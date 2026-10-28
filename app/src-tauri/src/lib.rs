@@ -23,7 +23,7 @@ use tauri::Manager;
 const SERVICE: &str = "Greenroom Local";
 
 fn entry(name: &str) -> Result<keyring::Entry, String> {
-    if !matches!(name, "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid") {
+    if !matches!(name, "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "huggingface") {
         return Err("Unknown provider.".into());
     }
     keyring::Entry::new(SERVICE, name).map_err(|e| format!("Could not reach the system credential store: {e}"))
@@ -73,12 +73,29 @@ struct KeyStatus {
     elevenlabs: bool,
     kie: bool,
     voicekiller: bool,
+    huggingface: bool,
 }
 
 #[tauri::command]
 fn key_status() -> KeyStatus {
     let has = |n: &str| entry(n).ok().and_then(|e| e.get_password().ok()).map(|k| !k.trim().is_empty()).unwrap_or(false);
-    KeyStatus { elevenlabs: has("elevenlabs"), kie: has("kie"), voicekiller: has("voicekiller") && has("voicekiller-userid") }
+    KeyStatus { elevenlabs: has("elevenlabs"), kie: has("kie"), voicekiller: has("voicekiller") && has("voicekiller-userid"), huggingface: has("huggingface") }
+}
+
+#[tauri::command]
+async fn huggingface_check() -> Result<String, String> {
+    blocking(move || {
+        let token = get_key("huggingface")?;
+        let result = net::agent().get("https://huggingface.co/api/whoami-v2").set("Authorization", &format!("Bearer {token}")).call();
+        match result {
+            Ok(response) => {
+                let data = net::read_json(response, 1 << 20)?;
+                data["name"].as_str().filter(|s| !s.is_empty()).map(|s| s.chars().take(80).collect()).ok_or_else(|| "Hugging Face did not identify this account.".into())
+            }
+            Err(ureq::Error::Status(401 | 403, _)) => Err("Hugging Face did not accept this token. Check that it is active and has read access.".into()),
+            Err(_) => Err("Could not reach Hugging Face. Check your internet connection.".into()),
+        }
+    }).await
 }
 
 #[tauri::command]
@@ -609,7 +626,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
-            key_status, set_key, clear_key, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
+            key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
             model_hardware, model_states, model_install

@@ -8,7 +8,7 @@ import type { Api, ClipReq, KeyName, PiperVoice, VideoInfo } from "./api";
 import type { EnginesCfg } from "./engines";
 
 const wait = (ms = 250) => new Promise((r) => setTimeout(r, ms));
-const keys = { elevenlabs: true, kie: true, voicekiller: true } as Record<string, boolean>;
+const keys = { elevenlabs: true, kie: true, voicekiller: true, huggingface: false } as Record<string, boolean>;
 const projects = new Map<string, Project>();
 const takes = new Map<string, { audioB64: string; mime: string }>();
 let library: VoiceEntry[] = [];
@@ -47,9 +47,10 @@ const SHARED: VoiceInfo[] = [
 ];
 
 export const mock: Api = {
-  keyStatus: async () => ({ elevenlabs: keys.elevenlabs!, kie: keys.kie!, voicekiller: keys.voicekiller! }),
+  keyStatus: async () => ({ elevenlabs: keys.elevenlabs!, kie: keys.kie!, voicekiller: keys.voicekiller!, huggingface: keys.huggingface! }),
   setKey: async (n: KeyName) => void (keys[n === "voicekiller-userid" ? "voicekiller" : n] = true),
   clearKey: async (n: KeyName) => void (keys[n === "voicekiller-userid" ? "voicekiller" : n] = false),
+  huggingfaceCheck: async () => { if (!keys.huggingface) throw new Error("Add a Hugging Face token first."); return "Demo account"; },
   runClip: async (req: ClipReq) => {
     await wait(400);
     const secs = req.provider.endsWith("sfx") ? (req.seconds ?? 2) : Math.min(8, 1 + req.text.length / 22);

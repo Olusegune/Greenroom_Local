@@ -6,8 +6,8 @@ import { mock } from "./mock";
 import type { EnginesCfg } from "./engines";
 import type { HardwareProfile, InstalledModel } from "./models";
 
-export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid";
-export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean };
+export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "huggingface";
+export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean; huggingface: boolean };
 export type Provider = "eleven-v4" | "eleven-tts" | "eleven-sfx" | "voicekiller" | "voicekiller-clone" | "kie-tts" | "kie-dialogue" | "kie-sfx" | "piper" | "local";
 
 export interface ClipOut {
@@ -134,6 +134,7 @@ const real = {
   keyStatus: () => call<KeyStatus>("key_status"),
   setKey: (name: KeyName, value: string) => call<void>("set_key", { name, value }),
   clearKey: (name: KeyName) => call<void>("clear_key", { name }),
+  huggingfaceCheck: () => call<string>("huggingface_check"),
   runClip: (req: ClipReq) => call<ClipOut>("run_clip", { req }),
   voicesMine: () => call<VoiceInfo[]>("voices_mine"),
   voicesVoiceKiller: () => call<{ name: string; language: string }[]>("voices_voicekiller"),

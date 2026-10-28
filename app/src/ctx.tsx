@@ -58,7 +58,7 @@ export const useApp = () => {
 
 export function Provider({ children }: { children: ReactNode }) {
   const [tab, setTab] = useState<Tab>("home");
-  const [keys, setKeys] = useState<KeyStatus>({ elevenlabs: false, kie: false, voicekiller: false });
+  const [keys, setKeys] = useState<KeyStatus>({ elevenlabs: false, kie: false, voicekiller: false, huggingface: false });
   const [library, setLibrary] = useState<VoiceEntry[]>([]);
   const [engines, setEngines] = useState<EnginesCfg>(DEFAULT_ENGINES_CFG);
   const [project, setProject] = useState<Project | null>(null);
