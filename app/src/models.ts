@@ -88,7 +88,7 @@ export const MODEL_CATALOG: LocalModel[] = [
     memoryGb: 10,
     capabilities: ["Voice cloning", "Expressive controls", "Code-switching"],
     languages: ["Yoruba", "Igbo", "Hausa", "Nigerian Pidgin", "English"],
-    accents: ["Nigerian English"], licence: "MIT plus upstream notices (verify at install)",
+    accents: ["Nigerian English — not independently verified"], licence: "Axiveri Research License: non-commercial; commercial licence required",
     experimental: true,
   },
   {

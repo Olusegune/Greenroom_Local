@@ -76,7 +76,7 @@ export default function Models() {
                 {!!m.languages.length && <p className="muted small"><strong>Languages:</strong> {m.languages.join(", ")}</p>}
                 {!!m.accents.length && <p className="muted small"><strong>Accent status:</strong> {m.accents.join(", ")}</p>}
                 <div className="model-bottom">
-                  <span className="muted small">{m.experimental ? "Experimental · native review required" : m.licence}</span>
+                  <span className="muted small">{m.experimental ? `Experimental · native review required · ${m.licence}` : m.licence}</span>
                   {state === "downloading" ? <div className="download-progress"><span style={{ width: `${progress[m.id] ?? 0}%` }} /><small>{progress[m.id] ?? 0}%</small></div> :
                     <button disabled>{state === "installed" ? "Installed" : "App integration pending"}</button>}
                 </div>
