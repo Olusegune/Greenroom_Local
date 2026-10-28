@@ -1,0 +1,79 @@
+/* Greenroom design tokens. The structure follows Soundstage (dark stage, thin wide-tracked display type, small radii);
+   the accent is the Greenroom green from the logo instead of gold. */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #050a07;
+  --surface-1: #0a110d;
+  --surface-2: #0f1812;
+  --surface-3: #16231b;
+  --surface-4: #1f3025;
+  --line: rgba(226, 244, 232, 0.1);
+  --line-strong: rgba(226, 244, 232, 0.22);
+  --control-line: #6f8579;
+
+  --text: #eaf4ed;
+  --text-2: #a4b8ab;
+  --text-3: #7f9486;
+
+  --accent: #52d68a;
+  --accent-hi: #9af0b8;
+  --on-accent: #04220f;
+  --accent-text: #7de8a6;
+  --accent-wash: rgba(82, 214, 138, 0.12);
+  --accent-line: rgba(82, 214, 138, 0.45);
+
+  --lime: #b6f05a;
+  --warm: #e9b85c;
+  --warm-wash: rgba(233, 184, 92, 0.12);
+
+  --ok: #62d6a6;
+  --warn: #f0a860;
+  --err: #ff8a80;
+  --ok-wash: rgba(98, 214, 166, 0.1);
+  --warn-wash: rgba(240, 168, 96, 0.1);
+  --err-wash: rgba(255, 138, 128, 0.1);
+
+  --focus: #b4f5cb;
+  --glow: radial-gradient(1100px 520px at 50% -140px, rgba(82, 214, 138, 0.1), transparent 70%),
+    radial-gradient(900px 600px at 100% 100%, rgba(233, 184, 92, 0.04), transparent 70%);
+  --shadow-2: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--line);
+  --scrim: rgba(2, 5, 3, 0.74);
+}
+
+:root {
+  --font: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, "Courier New", monospace;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 28px;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+
+  --r-ctl: 4px;
+  --r-card: 6px;
+  --r-dialog: 10px;
+  --ctl: 36px;
+  --ctl-sm: 28px;
+
+  --rail-w: 228px;
+  --t-fast: 120ms;
+  --t-base: 180ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

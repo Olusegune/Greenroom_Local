@@ -1,0 +1,28 @@
+[package]
+name = "greenroom-local"
+version = "0.1.0"
+description = "Greenroom Local: private, accent-aware AI voice performances"
+edition = "2021"
+publish = false
+
+[lib]
+name = "greenroom_local_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+keyring = { version = "3", features = ["windows-native", "apple-native"] }
+ureq = "2"
+base64 = "0.22"
+zip = { version = "9", default-features = false, features = ["deflate"] }
+sha2 = "0.10"
+md-5 = "0.10"
+tauri-plugin-updater = { version = "2.14.0", default-features = false, features = ["rustls-tls", "system-proxy"] }
+tauri-plugin-process = "2.4.0"

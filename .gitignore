@@ -1,0 +1,26 @@
+# JavaScript
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Rust / Tauri
+target/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local models, runtimes and generated media
+models/
+runtime/
+downloads/
+*.part
+
+# Secrets and signing material
+*.key
+*.pem
+.env
+.env.*
+!.env.example
