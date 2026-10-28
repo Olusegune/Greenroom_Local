@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, inApp } from "../api";
+import { useApp } from "../ctx";
 import { MODEL_CATALOG, recommendedModels, type HardwareProfile, type InstallState, type ModelKind } from "../models";
 
 const GROUPS: { id: ModelKind; label: string }[] = [
@@ -8,19 +9,32 @@ const GROUPS: { id: ModelKind; label: string }[] = [
 ];
 
 export default function Models() {
+  const { confirmSpend, toast, go } = useApp();
   const [profile, setProfile] = useState<HardwareProfile>(() => browserProfile());
   const suggested = useMemo(() => recommendedModels(profile), [profile]);
   const [states, setStates] = useState<Record<string, InstallState>>({});
   const [progress, setProgress] = useState<Record<string, number>>({});
+  const [piperInstalled, setPiperInstalled] = useState(false);
+  const [piperBusy, setPiperBusy] = useState(false);
 
   useEffect(() => {
     void api.modelHardware().then(setProfile).catch(() => undefined);
+    void api.piperStatus().then((s) => setPiperInstalled(s.installed)).catch(() => undefined);
     void api.modelStates(MODEL_CATALOG.map((m) => m.id)).then((rows) => setStates(Object.fromEntries(rows.map((r) => [r.id, r.state])))).catch(() => undefined);
     if (!inApp()) return;
     let stop: (() => void) | undefined;
     void import("@tauri-apps/api/event").then(({ listen }) => listen<{ id: string; percent: number }>("model-download-progress", (e) => setProgress((p) => ({ ...p, [e.payload.id]: e.payload.percent })))).then((fn) => { stop = fn; });
     return () => stop?.();
   }, []);
+
+  const installPiper = async () => {
+    const ok = await confirmSpend({ title: "Install local speech engine?", lines: ["Downloads the Piper speech engine (about 22 MB).", "Voice files are downloaded separately when you add them to your library.", "Piper runs locally and reads plain text; it does not support expressive acting or cloning."], download: true });
+    if (!ok) return;
+    setPiperBusy(true);
+    try { await api.piperInstall(); const status = await api.piperStatus(); setPiperInstalled(status.installed); toast(status.installed ? "Piper installed. Choose a voice to download." : "Piper could not be verified.", !status.installed); }
+    catch (e) { toast((e as Error).message, true); }
+    finally { setPiperBusy(false); }
+  };
 
   return (
     <section className="models-screen">
@@ -36,9 +50,10 @@ export default function Models() {
       </header>
 
       <div className="setup-strip">
-        <div><strong>Local AI setup is in development</strong><span>{suggested.length} suggested components · download sizes are estimates</span></div>
-        <button disabled title="Model packages are not ready yet">Coming soon</button>
+        <div><strong>Get started with local speech</strong><span>{piperInstalled ? "Piper is installed. Choose a voice in the library." : "Install the lightweight Piper engine, then choose voices."}</span></div>
+        {piperInstalled ? <button onClick={() => go("voices")}>Browse voices</button> : <button className="primary" disabled={piperBusy} onClick={() => void installPiper()}>{piperBusy ? "Installing…" : "Install local speech"}</button>}
       </div>
+      <p className="muted small">The advanced acting, cloning, voice design, music and effects engines below still need integration. {suggested.length} model packages are suggested for this machine, but they cannot be installed yet.</p>
 
       {GROUPS.map((group) => {
         const rows = MODEL_CATALOG.filter((m) => m.kind === group.id);
