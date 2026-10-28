@@ -20,5 +20,5 @@
 }
 .splash { position: fixed; inset: 0; z-index: 200; background: rgba(5, 10, 7, 0.82); display: grid; place-items: center; cursor: pointer; transition: opacity 0.5s ease; }
 .splash.out { opacity: 0; pointer-events: none; }
-.splash img { width: min(460px, 62vw); height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-dialog); box-shadow: var(--shadow-2); }
+.splash img { width: min(700px, 82vw); height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-dialog); box-shadow: var(--shadow-2); }
 @media (max-width: 900px) { :root { --rail-w: 64px; } .brand-name, .nav span.label, .rail h3, .rail-foot, .nav .count { display: none; } }

@@ -220,7 +220,16 @@ details.card > summary { cursor: pointer; }
 .shelf-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:10px; }
 .shelf-voice { display:flex; align-items:center; gap:13px; min-width:0; padding:13px; border:1px solid var(--line); border-radius:7px; background:linear-gradient(120deg, #1a2420, #111a16); }
 .shelf-voice:hover { border-color:var(--accent-line); }
+.shelf-voice.selected { border-color:var(--accent); }
+.shelf-actions { display:flex; align-items:center; gap:5px; }
+.shelf-icon { width:30px; height:30px; padding:0; justify-content:center; background:transparent; border:0; font-size:17px; color:var(--text-2); }
+.shelf-icon[aria-pressed="true"] { color:var(--warm); }
+.shelf-info select { max-width:100%; width:100%; height:28px; margin-top:5px; font-size:11px; }
 .shelf-info { display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; }
 .shelf-info strong, .shelf-info span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .shelf-info span, .shelf-info small { color:var(--text-2); font-size:12px; }
 @media (max-width: 850px) { .shelf-heading { align-items:stretch; flex-direction:column; } }
+.help-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:12px; }
+.help-grid .card { display:flex; flex-direction:column; gap:10px; padding:20px; }
+.help-grid .card p { flex:1; color:var(--text-2); }
+.help-grid .card button { align-self:flex-start; }

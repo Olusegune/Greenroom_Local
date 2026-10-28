@@ -214,19 +214,40 @@ function Mine({ goFind }: { goFind: () => void }) {
 
 /** Browse real Piper catalogue entries without creating fake or unusable saved voices. */
 function LocalVoiceShelf() {
-  const { confirmSpend, toast } = useApp();
+  const { confirmSpend, toast, library, project, edit, go } = useApp();
   const add = useAdd();
+  const sample = useSample();
   const [voices, setVoices] = useState<PiperVoice[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
+  const [favorites, setFavorites] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem("greenroom-local-favorite-voices") || "[]"); } catch { return []; } });
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [playing, setPlaying] = useState("");
+  const [selected, setSelected] = useState("");
+  const player = useRef<HTMLAudioElement | null>(null);
+  const audioUrl = useRef("");
+  useEffect(() => () => { player.current?.pause(); if (audioUrl.current) URL.revokeObjectURL(audioUrl.current); }, []);
+  const favorite = (key: string) => setFavorites((current) => { const next = current.includes(key) ? current.filter((id) => id !== key) : [...current, key]; localStorage.setItem("greenroom-local-favorite-voices", JSON.stringify(next)); return next; });
+  const play = async (v: PiperVoice) => {
+    if (playing === v.key) { player.current?.pause(); setPlaying(""); return; }
+    if (selected === v.key && player.current && !player.current.ended) { try { await player.current.play(); setPlaying(v.key); } catch { toast("Could not play this voice.", true); } return; }
+    const voice = library.find((x) => x.provider === "piper" && x.id === v.key);
+    if (!voice) { toast("Add this voice first to generate a local sample."); return; }
+    player.current?.pause();
+    if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
+    setBusy(v.key);
+    try { const url = await sample(voice); audioUrl.current = url; const audio = new Audio(url); player.current = audio; setSelected(v.key); audio.onended = () => setPlaying(""); audio.onerror = () => { setPlaying(""); toast("Could not play this voice.", true); }; await audio.play(); setPlaying(v.key); }
+    catch { setPlaying(""); }
+    finally { setBusy(""); }
+  };
   useEffect(() => {
     let active = true;
     api.piperCatalog().then((items) => { if (active) setVoices(items); }).catch((e: Error) => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
-  const shown = voices.filter((v) => `${v.name} ${v.language} ${v.country} ${v.code}`.toLowerCase().includes(query.toLowerCase().trim())).slice(0, 24);
+  const shown = voices.filter((v) => (!onlyFavorites || favorites.includes(v.key)) && `${v.name} ${v.language} ${v.country} ${v.code}`.toLowerCase().includes(query.toLowerCase().trim())).slice(0, 24);
   const download = async (v: PiperVoice) => {
     const ok = await confirmSpend({ title: `Download ${v.name}?`, lines: [`Voice download: approximately ${v.sizeMb} MB`, "If needed, Greenroom will also download the Piper speech engine.", "The voice runs on this computer after setup. Review its model licence before commercial use."], download: true });
     if (!ok) return;
@@ -240,14 +261,14 @@ function LocalVoiceShelf() {
     finally { setBusy(""); }
   };
   return <div className="local-shelf">
-    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Find your first voice</h2><p className="muted">Download a voice to add it to your library. Voice illustrations are symbolic, not pictures of speakers.</p></div><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div>
+    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Explore voices</h2><p className="muted">Add a voice, then play a sample generated on your computer. Portraits are illustrations.</p></div><div className="row wrap"><button aria-pressed={onlyFavorites} onClick={() => setOnlyFavorites(!onlyFavorites)}>{onlyFavorites ? "★ Favorites" : "☆ Favorites"}</button><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div></div>
     {loading && <p className="muted">Loading local voice catalogue…</p>}
     {error && <Note>Could not load the voice catalogue: {error}. Check your connection or try Find a voice.</Note>}
     {!loading && !error && shown.length === 0 && <p className="muted">No voices match your search.</p>}
-    <div className="shelf-grid">{shown.map((v) => <article className="shelf-voice" key={v.key}>
+    <div className="shelf-grid">{shown.map((v) => <article className={selected === v.key ? "shelf-voice selected" : "shelf-voice"} key={v.key}>
       <Avatar seed={v.key} size={54} />
-      <div className="shelf-info"><strong>{v.name}</strong><span>{v.language} · {v.country}</span><small>{v.quality} · {v.sizeMb} MB</small></div>
-      <button className="sm" disabled={!!busy} onClick={() => void download(v)}>{busy === v.key ? "Downloading…" : "Add"}</button>
+      <div className="shelf-info"><strong>{v.name}</strong><span>{v.language} · {v.country}</span><small>{v.quality} · {v.sizeMb} MB</small>{project && library.some((x) => x.provider === "piper" && x.id === v.key) && <select aria-label={`Select character for ${v.name}`} value="" onChange={(e) => { const id = e.target.value; if (id) { edit((p) => ({ ...p, characters: p.characters.map((c) => c.id === id ? { ...c, voiceId: v.key } : c) })); toast(`${v.name} assigned.`); } }}><option value="">Assign to character…</option>{project.characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>}</div>
+      <div className="shelf-actions"><button className="shelf-icon" aria-label={`${favorites.includes(v.key) ? "Remove from" : "Add to"} favorites: ${v.name}`} aria-pressed={favorites.includes(v.key)} onClick={() => favorite(v.key)}>{favorites.includes(v.key) ? "★" : "☆"}</button><button className="shelf-icon" disabled={!!busy} aria-label={`${playing === v.key ? "Pause" : "Play"} ${v.name}`} title="Add the voice before playing a sample" onClick={() => void play(v)}>{playing === v.key ? "Ⅱ" : "▶"}</button>{library.some((x) => x.provider === "piper" && x.id === v.key) ? !project && <button className="sm" onClick={() => go("home")}>Select</button> : <button className="sm" disabled={!!busy} onClick={() => void download(v)}>{busy === v.key ? "Adding…" : "Add"}</button>}</div>
     </article>)}</div>
     {voices.length > 24 && <p className="muted small">Showing up to 24 matches. Search for a language or region to explore more.</p>}
   </div>;
