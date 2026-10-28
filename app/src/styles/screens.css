@@ -110,3 +110,10 @@
 .download-progress small { position:absolute; inset:6px 0; text-align:center; }
 .legal-note { margin:40px 0; max-width:800px; }
 @media (max-width:720px) { .hardware-orb{display:none}.models-hero{display:block}.setup-strip{position:static}.model-bottom{align-items:stretch;flex-direction:column}.model-bottom>span{max-width:none} }
+.hardware-orb { width:auto; min-width:190px; aspect-ratio:auto; padding:16px 20px; border-radius:7px; align-items:flex-start; }
+.hardware-orb strong { overflow-wrap:anywhere; }
+.setup-strip, .model-card { border-radius:7px; }
+.model-card { min-height:0; gap:11px; }
+.model-group { margin:22px 0; }
+.model-marker { width:10px; height:10px; margin-top:5px; background:var(--accent); flex:none; }
+.tier { border-radius:4px; }

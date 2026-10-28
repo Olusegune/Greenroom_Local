@@ -9,7 +9,7 @@ import { ACCENTS, languageName, TILES, type Tile } from "../languages";
 import { fromBase64 } from "../audio";
 import type { Consent, ConsentBasis, LicenceUse, VoiceEntry } from "../types";
 import { BASIS_LABEL, LICENCE_LABEL, rightsFor } from "../trust";
-import { Empty, Note, PlayButton, Tabs, useBusy } from "../ui";
+import { Note, PlayButton, Tabs, useBusy } from "../ui";
 import { Avatar } from "../avatar";
 import AccentSheet from "./AccentSheet";
 import { DESIGN_ACCENTS } from "../accents";
@@ -128,9 +128,7 @@ function Mine({ goFind }: { goFind: () => void }) {
           </span>
         )}
       </div>
-      {library.length === 0 ? (
-        <Empty title="No voices yet">Pick a language in Find a voice, design a new voice from a description, or clone a voice you have permission to use.</Empty>
-      ) : (
+      {library.length > 0 && (
         <div className="grid">
           {shown.map((v) => (
             <div key={v.provider + v.id} className={usedBy(v).length ? "card voice-card vc lit" : "card voice-card vc"}>
@@ -209,8 +207,50 @@ function Mine({ goFind }: { goFind: () => void }) {
           ))}
         </div>
       )}
+      <LocalVoiceShelf />
     </>
   );
+}
+
+/** Browse real Piper catalogue entries without creating fake or unusable saved voices. */
+function LocalVoiceShelf() {
+  const { confirmSpend, toast } = useApp();
+  const add = useAdd();
+  const [voices, setVoices] = useState<PiperVoice[]>([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState("");
+  useEffect(() => {
+    let active = true;
+    api.piperCatalog().then((items) => { if (active) setVoices(items); }).catch((e: Error) => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+  const shown = voices.filter((v) => `${v.name} ${v.language} ${v.country} ${v.code}`.toLowerCase().includes(query.toLowerCase().trim())).slice(0, 24);
+  const download = async (v: PiperVoice) => {
+    const ok = await confirmSpend({ title: `Download ${v.name}?`, lines: [`Voice download: approximately ${v.sizeMb} MB`, "If needed, Greenroom will also download the Piper speech engine.", "The voice runs on this computer after setup. Review its model licence before commercial use."], download: true });
+    if (!ok) return;
+    setBusy(v.key);
+    try {
+      const status = await api.piperStatus();
+      if (!status.installed) await api.piperInstall();
+      if (!status.voices.includes(v.key)) await api.piperInstallVoice(v.key);
+      add({ id: v.key, name: v.name, provider: "piper", source: "library", language: v.language, accent: v.country, gender: "" });
+    } catch (e) { toast((e as Error).message, true); }
+    finally { setBusy(""); }
+  };
+  return <div className="local-shelf">
+    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Find your first voice</h2><p className="muted">Download a voice to add it to your library. Voice illustrations are symbolic, not pictures of speakers.</p></div><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div>
+    {loading && <p className="muted">Loading local voice catalogue…</p>}
+    {error && <Note>Could not load the voice catalogue: {error}. Check your connection or try Find a voice.</Note>}
+    {!loading && !error && shown.length === 0 && <p className="muted">No voices match your search.</p>}
+    <div className="shelf-grid">{shown.map((v) => <article className="shelf-voice" key={v.key}>
+      <Avatar seed={v.key} size={54} />
+      <div className="shelf-info"><strong>{v.name}</strong><span>{v.language} · {v.country}</span><small>{v.quality} · {v.sizeMb} MB</small></div>
+      <button className="sm" disabled={!!busy} onClick={() => void download(v)}>{busy === v.key ? "Downloading…" : "Add"}</button>
+    </article>)}</div>
+    {voices.length > 24 && <p className="muted small">Showing up to 24 matches. Search for a language or region to explore more.</p>}
+  </div>;
 }
 
 // ---- Find a voice -------------------------------------------------------------------------------------------------

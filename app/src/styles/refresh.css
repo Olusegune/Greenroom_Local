@@ -207,3 +207,20 @@ details.card > summary { cursor: pointer; }
 
 /* Updates */
 .update-box { padding: 14px 16px; border-radius: 14px; border: 1px solid var(--accent-line); background: var(--accent-wash); }
+
+/* A sharper, quieter studio surface. */
+:root { --r-ctl: 5px; --r-card: 7px; --r-dialog: 9px; }
+.nav, button.sm, button.sm.primary, button.ghost, .note, .bar, .toast, .sample, .tl-scroll, .direction, .hero, .lang-bar, .update-box { border-radius: 6px; }
+.chip, .badge, .steps li, .syntax, .voice-switch { border-radius: 5px; }
+.local-shelf { margin-top: 30px; }
+.shelf-heading { display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:16px; }
+.shelf-heading h2 { margin:5px 0; font-size:22px; }
+.shelf-heading p { max-width:630px; margin:0; }
+.shelf-heading input { width:min(300px, 100%); }
+.shelf-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:10px; }
+.shelf-voice { display:flex; align-items:center; gap:13px; min-width:0; padding:13px; border:1px solid var(--line); border-radius:7px; background:linear-gradient(120deg, #1a2420, #111a16); }
+.shelf-voice:hover { border-color:var(--accent-line); }
+.shelf-info { display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; }
+.shelf-info strong, .shelf-info span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.shelf-info span, .shelf-info small { color:var(--text-2); font-size:12px; }
+@media (max-width: 850px) { .shelf-heading { align-items:stretch; flex-direction:column; } }

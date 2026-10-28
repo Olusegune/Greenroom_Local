@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, inApp } from "../api";
-import { useApp } from "../ctx";
-import { MODEL_CATALOG, recommendedModels, totalDownload, type HardwareProfile, type InstallState, type ModelKind } from "../models";
+import { MODEL_CATALOG, recommendedModels, type HardwareProfile, type InstallState, type ModelKind } from "../models";
 
 const GROUPS: { id: ModelKind; label: string }[] = [
   { id: "runtime", label: "Runtime" }, { id: "speech", label: "Voices & acting" }, { id: "director", label: "AI Director" },
@@ -9,10 +8,8 @@ const GROUPS: { id: ModelKind; label: string }[] = [
 ];
 
 export default function Models() {
-  const { toast } = useApp();
   const [profile, setProfile] = useState<HardwareProfile>(() => browserProfile());
   const suggested = useMemo(() => recommendedModels(profile), [profile]);
-  const [selected, setSelected] = useState<string[]>(suggested);
   const [states, setStates] = useState<Record<string, InstallState>>({});
   const [progress, setProgress] = useState<Record<string, number>>({});
 
@@ -25,27 +22,13 @@ export default function Models() {
     return () => stop?.();
   }, []);
 
-  const install = async (id: string) => {
-    if (states[id] === "installed" || states[id] === "downloading") return;
-    setStates((s) => ({ ...s, [id]: "downloading" }));
-    try {
-      const result = await api.modelInstall(id);
-      setProgress((p) => ({ ...p, [id]: result.progress }));
-      setStates((s) => ({ ...s, [id]: result.state }));
-    } catch (e) {
-      setStates((s) => ({ ...s, [id]: "error" }));
-      toast((e as Error).message, true);
-    }
-  };
-  const installSelected = async () => { for (const id of selected) await install(id); };
-
   return (
     <section className="models-screen">
       <header className="models-hero">
         <div>
           <span className="eyebrow">LOCAL AI / PRIVATE BY DEFAULT</span>
           <h1>Model Center</h1>
-          <p className="lede">Greenroom downloads, verifies and configures its AI tools. No Python, terminal or model folders to manage.</p>
+          <p className="lede">Explore the local AI tools planned for Greenroom. The Piper engine and its voices can already be installed from Voices.</p>
         </div>
         <div className="hardware-orb" aria-label={`Hardware profile ${profile.tier}`}>
           <span>{profile.tier}</span><strong>{profile.accelerator}</strong><small>{profile.memoryGb} GB memory</small>
@@ -53,8 +36,8 @@ export default function Models() {
       </header>
 
       <div className="setup-strip">
-        <div><strong>Recommended setup</strong><span>{selected.length} components · {totalDownload(selected).toFixed(1)} GB</span></div>
-        <button className="primary" onClick={() => void installSelected()}>Install selected</button>
+        <div><strong>Local AI setup is in development</strong><span>{suggested.length} suggested components · download sizes are estimates</span></div>
+        <button disabled title="Model packages are not ready yet">Coming soon</button>
       </div>
 
       {GROUPS.map((group) => {
@@ -68,26 +51,27 @@ export default function Models() {
               const fits = tierRank(m.tier) <= tierRank(profile.tier);
               return <article className={`model-card ${m.experimental ? "experimental" : ""}`} key={m.id}>
                 <div className="model-top">
-                  <label className="model-select"><input type="checkbox" checked={selected.includes(m.id)} onChange={() => setSelected((s) => s.includes(m.id) ? s.filter((x) => x !== m.id) : [...s, m.id])}/><span /></label>
+                  <span className="model-marker" aria-hidden="true" />
                   <div><h3>{m.name}</h3><p className="muted small">{m.maker}</p></div>
                   <span className={`tier tier-${m.tier}`}>{m.tier}</span>
                 </div>
                 <p>{m.description}</p>
-                <div className="model-facts"><span>{m.sizeGb} GB download</span><span>{m.memoryGb} GB memory</span><span>{fits ? "Fits this computer" : "May run slowly"}</span></div>
+                <div className="model-facts"><span>~{m.sizeGb} GB download</span><span>~{m.memoryGb} GB memory</span><span>{fits ? "Memory may be sufficient" : "May need more memory"}</span></div>
                 <div className="chips">{m.capabilities.slice(0, 6).map((c) => <span className="chip static" key={c}>{c}</span>)}</div>
                 {!!m.languages.length && <p className="muted small"><strong>Languages:</strong> {m.languages.join(", ")}</p>}
                 {!!m.accents.length && <p className="muted small"><strong>Accent status:</strong> {m.accents.join(", ")}</p>}
                 <div className="model-bottom">
                   <span className="muted small">{m.experimental ? "Experimental · native review required" : m.licence}</span>
                   {state === "downloading" ? <div className="download-progress"><span style={{ width: `${progress[m.id] ?? 0}%` }} /><small>{progress[m.id] ?? 0}%</small></div> :
-                    <button className={state === "installed" ? "ok" : ""} onClick={() => void install(m.id)}>{state === "installed" ? "Installed" : state === "error" ? "Retry" : "Download"}</button>}
+                    <button disabled>{state === "installed" ? "Installed" : "Coming soon"}</button>}
                 </div>
               </article>;
             })}
           </div>
         </div>;
       })}
-      <p className="muted small legal-note">Every native download is resumed when possible, checked against an application-owned SHA-256 manifest, staged outside the active version and activated atomically. Experimental accent support is never presented as native-verified.</p>
+      <div className="model-group"><h2>Music & sound effects</h2><div className="model-grid"><article className="model-card"><div className="model-top"><span className="model-marker" aria-hidden="true" /><div><h3>Local music & sound design</h3><p className="muted small">In development</p></div></div><p>Create music, atmosphere and sound effects on this computer. For now, import your own audio on the Timeline.</p><div className="chips"><span className="chip static">Music</span><span className="chip static">Atmosphere</span><span className="chip static">Sound effects</span></div><div className="model-bottom"><span className="muted small">No local generator is installed yet.</span><button disabled>Coming soon</button></div></article></div></div>
+      <p className="muted small legal-note">The listed packages are not yet available. Hardware guidance is based on system memory; GPU detection and accent listening reviews are still in development.</p>
     </section>
   );
 }
