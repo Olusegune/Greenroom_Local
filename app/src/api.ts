@@ -172,6 +172,7 @@ const real = {
   piperStatus: () => call<PiperStatus>("piper_status"),
   piperInstall: () => call<void>("piper_install"),
   piperCatalog: () => call<PiperVoice[]>("piper_catalog"),
+  piperPreview: (key: string) => call<Audio>("piper_preview", { key }),
   piperInstallVoice: (key: string) => call<void>("piper_install_voice", { key }),
   piperRemoveVoice: (key: string) => call<void>("piper_remove_voice", { key }),
   localVoices: () => call<string[]>("local_voices"),

@@ -20,9 +20,9 @@ export default function Home() {
       {noKeys && (
         <div className="note warn">
           <div>
-            Add your ElevenLabs key first so voices can speak.{" "}
-            <button className="sm" onClick={() => go("settings")}>
-              Open Settings
+            Set up a local voice, or connect a cloud engine in Settings.{" "}
+            <button className="sm" onClick={() => go("voices")}>
+              Explore voices
             </button>
           </div>
         </div>
@@ -49,7 +49,7 @@ export default function Home() {
             ))}
           </div>
           <h2>Start your first scene</h2>
-          <p className="muted">Name a project above. Everything you make stays on this computer, in Documents\Greenroom.</p>
+          <p className="muted">Name a project above. Project files are saved on this computer in Documents\Greenroom Local.</p>
           <ol className="steps">
             <li>
               <b>Write</b> the lines

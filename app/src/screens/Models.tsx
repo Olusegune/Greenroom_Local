@@ -78,7 +78,7 @@ export default function Models() {
                 <div className="model-bottom">
                   <span className="muted small">{m.experimental ? "Experimental · native review required" : m.licence}</span>
                   {state === "downloading" ? <div className="download-progress"><span style={{ width: `${progress[m.id] ?? 0}%` }} /><small>{progress[m.id] ?? 0}%</small></div> :
-                    <button disabled>{state === "installed" ? "Installed" : "Coming soon"}</button>}
+                    <button disabled>{state === "installed" ? "Installed" : "App integration pending"}</button>}
                 </div>
               </article>;
             })}
@@ -86,7 +86,7 @@ export default function Models() {
         </div>;
       })}
       <div className="model-group"><h2>Music & sound effects</h2><div className="model-grid"><article className="model-card"><div className="model-top"><span className="model-marker" aria-hidden="true" /><div><h3>Local music & sound design</h3><p className="muted small">In development</p></div></div><p>Create music, atmosphere and sound effects on this computer. For now, import your own audio on the Timeline.</p><div className="chips"><span className="chip static">Music</span><span className="chip static">Atmosphere</span><span className="chip static">Sound effects</span></div><div className="model-bottom"><span className="muted small">No local generator is installed yet.</span><button disabled>Coming soon</button></div></article></div></div>
-      <p className="muted small legal-note">The listed packages are not yet available. Hardware guidance is based on system memory; GPU detection and accent listening reviews are still in development.</p>
+      <p className="muted small legal-note">The listed models exist, but Greenroom does not yet install or run them. Hardware guidance is based on system memory; GPU detection and accent listening reviews are still in development.</p>
     </section>
   );
 }

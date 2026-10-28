@@ -106,7 +106,12 @@ function Shell() {
           )}
         </div>
       </nav>
-      <main className="stage">{screens[tab]}</main>
+      <div className="workspace"><div className="app-menu" aria-label="Application menu">
+        <details><summary>File</summary><div className="menu-popup"><button onClick={() => go("home")}>New or open project</button><button disabled={!project} onClick={closeProject}>Close project</button><button disabled={!project} onClick={() => go("export")}>Export…</button></div></details>
+        <details><summary>Edit</summary><div className="menu-popup"><button disabled={!canUndo} onClick={undo}>Undo <span>Ctrl+Z</span></button><button disabled={!canRedo} onClick={redo}>Redo <span>Ctrl+Shift+Z</span></button></div></details>
+        <details><summary>View</summary><div className="menu-popup"><button onClick={() => go("voices")}>Voice library</button><button onClick={() => go("models")}>Model Center</button><button onClick={() => go("settings")}>Settings</button></div></details>
+        <details><summary>Help</summary><div className="menu-popup"><button onClick={() => go("help")}>Help & guide</button></div></details>
+      </div><main className="stage">{screens[tab]}</main></div>
     </div>
   );
 }

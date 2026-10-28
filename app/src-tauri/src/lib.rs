@@ -544,6 +544,18 @@ async fn piper_catalog() -> Result<Vec<local::PiperVoice>, String> {
 }
 
 #[tauri::command]
+async fn piper_preview(key: String) -> Result<Audio, String> {
+    blocking(move || {
+        let voice = catalog()?.into_iter().find(|v| v.key == key).ok_or("That voice is not in the catalogue.")?;
+        let parent = voice.onnx.0.rsplit_once('/').ok_or("No sample is listed for this voice.")?.0;
+        let bytes = net::download(&format!("{}{parent}/samples/speaker_0.mp3", local::VOICES_BASE), 6 << 20)
+            .map_err(|_| "This voice has no available online sample. Add it to generate one locally.".to_string())?;
+        if bytes.len() < 100 { return Err("This voice has no available online sample. Add it to generate one locally.".into()); }
+        Ok(Audio { mime: "audio/mpeg".into(), audio_b64: b64(&bytes) })
+    }).await
+}
+
+#[tauri::command]
 async fn piper_install_voice(app: tauri::AppHandle, key: String) -> Result<(), String> {
     let r = root(&app)?;
     blocking(move || {
@@ -599,7 +611,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             key_status, set_key, clear_key, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
-            save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_install_voice, piper_remove_voice, local_voices,
+            save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
             model_hardware, model_states, model_install
         ])
         .run(tauri::generate_context!())

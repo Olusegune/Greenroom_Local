@@ -233,3 +233,23 @@ details.card > summary { cursor: pointer; }
 .help-grid .card { display:flex; flex-direction:column; gap:10px; padding:20px; }
 .help-grid .card p { flex:1; color:var(--text-2); }
 .help-grid .card button { align-self:flex-start; }
+
+/* Studio-wide refinement */
+:root { --surface-1:#0d1311; --surface-2:#151c19; --surface-3:#202a25; --line:rgba(225,242,231,.10); --line-strong:rgba(225,242,231,.18); }
+body { background-image:radial-gradient(800px 380px at 75% -20%, rgba(63,166,111,.08), transparent 70%); }
+.stage { padding:32px clamp(24px, 4vw, 54px) 110px; }
+.stage > section { max-width:1280px; gap:18px; }
+.rail { background:#0a0f0d; padding:16px 12px; }
+.brand { padding-bottom:24px; }
+.brand-name { font-size:13px; letter-spacing:.1em; }
+.nav { height:38px; border-radius:5px; }
+.nav.on { box-shadow:inset 2px 0 var(--accent); background:rgba(82,214,138,.09); }
+.card, .linecard { box-shadow:none; background:var(--surface-2); }
+.grid { gap:12px; }
+.tabs { gap:4px; border-bottom:1px solid var(--line); }
+.tabs button { padding:0 15px; }
+button.primary { box-shadow:none; background:#65d89a; border-color:#65d89a; }
+button.primary:hover:not(:disabled) { box-shadow:none; background:#83e6af; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { box-shadow:0 0 0 2px rgba(82,214,138,.16); }
+.hero { border-radius:7px; }
+.shelf-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); }

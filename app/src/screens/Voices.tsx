@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, type DesignPreview, type PiperVoice } from "../api";
+import { api, toUrl, type DesignPreview, type PiperVoice } from "../api";
 import { useApp } from "../ctx";
 import { ENGINES, ENGINE_ORDER, type Engine } from "../engines";
 import { kieFor, piperFor, voicekillerFor, type Found } from "../finder";
@@ -234,12 +234,11 @@ function LocalVoiceShelf() {
     if (playing === v.key) { player.current?.pause(); setPlaying(""); return; }
     if (selected === v.key && player.current && !player.current.ended) { try { await player.current.play(); setPlaying(v.key); } catch { toast("Could not play this voice.", true); } return; }
     const voice = library.find((x) => x.provider === "piper" && x.id === v.key);
-    if (!voice) { toast("Add this voice first to generate a local sample."); return; }
     player.current?.pause();
     if (audioUrl.current) URL.revokeObjectURL(audioUrl.current);
     setBusy(v.key);
-    try { const url = await sample(voice); audioUrl.current = url; const audio = new Audio(url); player.current = audio; setSelected(v.key); audio.onended = () => setPlaying(""); audio.onerror = () => { setPlaying(""); toast("Could not play this voice.", true); }; await audio.play(); setPlaying(v.key); }
-    catch { setPlaying(""); }
+    try { const url = voice ? await sample(voice) : toUrl(await api.piperPreview(v.key)); audioUrl.current = url; const audio = new Audio(url); player.current = audio; setSelected(v.key); audio.onended = () => setPlaying(""); audio.onerror = () => { setPlaying(""); toast("Could not play this voice.", true); }; await audio.play(); setPlaying(v.key); }
+    catch (e) { setPlaying(""); if (!voice) toast((e as Error).message, true); }
     finally { setBusy(""); }
   };
   useEffect(() => {
@@ -261,14 +260,14 @@ function LocalVoiceShelf() {
     finally { setBusy(""); }
   };
   return <div className="local-shelf">
-    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Explore voices</h2><p className="muted">Add a voice, then play a sample generated on your computer. Portraits are illustrations.</p></div><div className="row wrap"><button aria-pressed={onlyFavorites} onClick={() => setOnlyFavorites(!onlyFavorites)}>{onlyFavorites ? "★ Favorites" : "☆ Favorites"}</button><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div></div>
+    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Explore voices</h2><p className="muted">Listen to online samples before adding a voice. Installed voices generate samples locally. Portraits are illustrations.</p></div><div className="row wrap"><button aria-pressed={onlyFavorites} onClick={() => setOnlyFavorites(!onlyFavorites)}>{onlyFavorites ? "★ Favorites" : "☆ Favorites"}</button><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div></div>
     {loading && <p className="muted">Loading local voice catalogue…</p>}
     {error && <Note>Could not load the voice catalogue: {error}. Check your connection or try Find a voice.</Note>}
     {!loading && !error && shown.length === 0 && <p className="muted">No voices match your search.</p>}
     <div className="shelf-grid">{shown.map((v) => <article className={selected === v.key ? "shelf-voice selected" : "shelf-voice"} key={v.key}>
       <Avatar seed={v.key} size={54} />
       <div className="shelf-info"><strong>{v.name}</strong><span>{v.language} · {v.country}</span><small>{v.quality} · {v.sizeMb} MB</small>{project && library.some((x) => x.provider === "piper" && x.id === v.key) && <select aria-label={`Select character for ${v.name}`} value="" onChange={(e) => { const id = e.target.value; if (id) { edit((p) => ({ ...p, characters: p.characters.map((c) => c.id === id ? { ...c, voiceId: v.key } : c) })); toast(`${v.name} assigned.`); } }}><option value="">Assign to character…</option>{project.characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>}</div>
-      <div className="shelf-actions"><button className="shelf-icon" aria-label={`${favorites.includes(v.key) ? "Remove from" : "Add to"} favorites: ${v.name}`} aria-pressed={favorites.includes(v.key)} onClick={() => favorite(v.key)}>{favorites.includes(v.key) ? "★" : "☆"}</button><button className="shelf-icon" disabled={!!busy} aria-label={`${playing === v.key ? "Pause" : "Play"} ${v.name}`} title="Add the voice before playing a sample" onClick={() => void play(v)}>{playing === v.key ? "Ⅱ" : "▶"}</button>{library.some((x) => x.provider === "piper" && x.id === v.key) ? !project && <button className="sm" onClick={() => go("home")}>Select</button> : <button className="sm" disabled={!!busy} onClick={() => void download(v)}>{busy === v.key ? "Adding…" : "Add"}</button>}</div>
+      <div className="shelf-actions"><button className="shelf-icon" aria-label={`${favorites.includes(v.key) ? "Remove from" : "Add to"} favorites: ${v.name}`} aria-pressed={favorites.includes(v.key)} onClick={() => favorite(v.key)}>{favorites.includes(v.key) ? "★" : "☆"}</button><button className="shelf-icon" disabled={!!busy} aria-label={`${playing === v.key ? "Pause" : "Play"} ${v.name}`} title="Play voice sample" onClick={() => void play(v)}>{playing === v.key ? "Ⅱ" : "▶"}</button>{library.some((x) => x.provider === "piper" && x.id === v.key) ? !project && <button className="sm" onClick={() => go("home")}>Select</button> : <button className="sm" disabled={!!busy} onClick={() => void download(v)}>{busy === v.key ? "Adding…" : "Add"}</button>}</div>
     </article>)}</div>
     {voices.length > 24 && <p className="muted small">Showing up to 24 matches. Search for a language or region to explore more.</p>}
   </div>;

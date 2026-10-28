@@ -135,6 +135,7 @@ export const mock: Api = {
   piperStatus: async () => ({ installed: piperInstalled, voices: [...piperVoices] }),
   piperInstall: async () => (await wait(900), void (piperInstalled = true)),
   piperCatalog: async () => (await wait(), PIPER),
+  piperPreview: async () => ({ audioB64: tone(1, 300), mime: "audio/wav" }),
   piperInstallVoice: async (k) => (await wait(900), void piperVoices.add(k)),
   piperRemoveVoice: async (k) => void piperVoices.delete(k),
   localVoices: async () => (await wait(), ["af_bella", "am_adam"]),
