@@ -81,8 +81,8 @@ Yoruba, Igbo, Hausa, Nigerian Pidgin, Nigerian English, British varieties, Filip
 
 ## Delivery order
 
-1. Hardware profiler and signed manifest schema
-2. Resumable verified downloader
+1. Hardware profiler and application-owned manifest schema — implemented foundation
+2. Resumable verified downloader with progress and atomic activation — implemented foundation
 3. Managed runtime bootstrap and health checks
 4. Chatterbox adapter and lightweight CPU adapter
 5. Local Acting Director through llama.cpp

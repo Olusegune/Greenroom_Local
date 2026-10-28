@@ -5,6 +5,7 @@ mod eleven;
 mod kie;
 mod history;
 mod local;
+mod model_manager;
 mod mux;
 mod net;
 mod store;
@@ -19,13 +20,13 @@ use std::sync::Mutex;
 use std::time::Instant;
 use tauri::Manager;
 
-const SERVICE: &str = "Greenroom";
+const SERVICE: &str = "Greenroom Local";
 
 fn entry(name: &str) -> Result<keyring::Entry, String> {
     if !matches!(name, "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid") {
         return Err("Unknown provider.".into());
     }
-    keyring::Entry::new(SERVICE, name).map_err(|e| format!("Could not reach the Windows Credential Manager: {e}"))
+    keyring::Entry::new(SERVICE, name).map_err(|e| format!("Could not reach the system credential store: {e}"))
 }
 
 fn get_key(name: &str) -> Result<String, String> {
@@ -37,7 +38,7 @@ fn get_key(name: &str) -> Result<String, String> {
     match entry(name)?.get_password() {
         Ok(k) if !k.trim().is_empty() => Ok(k.trim().to_string()),
         Ok(_) | Err(keyring::Error::NoEntry) => Err(format!("Add your {who} key in Settings first.")),
-        Err(e) => Err(format!("Could not read the Windows Credential Manager: {e}")),
+        Err(e) => Err(format!("Could not read the system credential store: {e}")),
     }
 }
 
@@ -50,7 +51,7 @@ fn voicekiller_client() -> Result<voicekiller::Client, String> {
 }
 
 fn root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
-    Ok(app.path().document_dir().map_err(|_| "Could not find your Documents folder.".to_string())?.join("Greenroom"))
+    Ok(app.path().document_dir().map_err(|_| "Could not find your Documents folder.".to_string())?.join("Greenroom Local"))
 }
 
 fn b64(bytes: &[u8]) -> String {
@@ -86,7 +87,7 @@ fn set_key(name: String, value: String) -> Result<(), String> {
     if v.is_empty() || v.len() > 512 || !v.bytes().all(|b| b.is_ascii_graphic()) {
         return Err("That does not look like an API key. Paste it again without spaces.".into());
     }
-    entry(&name)?.set_password(v).map_err(|e| format!("Could not save to the Windows Credential Manager: {e}"))
+    entry(&name)?.set_password(v).map_err(|e| format!("Could not save to the system credential store: {e}"))
 }
 
 #[tauri::command]
@@ -563,6 +564,31 @@ async fn local_voices(app: tauri::AppHandle) -> Result<Vec<String>, String> {
     blocking(move || local::server_voices(&cfg)).await
 }
 
+// ---- managed local AI -----------------------------------------------------------------------------------------
+
+#[tauri::command]
+fn model_hardware() -> model_manager::HardwareInfo {
+    model_manager::hardware()
+}
+
+#[tauri::command]
+fn model_states(app: tauri::AppHandle, ids: Vec<String>) -> Result<Vec<model_manager::ModelState>, String> {
+    if ids.len() > 100 { return Err("Too many model ids were requested.".into()); }
+    model_manager::states(&app, &ids)
+}
+
+/// Only application-owned manifests may be installed. URLs and checksums are deliberately never accepted from the UI.
+#[tauri::command]
+async fn model_install(app: tauri::AppHandle, id: String) -> Result<model_manager::ModelState, String> {
+    let manifest = managed_manifest(&id).ok_or_else(|| "This model's verified installation manifest is not included in this development build yet.".to_string())?;
+    blocking(move || model_manager::install(&app, manifest)).await
+}
+
+fn managed_manifest(_id: &str) -> Option<&'static model_manager::Manifest> {
+    // Populated only with byte-exact, licence-reviewed release artifacts. Never guess a moving model URL here.
+    None
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -573,7 +599,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             key_status, set_key, clear_key, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
-            save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_install_voice, piper_remove_voice, local_voices
+            save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_install_voice, piper_remove_voice, local_voices,
+            model_hardware, model_states, model_install
         ])
         .run(tauri::generate_context!())
         .expect("error while running Greenroom");

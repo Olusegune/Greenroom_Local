@@ -138,6 +138,9 @@ export const mock: Api = {
   piperInstallVoice: async (k) => (await wait(900), void piperVoices.add(k)),
   piperRemoveVoice: async (k) => void piperVoices.delete(k),
   localVoices: async () => (await wait(), ["af_bella", "am_adam"]),
+  modelHardware: async () => ({ platform: "windows" as const, memoryGb: 16, accelerator: "Demo GPU", vramGb: 8, tier: "standard" as const }),
+  modelStates: async (ids: string[]) => ids.map((id) => ({ id, state: "available" as const, progress: 0 })),
+  modelInstall: async (id: string) => (await wait(900), { id, state: "installed" as const, progress: 100, version: "demo" }),
   directorComplete: async (_s: string, user: string) => {
     await wait(700);
     const ids = [...user.matchAll(/^(l-[\w-]+) \|/gm)].map((x) => x[1]!);

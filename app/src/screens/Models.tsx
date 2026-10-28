@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { api, inApp } from "../api";
+import { useApp } from "../ctx";
 import { MODEL_CATALOG, recommendedModels, totalDownload, type HardwareProfile, type InstallState, type ModelKind } from "../models";
 
 const GROUPS: { id: ModelKind; label: string }[] = [
@@ -7,26 +9,35 @@ const GROUPS: { id: ModelKind; label: string }[] = [
 ];
 
 export default function Models() {
-  const [profile] = useState<HardwareProfile>(() => browserProfile());
+  const { toast } = useApp();
+  const [profile, setProfile] = useState<HardwareProfile>(() => browserProfile());
   const suggested = useMemo(() => recommendedModels(profile), [profile]);
   const [selected, setSelected] = useState<string[]>(suggested);
   const [states, setStates] = useState<Record<string, InstallState>>({});
   const [progress, setProgress] = useState<Record<string, number>>({});
 
-  const install = (id: string) => {
+  useEffect(() => {
+    void api.modelHardware().then(setProfile).catch(() => undefined);
+    void api.modelStates(MODEL_CATALOG.map((m) => m.id)).then((rows) => setStates(Object.fromEntries(rows.map((r) => [r.id, r.state])))).catch(() => undefined);
+    if (!inApp()) return;
+    let stop: (() => void) | undefined;
+    void import("@tauri-apps/api/event").then(({ listen }) => listen<{ id: string; percent: number }>("model-download-progress", (e) => setProgress((p) => ({ ...p, [e.payload.id]: e.payload.percent })))).then((fn) => { stop = fn; });
+    return () => stop?.();
+  }, []);
+
+  const install = async (id: string) => {
     if (states[id] === "installed" || states[id] === "downloading") return;
     setStates((s) => ({ ...s, [id]: "downloading" }));
-    let n = 0;
-    const timer = window.setInterval(() => {
-      n += 4;
-      setProgress((p) => ({ ...p, [id]: Math.min(n, 100) }));
-      if (n >= 100) {
-        window.clearInterval(timer);
-        setStates((s) => ({ ...s, [id]: "installed" }));
-      }
-    }, 80);
+    try {
+      const result = await api.modelInstall(id);
+      setProgress((p) => ({ ...p, [id]: result.progress }));
+      setStates((s) => ({ ...s, [id]: result.state }));
+    } catch (e) {
+      setStates((s) => ({ ...s, [id]: "error" }));
+      toast((e as Error).message, true);
+    }
   };
-  const installSelected = () => selected.forEach(install);
+  const installSelected = async () => { for (const id of selected) await install(id); };
 
   return (
     <section className="models-screen">
@@ -43,7 +54,7 @@ export default function Models() {
 
       <div className="setup-strip">
         <div><strong>Recommended setup</strong><span>{selected.length} components · {totalDownload(selected).toFixed(1)} GB</span></div>
-        <button className="primary" onClick={installSelected}>Install selected</button>
+        <button className="primary" onClick={() => void installSelected()}>Install selected</button>
       </div>
 
       {GROUPS.map((group) => {
@@ -69,14 +80,14 @@ export default function Models() {
                 <div className="model-bottom">
                   <span className="muted small">{m.experimental ? "Experimental · native review required" : m.licence}</span>
                   {state === "downloading" ? <div className="download-progress"><span style={{ width: `${progress[m.id] ?? 0}%` }} /><small>{progress[m.id] ?? 0}%</small></div> :
-                    <button className={state === "installed" ? "ok" : ""} onClick={() => install(m.id)}>{state === "installed" ? "Installed" : "Download"}</button>}
+                    <button className={state === "installed" ? "ok" : ""} onClick={() => void install(m.id)}>{state === "installed" ? "Installed" : state === "error" ? "Retry" : "Download"}</button>}
                 </div>
               </article>;
             })}
           </div>
         </div>;
       })}
-      <p className="muted small legal-note">Before a real model download begins, Greenroom will show its source, exact version, checksum, licence and disk use. Experimental accent support is never presented as native-verified.</p>
+      <p className="muted small legal-note">Every native download is resumed when possible, checked against an application-owned SHA-256 manifest, staged outside the active version and activated atomically. Experimental accent support is never presented as native-verified.</p>
     </section>
   );
 }

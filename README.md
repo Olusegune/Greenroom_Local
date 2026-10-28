@@ -12,9 +12,9 @@ Private, accent-aware AI voice production for Windows and macOS. Greenroom Local
 - Local model catalogue with download size, memory requirements, capabilities and licence visibility
 - Structured Performance Engine for emotional arcs, objectives, breath, physical effort, fatigue, pain and timed expressions
 - Windows and macOS bundle configuration
-- 183 passing tests
+- 183 frontend tests and 61 native backend tests passing
 
-The Model Center UI is the first installer slice. Download progress is currently a UI prototype while the signed artifact manifest, resumable Rust downloader and managed inference runtime are implemented. It must not be represented as a production model installer yet.
+The native installer foundation now detects hardware, keeps model state outside projects, resumes partial downloads, emits real progress, enforces manifest byte counts and SHA-256, stages new versions and activates them atomically. Production model buttons remain unavailable until their exact release artifacts and licences are pinned in application-owned manifests; moving URLs are deliberately never guessed.
 
 See [docs/LOCAL_AI_ARCHITECTURE.md](docs/LOCAL_AI_ARCHITECTURE.md) for the installation and runtime design.
 

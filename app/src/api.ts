@@ -4,6 +4,7 @@ import type { SavedCast } from "./cast";
 import type { Project, VoiceEntry, VoiceInfo } from "./types";
 import { mock } from "./mock";
 import type { EnginesCfg } from "./engines";
+import type { HardwareProfile, InstalledModel } from "./models";
 
 export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid";
 export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean };
@@ -174,6 +175,9 @@ const real = {
   piperInstallVoice: (key: string) => call<void>("piper_install_voice", { key }),
   piperRemoveVoice: (key: string) => call<void>("piper_remove_voice", { key }),
   localVoices: () => call<string[]>("local_voices"),
+  modelHardware: () => call<HardwareProfile>("model_hardware"),
+  modelStates: (ids: string[]) => call<InstalledModel[]>("model_states", { ids }),
+  modelInstall: (id: string) => call<InstalledModel>("model_install", { id }),
   directorComplete: (system: string, user: string) => call<string>("director_complete", { system, user }),
   musicGenerate: (project: string, req: MusicReq) => call<MadeMusic[]>("music_generate", { project, req }),
   audioImport: (project: string, path: string) => call<Imported>("audio_import", { project, path }),
