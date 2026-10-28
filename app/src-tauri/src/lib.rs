@@ -607,15 +607,39 @@ fn model_states(app: tauri::AppHandle, ids: Vec<String>) -> Result<Vec<model_man
 }
 
 /// Only application-owned manifests may be installed. URLs and checksums are deliberately never accepted from the UI.
+static MODEL_INSTALL_LOCK: Mutex<()> = Mutex::new(());
+
 #[tauri::command]
 async fn model_install(app: tauri::AppHandle, id: String) -> Result<model_manager::ModelState, String> {
     let manifest = managed_manifest(&id).ok_or_else(|| "This model's verified installation manifest is not included in this development build yet.".to_string())?;
-    blocking(move || model_manager::install(&app, manifest)).await
+    blocking(move || {
+        let _guard = MODEL_INSTALL_LOCK.try_lock().map_err(|_| "Another model download is already in progress.")?;
+        model_manager::install(&app, manifest)
+    }).await
 }
 
-fn managed_manifest(_id: &str) -> Option<&'static model_manager::Manifest> {
-    // Populated only with byte-exact, licence-reviewed release artifacts. Never guess a moving model URL here.
-    None
+#[tauri::command]
+async fn chatterbox_import_downloads(app: tauri::AppHandle) -> Result<model_manager::ModelState, String> {
+    let source = root(&app)?.join("Model Downloads").join("Chatterbox");
+    let manifest = managed_manifest("chatterbox-multilingual-v3").ok_or("The Chatterbox manifest is missing.")?;
+    blocking(move || {
+        let _guard = MODEL_INSTALL_LOCK.try_lock().map_err(|_| "Another model download is already in progress.")?;
+        model_manager::import_files(&app, manifest, &source)
+    }).await
+}
+
+fn managed_manifest(id: &str) -> Option<&'static model_manager::Manifest> {
+    use model_manager::{Artifact, Manifest};
+    const FILES: &[Artifact] = &[
+        Artifact { url: "https://huggingface.co/ResembleAI/chatterbox/resolve/5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18/ve.pt", bytes: 5_698_626, sha256: "4b16d836bc598509860f6fa068165a8bb5e9ac84f05582dfcf278a5a372879f1", filename: "ve.pt" },
+        Artifact { url: "https://huggingface.co/ResembleAI/chatterbox/resolve/5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18/t3_mtl23ls_v3.safetensors", bytes: 2_143_989_928, sha256: "5abca8321ede76f8e61f1cc0d19aea6c946b28871017ce8726f8a69203f05953", filename: "t3_mtl23ls_v3.safetensors" },
+        Artifact { url: "https://huggingface.co/ResembleAI/chatterbox/resolve/5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18/s3gen.pt", bytes: 1_057_165_844, sha256: "9b9ff07e60b20c136e2b1b3d7563a24604e8d2c4c267888d1ee929dd0151d2a3", filename: "s3gen.pt" },
+        Artifact { url: "https://huggingface.co/ResembleAI/chatterbox/resolve/5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18/grapheme_mtl_merged_expanded_v1.json", bytes: 69_989, sha256: "69632f47220a788a52ce2661d096453c5655e9bf25289d89a8d832c46ee07dbf", filename: "grapheme_mtl_merged_expanded_v1.json" },
+        Artifact { url: "https://huggingface.co/ResembleAI/chatterbox/resolve/5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18/conds.pt", bytes: 107_374, sha256: "6552d70568833628ba019c6b03459e77fe71ca197d5c560cef9411bee9d87f4e", filename: "conds.pt" },
+        Artifact { url: "https://huggingface.co/ResembleAI/chatterbox/resolve/5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18/Cangjie5_TC.json", bytes: 1_920_163, sha256: "7073fd9de919443ae88e0bd2449917a65fe54898a4413ed1edcc4b67f28bce8c", filename: "Cangjie5_TC.json" },
+    ];
+    static CHATTERBOX: Manifest = Manifest { id: "chatterbox-multilingual-v3", version: "5bb1f6ee", artifacts: FILES };
+    if id == CHATTERBOX.id { Some(&CHATTERBOX) } else { None }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -629,7 +653,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install
+            model_hardware, model_states, model_install, chatterbox_import_downloads
         ])
         .run(tauri::generate_context!())
         .expect("error while running Greenroom");

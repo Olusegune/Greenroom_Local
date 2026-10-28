@@ -57,7 +57,7 @@ export const MODEL_CATALOG: LocalModel[] = [
     kind: "speech",
     tier: "standard",
     description: "Expressive multilingual acting, voice cloning and paralinguistic performance.",
-    sizeGb: 4.1,
+    sizeGb: 3.2,
     memoryGb: 8,
     capabilities: ["Voice cloning", "Emotion", "Chuckle", "Breath", "Exertion", "23+ languages"],
     languages: ["English", "Korean", "French", "Spanish", "Swahili", "Arabic", "Hindi"],

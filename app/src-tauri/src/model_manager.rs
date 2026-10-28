@@ -163,11 +163,12 @@ pub fn install(app: &tauri::AppHandle, manifest: &Manifest) -> Result<ModelState
     let root = models_root(app)?;
     let model_dir = root.join(manifest.id);
     let stage = model_dir.join(format!("{}.staging", manifest.version));
-    if stage.exists() {
-        fs::remove_dir_all(&stage).map_err(|_| "Could not clear the previous staging folder.")?;
-    }
     fs::create_dir_all(&stage).map_err(|_| "Could not create the model staging folder.")?;
     for artifact in manifest.artifacts {
+        let complete = stage.join(artifact.filename);
+        if complete.is_file() && fs::metadata(&complete).map(|m| m.len()).ok() == Some(artifact.bytes) && verify_sha256(&complete, artifact.sha256).is_ok() {
+            continue;
+        }
         download_artifact(app, manifest.id, artifact, &stage)?;
     }
     let installed = serde_json::json!({"id": manifest.id, "version": manifest.version, "artifacts": manifest.artifacts.len()});
@@ -176,11 +177,38 @@ pub fn install(app: &tauri::AppHandle, manifest: &Manifest) -> Result<ModelState
         installed.to_string().as_bytes(),
     )?;
     let target = model_dir.join(manifest.version);
-    if target.exists() {
-        fs::remove_dir_all(&target).map_err(|_| "Could not replace the inactive model version.")?;
-    }
+    if target.exists() { return Err("This model version already exists. Its files were not replaced.".into()); }
     fs::rename(&stage, &target).map_err(|_| "Could not activate the downloaded model files.")?;
     crate::store::atomic_write(&model_dir.join("active"), manifest.version.as_bytes())?;
+    Ok(state(&root, manifest.id))
+}
+
+pub fn import_files(app: &tauri::AppHandle, manifest: &Manifest, source: &Path) -> Result<ModelState, String> {
+    if !valid_id(manifest.id) || !valid_version(manifest.version) { return Err("The model manifest is invalid.".into()); }
+    for artifact in manifest.artifacts {
+        let path = source.join(artifact.filename);
+        if fs::metadata(&path).map(|m| m.len()).ok() != Some(artifact.bytes) || verify_sha256(&path, artifact.sha256).is_err() {
+            return Err(format!("The downloaded {} is missing or does not match the verified model version.", artifact.filename));
+        }
+    }
+    let root = models_root(app)?;
+    let dir = root.join(manifest.id);
+    let target = dir.join(manifest.version);
+    if target.exists() { return Err("This model version already exists. Its files were not replaced.".into()); }
+    let stage = dir.join(format!("{}.staging", manifest.version));
+    fs::create_dir_all(&stage).map_err(|_| "Could not create the model staging folder.")?;
+    for artifact in manifest.artifacts {
+        let destination = stage.join(artifact.filename);
+        if destination.exists() && fs::metadata(&destination).map(|m| m.len()).ok() == Some(artifact.bytes) && verify_sha256(&destination, artifact.sha256).is_ok() { continue; }
+        let temp = stage.join(format!("{}.importing", artifact.filename));
+        fs::copy(source.join(artifact.filename), &temp).map_err(|_| "Could not copy the model files. Check available disk space.")?;
+        verify_sha256(&temp, artifact.sha256)?;
+        fs::rename(&temp, &destination).map_err(|_| "Could not finish copying the model file.")?;
+    }
+    let installed = serde_json::json!({"id": manifest.id, "version": manifest.version, "artifacts": manifest.artifacts.len()});
+    crate::store::atomic_write(&stage.join("installed.json"), installed.to_string().as_bytes())?;
+    fs::rename(&stage, &target).map_err(|_| "Could not activate the downloaded model files.")?;
+    crate::store::atomic_write(&dir.join("active"), manifest.version.as_bytes())?;
     Ok(state(&root, manifest.id))
 }
 
@@ -203,6 +231,13 @@ fn download_artifact(
     let mut have = fs::metadata(&part).map(|m| m.len()).unwrap_or(0);
     if have > artifact.bytes {
         fs::remove_file(&part).map_err(|_| "Could not restart the model download.")?;
+        have = 0;
+    }
+    if have == artifact.bytes {
+        if verify_sha256(&part, artifact.sha256).is_ok() {
+            return fs::rename(&part, stage.join(artifact.filename)).map_err(|_| "Could not finish the verified model artifact.".to_string());
+        }
+        fs::remove_file(&part).map_err(|_| "Could not restart the damaged model download.")?;
         have = 0;
     }
     let mut request = crate::net::agent().get(artifact.url);
@@ -254,7 +289,10 @@ fn download_artifact(
     if have != artifact.bytes {
         return Err("The model download ended before it was complete.".into());
     }
-    verify_sha256(&part, artifact.sha256)?;
+    if let Err(e) = verify_sha256(&part, artifact.sha256) {
+        let _ = fs::remove_file(&part);
+        return Err(e);
+    }
     fs::rename(&part, stage.join(artifact.filename))
         .map_err(|_| "Could not finish the verified model artifact.".to_string())
 }

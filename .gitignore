@@ -14,7 +14,8 @@ Thumbs.db
 
 # Local models, runtimes and generated media
 models/
-runtime/
+/runtime/*
+!/runtime/chatterbox_server.py
 downloads/
 *.part
 

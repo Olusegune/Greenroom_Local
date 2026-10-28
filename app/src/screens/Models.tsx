@@ -35,6 +35,20 @@ export default function Models() {
     catch (e) { toast((e as Error).message, true); }
     finally { setPiperBusy(false); }
   };
+  const downloadChatterbox = async () => {
+    const ok = await confirmSpend({ title: "Download Chatterbox model files?", lines: ["Downloads approximately 3.2 GB from Resemble AI’s Hugging Face repository.", "The model files are checked against pinned SHA-256 hashes.", "This downloads the model only. The speech runtime and Greenroom integration are still under development."], download: true });
+    if (!ok) return;
+    const id = "chatterbox-multilingual-v3";
+    setStates((s) => ({ ...s, [id]: "downloading" }));
+    try { const result = await api.modelInstall(id); setStates((s) => ({ ...s, [id]: result.state })); toast("Chatterbox model files downloaded and verified. Runtime integration is still in development."); }
+    catch (e) { setStates((s) => ({ ...s, [id]: "error" })); toast((e as Error).message, true); }
+  };
+  const importChatterbox = async () => {
+    const id = "chatterbox-multilingual-v3";
+    setStates((s) => ({ ...s, [id]: "downloading" }));
+    try { const result = await api.chatterboxImportDownloads(); setStates((s) => ({ ...s, [id]: result.state })); toast("Existing Chatterbox model files verified and added. Runtime integration is still in development."); }
+    catch (e) { setStates((s) => ({ ...s, [id]: "error" })); toast((e as Error).message, true); }
+  };
 
   return (
     <section className="models-screen">
@@ -53,7 +67,7 @@ export default function Models() {
         <div><strong>Get started with local speech</strong><span>{piperInstalled ? "Piper is installed. Choose a voice in the library." : "Install the lightweight Piper engine, then choose voices."}</span></div>
         {piperInstalled ? <button onClick={() => go("voices")}>Browse voices</button> : <button className="primary" disabled={piperBusy} onClick={() => void installPiper()}>{piperBusy ? "Installing…" : "Install local speech"}</button>}
       </div>
-      <p className="muted small">The advanced acting, cloning, voice design, music and effects engines below still need integration. {suggested.length} model packages are suggested for this machine, but they cannot be installed yet.</p>
+      <p className="muted small">The advanced acting, cloning, voice design, music and effects engines below still need integration. Chatterbox model files can be downloaded now. {suggested.length} packages are suggested for this machine.</p>
 
       {GROUPS.map((group) => {
         const rows = MODEL_CATALOG.filter((m) => m.kind === group.id);
@@ -77,8 +91,8 @@ export default function Models() {
                 {!!m.accents.length && <p className="muted small"><strong>Accent status:</strong> {m.accents.join(", ")}</p>}
                 <div className="model-bottom">
                   <span className="muted small">{m.experimental ? `Experimental · native review required · ${m.licence}` : m.licence}</span>
-                  {state === "downloading" ? <div className="download-progress"><span style={{ width: `${progress[m.id] ?? 0}%` }} /><small>{progress[m.id] ?? 0}%</small></div> :
-                    <button disabled>{state === "installed" ? "Installed" : "App integration pending"}</button>}
+                  {state === "downloading" ? <div className="download-progress" title="Progress for the current file"><span style={{ width: `${progress[m.id] ?? 0}%` }} /><small>{progress[m.id] ?? 0}% file</small></div> :
+                    m.id === "chatterbox-multilingual-v3" ? <div className="row wrap">{state !== "installed" && <button title="Import files from Documents/Greenroom Local/Model Downloads/Chatterbox" onClick={() => void importChatterbox()}>Use existing files</button>}<button disabled={state === "installed"} onClick={() => void downloadChatterbox()}>{state === "installed" ? "Files downloaded" : state === "error" ? "Retry download" : "Download files"}</button></div> : <button disabled>{state === "installed" ? "Installed" : "App integration pending"}</button>}
                 </div>
               </article>;
             })}
@@ -86,7 +100,7 @@ export default function Models() {
         </div>;
       })}
       <div className="model-group"><h2>Music & sound effects</h2><div className="model-grid"><article className="model-card"><div className="model-top"><span className="model-marker" aria-hidden="true" /><div><h3>Local music & sound design</h3><p className="muted small">In development</p></div></div><p>Create music, atmosphere and sound effects on this computer. For now, import your own audio on the Timeline.</p><div className="chips"><span className="chip static">Music</span><span className="chip static">Atmosphere</span><span className="chip static">Sound effects</span></div><div className="model-bottom"><span className="muted small">No local generator is installed yet.</span><button disabled>Coming soon</button></div></article></div></div>
-      <p className="muted small legal-note">The listed models exist, but Greenroom does not yet install or run them. Hardware guidance is based on system memory; GPU detection and accent listening reviews are still in development.</p>
+      <p className="muted small legal-note">Downloading Chatterbox files does not yet install its runtime or enable generation. Hardware guidance is based on system memory; GPU detection and accent listening reviews are still in development.</p>
     </section>
   );
 }

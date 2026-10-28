@@ -143,6 +143,7 @@ export const mock: Api = {
   modelHardware: async () => ({ platform: "windows" as const, memoryGb: 16, accelerator: "Demo GPU", vramGb: 8, tier: "standard" as const }),
   modelStates: async (ids: string[]) => ids.map((id) => ({ id, state: "available" as const, progress: 0 })),
   modelInstall: async (id: string) => (await wait(900), { id, state: "installed" as const, progress: 100, version: "demo" }),
+  chatterboxImportDownloads: async () => (await wait(900), { id: "chatterbox-multilingual-v3", state: "installed" as const, progress: 100, version: "demo" }),
   directorComplete: async (_s: string, user: string) => {
     await wait(700);
     const ids = [...user.matchAll(/^(l-[\w-]+) \|/gm)].map((x) => x[1]!);

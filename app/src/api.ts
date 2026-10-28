@@ -180,6 +180,7 @@ const real = {
   modelHardware: () => call<HardwareProfile>("model_hardware"),
   modelStates: (ids: string[]) => call<InstalledModel[]>("model_states", { ids }),
   modelInstall: (id: string) => call<InstalledModel>("model_install", { id }),
+  chatterboxImportDownloads: () => call<InstalledModel>("chatterbox_import_downloads"),
   directorComplete: (system: string, user: string) => call<string>("director_complete", { system, user }),
   musicGenerate: (project: string, req: MusicReq) => call<MadeMusic[]>("music_generate", { project, req }),
   audioImport: (project: string, path: string) => call<Imported>("audio_import", { project, path }),
