@@ -98,6 +98,7 @@ export default function Models() {
                   <div><h3>{m.name}</h3><p className="muted small">{m.maker}</p></div>
                   <span className={`tier tier-${m.tier}`}>{m.tier}</span>
                 </div>
+                <div className={`model-visual ${m.id}`} aria-hidden="true"><i /><i /><i /><i /><i /><span>{m.kind === "speech" ? "VOICE" : m.kind === "director" ? "DIRECTION" : "LISTEN"}</span></div>
                 <p className={`integration-state ${setup.kind}`}>{setup.label}</p>
                 <p>{m.description}</p>
                 <div className="model-facts"><span>~{m.sizeGb} GB download</span><span>~{m.memoryGb} GB memory</span><span>{fits ? "Memory may be sufficient" : "May need more memory"}</span></div>
@@ -115,7 +116,7 @@ export default function Models() {
           </div>
         </div>;
       })}
-      <div className="model-group"><h2>Music & sound effects</h2><div className="model-grid"><article className="model-card"><div className="model-top"><span className="model-marker" aria-hidden="true" /><div><h3>Local music & sound design</h3><p className="muted small">Research and download options</p></div></div><p>Greenroom can already import and arrange your audio. For local generation, inspect AudioCraft’s official project and its licensing before choosing an engine.</p><div className="chips"><span className="chip static">Music</span><span className="chip static">Atmosphere</span><span className="chip static">Sound effects</span></div><div className="model-bottom"><span className="muted small">Choose an engine after checking its licence and hardware needs.</span><button className="sm" onClick={() => openSource("https://github.com/facebookresearch/audiocraft")}>Open AudioCraft ↗</button></div></article></div></div>
+      <div className="model-group"><h2>Music & sound effects</h2><div className="model-grid"><article className="model-card"><div className="model-top"><span className="model-marker" aria-hidden="true" /><div><h3>Local music & sound design</h3><p className="muted small">Research and download options</p></div></div><div className="model-visual audio" aria-hidden="true"><i /><i /><i /><i /><i /><span>SOUND</span></div><p>Greenroom can already import and arrange your audio. For local generation, inspect AudioCraft’s official project and its licensing before choosing an engine.</p><div className="chips"><span className="chip static">Music</span><span className="chip static">Atmosphere</span><span className="chip static">Sound effects</span></div><div className="model-bottom"><span className="muted small">Choose an engine after checking its licence and hardware needs.</span><button className="sm" onClick={() => openSource("https://github.com/facebookresearch/audiocraft")}>Open AudioCraft ↗</button></div></article></div></div>
       <p className="muted small legal-note">A model page is an official source link, not a claim that its engine is integrated. Greenroom will show an in-app download button only when the files, licence, runtime and audio path are verified.</p>
     </section>
   );
