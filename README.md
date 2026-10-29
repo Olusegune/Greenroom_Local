@@ -12,11 +12,17 @@ Private, accent-aware AI voice production for Windows and macOS. Greenroom Local
 - Local model catalogue with download size, memory requirements, capabilities and licence visibility
 - Structured Performance Engine for emotional arcs, objectives, breath, physical effort, fatigue, pain and timed expressions
 - Windows and macOS bundle configuration
-- 183 frontend tests and 61 native backend tests passing
+- 183 frontend tests and 62 native backend tests passing
 
 The native installer foundation now detects hardware, keeps model state outside projects, resumes partial downloads, emits real progress, enforces manifest byte counts and SHA-256, stages new versions and activates them atomically. Production model buttons remain unavailable until their exact release artifacts and licences are pinned in application-owned manifests; moving URLs are deliberately never guessed.
 
 See [docs/LOCAL_AI_ARCHITECTURE.md](docs/LOCAL_AI_ARCHITECTURE.md) for the installation and runtime design.
+
+## Release documentation
+
+- [Getting started](docs/GETTING_STARTED.md) - install, first project, local voices, keys and export.
+- [Release QA](docs/RELEASE_QA.md) - automated coverage, manual acceptance checks and release gates.
+- [Product roadmap](docs/PRODUCT_ROADMAP.md) - the next practical improvements and what is intentionally not represented as working today.
 
 ## Develop
 
