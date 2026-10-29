@@ -5,7 +5,6 @@ import { MODEL_CATALOG, recommendedModels, type HardwareProfile, type InstallSta
 
 const GROUPS: { id: ModelKind; label: string }[] = [
   { id: "runtime", label: "Runtime" }, { id: "speech", label: "Voices & acting" }, { id: "director", label: "AI Director" },
-  { id: "transcription", label: "Listening" }, { id: "audio", label: "Audio tools" },
 ];
 
 export default function Models() {
@@ -61,6 +60,22 @@ export default function Models() {
     catch (e) { toast((e as Error).message, true); }
     finally { setChatterboxBusy(false); }
   };
+  const installWazobia = async () => {
+    const ok = await confirmSpend({ title: "Install Wazobia model file?", lines: ["Greenroom looks only on your Desktop and in Downloads for t3_mtl23ls_v2.safetensors.", "It copies the file into Greenroom’s private model folder. The original download is left untouched.", "The model file will be ready for a compatible Wazobia runtime; it does not enable speech by itself yet."], download: true });
+    if (!ok) return;
+    const id = "wazobia-voice";
+    setStates((s) => ({ ...s, [id]: "downloading" }));
+    try { const result = await api.wazobiaInstallAutomatic(); setStates((s) => ({ ...s, [id]: result.state })); toast("Wazobia model file added to Greenroom."); }
+    catch (e) { setStates((s) => ({ ...s, [id]: "error" })); toast((e as Error).message, true); }
+  };
+  const chooseWazobia = async () => {
+    const path = await api.pickModelFile();
+    if (!path) return;
+    const id = "wazobia-voice";
+    setStates((s) => ({ ...s, [id]: "downloading" }));
+    try { const result = await api.wazobiaImportFile(path); setStates((s) => ({ ...s, [id]: result.state })); toast("Wazobia model file added to Greenroom."); }
+    catch (e) { setStates((s) => ({ ...s, [id]: "error" })); toast((e as Error).message, true); }
+  };
 
   return (
     <section className="models-screen">
@@ -82,7 +97,7 @@ export default function Models() {
       <p className="muted small">{suggested.length} packages suit this computer. Model cards open in your browser so you can review licences, hardware requirements and provider-specific download terms before downloading.</p>
 
       {GROUPS.map((group) => {
-        const rows = MODEL_CATALOG.filter((m) => m.kind === group.id);
+        const rows = MODEL_CATALOG.filter((m) => m.kind === group.id && m.id !== "whisper-large-v3-turbo");
         if (!rows.length) return null;
         if (group.id === "runtime") return <div className="model-group runtime-group" key={group.id}><h2>Local foundation</h2><article className="runtime-overview"><div><span className="eyebrow">LOCAL RUNTIME</span><h3>Everything stays on your computer</h3><p className="muted">Greenroom sets up a verified runtime only when an engine has an in-app installer. No separate “runtime” download is needed.</p></div><div className="runtime-points"><span>Private model folders</span><span>Background jobs</span><span>CPU, CUDA & Apple Silicon</span></div></article></div>;
         return <div className="model-group" key={group.id}>
@@ -108,7 +123,7 @@ export default function Models() {
                 <div className="model-bottom">
                   <span className="muted small">{m.experimental ? `Experimental · ${m.licence}` : m.licence}</span>
                   {state === "downloading" ? <div className="download-progress" title="Progress for the current file"><span style={{ width: `${progress[m.id] ?? 0}%` }} /><small>{progress[m.id] ?? 0}% file</small></div> :
-                    m.id === "chatterbox-multilingual-v3" ? <div className="row wrap">{!chatterboxRuntime?.installed && <button className="primary" disabled={chatterboxBusy} onClick={() => void installChatterboxRuntime()}>{chatterboxBusy ? "Installing runtime…" : "Install local runtime"}</button>}{state !== "installed" && <button title="Import files from Documents/Greenroom Local/Model Downloads/Chatterbox" onClick={() => void importChatterbox()}>Use existing files</button>}<button disabled={state === "installed"} onClick={() => void downloadChatterbox()}>{state === "installed" ? "Model files ready" : state === "error" ? "Retry download" : "Download files"}</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Model page ↗</button></div> : <button className="sm" onClick={() => openSource(m.sourceUrl)}>{m.sourceLabel} ↗</button>}
+                    m.id === "chatterbox-multilingual-v3" ? <div className="row wrap">{!chatterboxRuntime?.installed && <button className="primary" disabled={chatterboxBusy} onClick={() => void installChatterboxRuntime()}>{chatterboxBusy ? "Installing runtime…" : "Install local runtime"}</button>}{state !== "installed" && <button title="Import files from Documents/Greenroom Local/Model Downloads/Chatterbox" onClick={() => void importChatterbox()}>Use existing files</button>}<button disabled={state === "installed"} onClick={() => void downloadChatterbox()}>{state === "installed" ? "Model files ready" : state === "error" ? "Retry download" : "Download files"}</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Model page ↗</button></div> : m.id === "wazobia-voice" ? <div className="row wrap">{state === "installed" ? <button disabled>Model file added</button> : <button className="primary" onClick={() => void installWazobia()}>{state === "error" ? "Try automatic install" : "Install automatically"}</button>}<button onClick={() => void chooseWazobia()}>Choose model file</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Model page ↗</button></div> : m.id === "director-8b" ? <div className="row wrap"><button className="primary" onClick={() => go("settings")}>Set up AI Director</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Browse local models ↗</button></div> : <button className="sm" onClick={() => openSource(m.sourceUrl)}>{m.sourceLabel} ↗</button>}
                 </div>
                 {m.id === "chatterbox-multilingual-v3" && chatterboxRuntime && <p className={chatterboxRuntime.installed ? "runtime-status ready" : "runtime-status"}>{chatterboxRuntime.installed ? "● " : "○ "}{chatterboxRuntime.detail}</p>}
               </article>;
@@ -116,8 +131,7 @@ export default function Models() {
           </div>
         </div>;
       })}
-      <div className="model-group"><h2>Music & sound effects</h2><div className="model-grid"><article className="model-card"><div className="model-top"><span className="model-marker" aria-hidden="true" /><div><h3>Local music & sound design</h3><p className="muted small">Research and download options</p></div></div><div className="model-visual audio" aria-hidden="true"><i /><i /><i /><i /><i /><span>SOUND</span></div><p>Greenroom can already import and arrange your audio. For local generation, inspect AudioCraft’s official project and its licensing before choosing an engine.</p><div className="chips"><span className="chip static">Music</span><span className="chip static">Atmosphere</span><span className="chip static">Sound effects</span></div><div className="model-bottom"><span className="muted small">Choose an engine after checking its licence and hardware needs.</span><button className="sm" onClick={() => openSource("https://github.com/facebookresearch/audiocraft")}>Open AudioCraft ↗</button></div></article></div></div>
-      <p className="muted small legal-note">A model page is an official source link, not a claim that its engine is integrated. Greenroom will show an in-app download button only when the files, licence, runtime and audio path are verified.</p>
+      <div className="model-group model-next"><div className="engine-quick card"><div><span className="eyebrow">SOUND DESIGN</span><strong>Create effects in your project</strong><p className="muted small">SFX Studio generates and places effects directly on your timeline. No model-card research required.</p></div><button className="primary" onClick={() => go("sfx")}>Open SFX Studio</button></div></div>
     </section>
   );
 }
@@ -126,6 +140,8 @@ function tierRank(t: "compact" | "standard" | "studio") { return t === "compact"
 
 function modelSetupLabel(id: string, state: InstallState, runtimeInstalled: boolean) {
   if (id === "chatterbox-multilingual-v3") return state === "installed" && runtimeInstalled ? { kind: "ready", label: "Ready in Greenroom · default local voice" } : { kind: "setup", label: "In-app setup available · model files and runtime required" };
+  if (id === "wazobia-voice") return state === "installed" ? { kind: "ready", label: "Model file stored locally · a compatible runtime is required to speak" } : { kind: "setup", label: "One-click local file setup · looks in Desktop and Downloads" };
+  if (id === "director-8b") return { kind: "setup", label: "Use the AI Director now with Kie · local GGUF support is a separate engine" };
   if (id === "greenroom-runtime") return { kind: "info", label: "Shared requirements · not a separate install" };
   return { kind: "link", label: "Official source link · not yet integrated" };
 }

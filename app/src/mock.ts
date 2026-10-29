@@ -143,6 +143,8 @@ export const mock: Api = {
   modelHardware: async () => ({ platform: "windows" as const, memoryGb: 16, accelerator: "Demo GPU", vramGb: 8, tier: "standard" as const }),
   modelStates: async (ids: string[]) => ids.map((id) => ({ id, state: "available" as const, progress: 0 })),
   modelInstall: async (id: string) => (await wait(900), { id, state: "installed" as const, progress: 100, version: "demo" }),
+  wazobiaInstallAutomatic: async () => (await wait(900), { id: "wazobia-voice", state: "installed" as const, progress: 100, version: "v2" }),
+  wazobiaImportFile: async () => (await wait(900), { id: "wazobia-voice", state: "installed" as const, progress: 100, version: "v2" }),
   chatterboxImportDownloads: async () => (await wait(900), { id: "chatterbox-multilingual-v3", state: "installed" as const, progress: 100, version: "demo" }),
   chatterboxReady: async () => false,
   chatterboxRuntimeStatus: async () => ({ installed: false, modelReady: false, detail: "Install the local runtime, then download the model files." }),
@@ -154,6 +156,7 @@ export const mock: Api = {
     return ["Here you go:", "```json", JSON.stringify({ lines, atmosphere: "a busy kitchen, soft pots and pans" }), "```"].join("\n");
   },
   pickAudio: async () => "C:/Demo/Theme Music.wav",
+  pickModelFile: async () => "C:/Demo/t3_mtl23ls_v2.safetensors",
   audioImport: async (_p: string, path: string) => {
     await wait(300);
     const id = "m-demo" + takes.size;

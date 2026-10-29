@@ -750,6 +750,29 @@ async fn chatterbox_import_downloads(app: tauri::AppHandle) -> Result<model_mana
     }).await
 }
 
+#[tauri::command]
+async fn wazobia_install_automatic(app: tauri::AppHandle) -> Result<model_manager::ModelState, String> {
+    let home = std::env::var_os("USERPROFILE").or_else(|| std::env::var_os("HOME")).ok_or("Could not find your home folder.")?;
+    let home = std::path::PathBuf::from(home);
+    let filename = "t3_mtl23ls_v2.safetensors";
+    let source = [home.join("Desktop").join(filename), home.join("Downloads").join(filename)]
+        .into_iter().find(|p| p.is_file())
+        .ok_or("Greenroom could not find t3_mtl23ls_v2.safetensors on your Desktop or in Downloads. Use Choose model file to select it.")?;
+    blocking(move || {
+        let _guard = MODEL_INSTALL_LOCK.try_lock().map_err(|_| "Another model download or install is already in progress.")?;
+        model_manager::import_wazobia_weight(&app, &source)
+    }).await
+}
+
+#[tauri::command]
+async fn wazobia_import_file(app: tauri::AppHandle, path: String) -> Result<model_manager::ModelState, String> {
+    let source = std::path::PathBuf::from(path);
+    blocking(move || {
+        let _guard = MODEL_INSTALL_LOCK.try_lock().map_err(|_| "Another model download or install is already in progress.")?;
+        model_manager::import_wazobia_weight(&app, &source)
+    }).await
+}
+
 fn managed_manifest(id: &str) -> Option<&'static model_manager::Manifest> {
     use model_manager::{Artifact, Manifest};
     const FILES: &[Artifact] = &[
@@ -775,7 +798,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install
+            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install
         ])
         .run(tauri::generate_context!())
         .expect("error while running Greenroom");

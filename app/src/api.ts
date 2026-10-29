@@ -190,6 +190,8 @@ const real = {
   modelStates: (ids: string[]) => call<InstalledModel[]>("model_states", { ids }),
   modelInstall: (id: string) => call<InstalledModel>("model_install", { id }),
   chatterboxImportDownloads: () => call<InstalledModel>("chatterbox_import_downloads"),
+  wazobiaInstallAutomatic: () => call<InstalledModel>("wazobia_install_automatic"),
+  wazobiaImportFile: (path: string) => call<InstalledModel>("wazobia_import_file", { path }),
   chatterboxReady: () => call<boolean>("chatterbox_ready"),
   chatterboxRuntimeStatus: () => call<ChatterboxRuntimeStatus>("chatterbox_runtime_status"),
   chatterboxRuntimeInstall: () => call<ChatterboxRuntimeStatus>("chatterbox_runtime_install"),
@@ -198,6 +200,10 @@ const real = {
   audioImport: (project: string, path: string) => call<Imported>("audio_import", { project, path }),
   pickAudio: async (): Promise<string | null> => {
     const r = await openDialog({ multiple: false, directory: false, filters: [{ name: "Audio", extensions: AUDIO_EXTENSIONS }] });
+    return typeof r === "string" ? r : null;
+  },
+  pickModelFile: async (): Promise<string | null> => {
+    const r = await openDialog({ multiple: false, directory: false, filters: [{ name: "Model weights", extensions: ["safetensors"] }] });
     return typeof r === "string" ? r : null;
   },
   /** Asks GitHub whether a newer signed Greenroom exists. Sends nothing but the request. Null when this is the newest. */

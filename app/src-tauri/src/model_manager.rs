@@ -212,6 +212,34 @@ pub fn import_files(app: &tauri::AppHandle, manifest: &Manifest, source: &Path) 
     Ok(state(&root, manifest.id))
 }
 
+/// Wazobia's public release currently provides a model weight, but no pinned, Greenroom-tested
+/// inference bundle. Keep the selected weight in the same managed location as other models without
+/// ever executing it. This is deliberately separate from `import_files`, which is checksum-pinned.
+pub fn import_wazobia_weight(app: &tauri::AppHandle, source: &Path) -> Result<ModelState, String> {
+    const ID: &str = "wazobia-voice";
+    const VERSION: &str = "v2";
+    const FILE: &str = "t3_mtl23ls_v2.safetensors";
+    let name = source.file_name().and_then(|x| x.to_str()).unwrap_or("");
+    let bytes = fs::metadata(source).map_err(|_| "Greenroom could not read the selected Wazobia file.")?.len();
+    if name != FILE || bytes < 50 * 1024 * 1024 || bytes > 15 * 1024 * 1024 * 1024 {
+        return Err("Choose the Wazobia file named t3_mtl23ls_v2.safetensors. The selected file was not copied.".into());
+    }
+    let root = models_root(app)?;
+    let model_dir = root.join(ID);
+    let target = model_dir.join(VERSION);
+    if target.join("installed.json").is_file() { return Ok(state(&root, ID)); }
+    let stage = model_dir.join(format!("{VERSION}.staging"));
+    fs::create_dir_all(&stage).map_err(|_| "Could not create the Wazobia model folder.")?;
+    let temp = stage.join(format!("{FILE}.importing"));
+    fs::copy(source, &temp).map_err(|_| "Could not copy the Wazobia model file. Check available disk space.")?;
+    fs::rename(&temp, stage.join(FILE)).map_err(|_| "Could not finish adding the Wazobia model file.")?;
+    let installed = serde_json::json!({"id": ID, "version": VERSION, "artifacts": 1, "source": "user-selected", "verified": false});
+    crate::store::atomic_write(&stage.join("installed.json"), installed.to_string().as_bytes())?;
+    fs::rename(&stage, &target).map_err(|_| "Could not activate the Wazobia model file.")?;
+    crate::store::atomic_write(&model_dir.join("active"), VERSION.as_bytes())?;
+    Ok(state(&root, ID))
+}
+
 fn download_artifact(
     app: &tauri::AppHandle,
     id: &str,
