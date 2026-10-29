@@ -73,6 +73,7 @@ export interface Prices {
 export const DEFAULT_PRICES: Prices = { currency: "USD", perKChars: {}, sfxClip: 0, directorCall: 0, designPreview: 0 };
 
 export type SoundEngine = "elevenlabs" | "kie";
+export type ElevenSfxModel = "eleven_text_to_sound_v3" | "eleven_text_to_sound_v2";
 export const SOUND_ENGINES: { id: SoundEngine; label: string; ledger: string; provider: "eleven-sfx" | "kie-sfx"; key: "elevenlabs" | "kie" }[] = [
   { id: "elevenlabs", label: "ElevenLabs sound effects", ledger: "ElevenLabs sound effects", provider: "eleven-sfx", key: "elevenlabs" },
   { id: "kie", label: "Kie sound effects v2", ledger: "Kie sound effects", provider: "kie-sfx", key: "kie" },
@@ -86,11 +87,13 @@ export interface EnginesCfg {
   updateCheck?: boolean;
   /** Which engine makes sound clips and the atmosphere. */
   soundEngine?: SoundEngine;
+  /** ElevenLabs Sound Effects v3 is the default; v2 remains a compatibility fallback. */
+  elevenSfxModel?: ElevenSfxModel;
   prices: Prices;
   localServer: { url: string; model: string };
 }
 
-export const DEFAULT_ENGINES_CFG: EnginesCfg = { elevenModel: "eleven_v4", quality: "standard", prices: DEFAULT_PRICES, localServer: { url: "http://127.0.0.1:8880", model: "kokoro" } };
+export const DEFAULT_ENGINES_CFG: EnginesCfg = { elevenModel: "eleven_v4", quality: "standard", elevenSfxModel: "eleven_text_to_sound_v3", prices: DEFAULT_PRICES, localServer: { url: "http://127.0.0.1:8880", model: "kokoro" } };
 
 /** Kie's preset voices for ElevenLabs Turbo 2.5 (from Kie's docs, 2026-10-26). Names repeat, so the id is what counts. */
 export const KIE_VOICES: { id: string; name: string; style: string }[] = [

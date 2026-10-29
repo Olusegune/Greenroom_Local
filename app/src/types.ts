@@ -44,6 +44,9 @@ export interface SoundEvent {
   prompt: string;
   placement: "before" | "after";
   seconds: number;
+  model?: "eleven_text_to_sound_v2" | "eleven_text_to_sound_v3";
+  loop?: boolean;
+  promptInfluence?: number;
   take?: { id: string; ext: "mp3" | "wav"; seconds: number; sha256?: string; prompt?: string };
 }
 

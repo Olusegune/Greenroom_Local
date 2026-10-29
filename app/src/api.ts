@@ -28,6 +28,10 @@ export interface ClipReq {
   instructions?: string;
   /** An ElevenLabs output format, checked against an allow-list in the backend. */
   quality?: string;
+  /** ElevenLabs sound-effects controls. Ignored by other providers. */
+  loop?: boolean;
+  promptInfluence?: number;
+  sfxModel?: "eleven_text_to_sound_v2" | "eleven_text_to_sound_v3";
 }
 export interface DesignPreview {
   generatedVoiceId: string;

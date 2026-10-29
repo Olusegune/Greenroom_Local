@@ -55,14 +55,14 @@ export async function makeTake(projectId: string, line: Line, voice: VoiceEntry,
 }
 
 /** A sound clip (laugh, sneeze, door) made by the sound-effects model, kept like any other take. */
-export async function makeSound(projectId: string, prompt: string, seconds: number, quality?: string, provider: "eleven-sfx" | "kie-sfx" = "eleven-sfx") {
-  const out = await api.runClip({ provider, text: prompt, seconds, quality });
+export async function makeSound(projectId: string, prompt: string, seconds: number, quality?: string, provider: "eleven-sfx" | "kie-sfx" = "eleven-sfx", options: { loop?: boolean; promptInfluence?: number; sfxModel?: "eleven_text_to_sound_v2" | "eleven_text_to_sound_v3" } = {}) {
+  const out = await api.runClip({ provider, text: prompt, seconds, quality, ...options });
   const id = "s-" + uid();
   const ext = out.mime === "audio/wav" ? "wav" : "mp3";
   await api.takeWrite(projectId, id, ext, out.audioB64);
   const real = await remember(id, out);
   const sha256 = await sha256Hex(fromBase64(out.audioB64));
-  return { id, ext, seconds: real, sha256, prompt } as const;
+  return { id, ext, seconds: real, sha256, prompt, ...options } as const;
 }
 
 export function modelLabel(m: Take["model"]): string {

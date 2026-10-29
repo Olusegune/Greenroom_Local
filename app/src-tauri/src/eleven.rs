@@ -96,9 +96,15 @@ impl Client {
         read_all(self.post(&format!("/v1/text-to-speech/{voice}?output_format={format}"), &body).map_err(|m| quality_hint(m, format))?, MAX_AUDIO)
     }
 
-    pub fn sound(&self, text: &str, seconds: f64, format: &str) -> Result<Vec<u8>, String> {
+    pub fn sound(&self, text: &str, seconds: f64, looped: bool, prompt_influence: Option<f64>, model: Option<&str>, format: &str) -> Result<Vec<u8>, String> {
         let format = format_or_standard(Some(format));
-        read_all(self.post(&format!("/v1/sound-generation?output_format={format}"), &json!({ "text": text, "duration_seconds": seconds.clamp(0.5, 22.0) })).map_err(|m| quality_hint(m, format))?, MAX_AUDIO)
+        let model_id = match model.unwrap_or("eleven_text_to_sound_v3") {
+            "eleven_text_to_sound_v2" | "eleven_text_to_sound_v3" => model.unwrap_or("eleven_text_to_sound_v3"),
+            _ => return Err("That Sound Effects model is not supported.".into()),
+        };
+        let mut body = json!({ "text": text, "duration_seconds": seconds.clamp(0.5, 30.0), "loop": looped, "model_id": model_id });
+        if let Some(value) = prompt_influence { body["prompt_influence"] = json!(value.clamp(0.0, 1.0)); }
+        read_all(self.post(&format!("/v1/sound-generation?output_format={format}"), &body).map_err(|m| quality_hint(m, format))?, MAX_AUDIO)
     }
 
     pub fn my_voices(&self) -> Result<Vec<VoiceInfo>, String> {
@@ -359,8 +365,13 @@ mod tests {
         let hits = f.hits.lock().unwrap().clone();
         assert!(hits[0].path.contains("output_format=wav_48000"));
         assert!(hits[1].path.contains("output_format=mp3_44100_128"));
-        assert!(c.sound("rain", 3.0, "mp3_44100_192").is_ok());
-        assert!(f.hits.lock().unwrap().last().unwrap().path.contains("output_format=mp3_44100_192"));
+        assert!(c.sound("rain", 3.0, false, Some(0.3), Some("eleven_text_to_sound_v3"), "mp3_44100_192").is_ok());
+        let sound = f.hits.lock().unwrap().last().unwrap().clone();
+        assert!(sound.path.contains("output_format=mp3_44100_192"));
+        let body: Value = serde_json::from_slice(&sound.body).unwrap();
+        assert_eq!(body["model_id"], "eleven_text_to_sound_v3");
+        assert_eq!(body["prompt_influence"], 0.3);
+        assert_eq!(body["loop"], false);
     }
 
     #[test]

@@ -72,7 +72,8 @@ export default function Export() {
     if (!ok) return;
     await run(async () => {
       try {
-        const t = await makeSound(project.id, project.bed.prompt.trim(), bedSecs, qualityFormat(engines.quality), soundEngineOf(engines).provider);
+        const elevenOptions = soundEngineOf(engines).id === "elevenlabs" ? { loop: true, promptInfluence: 0.3, sfxModel: engines.elevenSfxModel ?? "eleven_text_to_sound_v3" } : {};
+        const t = await makeSound(project.id, project.bed.prompt.trim(), bedSecs, qualityFormat(engines.quality), soundEngineOf(engines).provider, elevenOptions);
         addLedger({ kind: "sound", engine: soundEngineOf(engines).ledger, chars: project.bed.prompt.trim().length, items: [{ kind: "sound", count: 1 }], note: "atmosphere" });
         edit((p) => ({ ...p, bed: { ...p.bed, take: t } }));
       } catch (e) {

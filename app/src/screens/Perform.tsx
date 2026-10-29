@@ -315,7 +315,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
   const [open, setOpen] = useState(false);
   const [editText, setEditText] = useState(false);
   const [dirOpen, setDirOpen] = useState(false);
-  const [snd, setSnd] = useState({ prompt: "", placement: "after" as "before" | "after", seconds: 2 });
+  const [snd, setSnd] = useState({ prompt: "", placement: "after" as "before" | "after", seconds: 2, loop: false, promptInfluence: 0.3 });
   const d = line.direction;
   const noTags = !!voice && !ENGINES[voice.provider].tags;
   const ignoresNote = !!voice && !ENGINES[voice.provider].tags && voice.provider !== "voicekiller";
@@ -336,9 +336,11 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
     if (!ok) return;
     setBusy(true);
     try {
-      const t = await makeSound(project.id, snd.prompt.trim(), snd.seconds, qualityFormat(engines.quality), soundEngineOf(engines).provider);
+      const isEleven = soundEngineOf(engines).id === "elevenlabs";
+      const options = isEleven ? { loop: snd.loop, promptInfluence: snd.promptInfluence, sfxModel: engines.elevenSfxModel ?? "eleven_text_to_sound_v3" } : {};
+      const t = await makeSound(project.id, snd.prompt.trim(), snd.seconds, qualityFormat(engines.quality), soundEngineOf(engines).provider, options);
       addLedger({ kind: "sound", engine: soundEngineOf(engines).ledger, chars: snd.prompt.trim().length, items: [{ kind: "sound", count: 1 }], note: snd.prompt.trim().slice(0, 60) });
-      patch((l) => ({ ...l, events: [...l.events, { id: "e-" + uid(), prompt: snd.prompt.trim(), placement: snd.placement, seconds: snd.seconds, take: t }] }));
+      patch((l) => ({ ...l, events: [...l.events, { id: "e-" + uid(), prompt: snd.prompt.trim(), placement: snd.placement, seconds: snd.seconds, loop: snd.loop, promptInfluence: snd.promptInfluence, model: options.sfxModel, take: t }] }));
       setSnd({ ...snd, prompt: "" });
     } catch (e) {
       toast((e as Error).message, true);
@@ -537,6 +539,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
               </option>
             ))}
           </select>
+          {soundEngineOf(engines).id === "elevenlabs" && <label className="row small muted"><input type="checkbox" checked={snd.loop} onChange={(e) => setSnd({ ...snd, loop: e.target.checked })} /> Loop</label>}
           <button className="sm primary" disabled={!snd.prompt.trim() || busy} onClick={() => void addSound()}>
             Make sound
           </button>

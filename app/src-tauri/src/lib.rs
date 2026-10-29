@@ -127,6 +127,10 @@ struct ClipReq {
     seconds: Option<f64>,
     instructions: Option<String>,
     quality: Option<String>,
+    #[serde(rename = "loop")]
+    r#loop: Option<bool>,
+    prompt_influence: Option<f64>,
+    sfx_model: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -146,7 +150,7 @@ fn make_clip(root: &std::path::Path, models: &std::path::Path, req: ClipReq) -> 
     match req.provider.as_str() {
         "eleven-v4" => eleven()?.speech(&voice, eleven::MODEL_V4, text, req.speed, eleven::format_or_standard(req.quality.as_deref())),
         "eleven-tts" => eleven()?.speech(&voice, eleven::MODEL_V3, text, req.speed, eleven::format_or_standard(req.quality.as_deref())),
-        "eleven-sfx" => eleven()?.sound(text, req.seconds.unwrap_or(3.0), eleven::format_or_standard(req.quality.as_deref())),
+        "eleven-sfx" => eleven()?.sound(text, req.seconds.unwrap_or(3.0), req.r#loop.unwrap_or(false), req.prompt_influence, req.sfx_model.as_deref(), eleven::format_or_standard(req.quality.as_deref())),
         "piper" => local::piper_speak(root, &voice, text, req.speed.unwrap_or(1.0), &local::RealRunner),
         "local" => local::server_speak(&server_cfg(root), text, &voice, req.speed.unwrap_or(1.0)),
         "chatterbox" => chatterbox_speak(root, models, text, &voice),

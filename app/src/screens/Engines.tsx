@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, type PiperStatus } from "../api";
 import { useApp } from "../ctx";
-import { ENGINES, QUALITIES, SOUND_ENGINES, soundEngineOf, type ElevenModel, type Quality, type SoundEngine } from "../engines";
+import { ENGINES, QUALITIES, SOUND_ENGINES, soundEngineOf, type ElevenModel, type ElevenSfxModel, type Quality, type SoundEngine } from "../engines";
 import { Note, useBusy } from "../ui";
 import { BASIS_LABEL } from "../trust";
 import type { ConsentBasis } from "../types";
@@ -82,6 +82,19 @@ export default function Engines() {
             ))}
           </select>
         </label>
+        {soundEngineOf(engines).id === "elevenlabs" && (
+          <label className="field" style={{ maxWidth: 360 }}>
+            ElevenLabs sound model
+            <select value={engines.elevenSfxModel ?? "eleven_text_to_sound_v3"} onChange={(e) => saveEngines({ ...engines, elevenSfxModel: e.target.value as ElevenSfxModel })}>
+              <option value="eleven_text_to_sound_v3">Sound Effects v3 — recommended</option>
+              <option value="eleven_text_to_sound_v2">Sound Effects v2 — fallback</option>
+            </select>
+          </label>
+        )}
+        <div className="row wrap">
+          <button className="primary" onClick={() => go("sfx")}>Open SFX Studio</button>
+          <span className="muted small">Create, audition and place an effect directly on a script line.</span>
+        </div>
         {!keys[soundEngineOf(engines).key] && (
           <div>
             <button onClick={() => go("settings")}>Add the key in Settings</button>

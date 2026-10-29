@@ -17,6 +17,7 @@ import Settings from "./screens/Settings";
 import Voices from "./screens/Voices";
 import Models from "./screens/Models";
 import Help from "./screens/Help";
+import SfxStudio from "./screens/SfxStudio";
 import Write from "./screens/Write";
 
 export default function App() {
@@ -57,7 +58,7 @@ function Shell() {
     </button>
   );
   const takes = project ? project.lines.filter((l) => l.takes.length > 0).length : 0;
-  const screens: Record<Tab, React.ReactNode> = { home: <Home />, write: <Write />, cast: <Cast />, perform: <Perform />, timeline: <Timeline />, picture: <PictureScreen />, export: <Export />, studio: <Studio />, history: <History />, voices: <Voices />, models: <Models />, engines: <Engines />, lab: <Lab />, settings: <Settings />, help: <Help /> };
+  const screens: Record<Tab, React.ReactNode> = { home: <Home />, write: <Write />, cast: <Cast />, perform: <Perform />, timeline: <Timeline />, picture: <PictureScreen />, export: <Export />, studio: <Studio />, history: <History />, voices: <Voices />, models: <Models />, engines: <Engines />, sfx: <SfxStudio />, lab: <Lab />, settings: <Settings />, help: <Help /> };
 
   return (
     <div className="shell">
@@ -84,6 +85,7 @@ function Shell() {
         <Item id="voices" label="Voices" icon={<VoicesIcon size={18} />} />
         <Item id="models" label="Model Center" icon={<Layers size={18} />} />
         <Item id="engines" label="Engines" icon={<Layers size={18} />} />
+        <Item id="sfx" label="SFX Studio" icon={<Wave size={18} />} />
         <Item id="lab" label="Voice lab" icon={<Speaker size={18} />} />
         <Item id="settings" label="Settings" icon={<Gear size={18} />} count={upd.phase === "available" ? "update" : undefined} />
         <Item id="help" label="Help & guide" icon={<Book size={18} />} />
