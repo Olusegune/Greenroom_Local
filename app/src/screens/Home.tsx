@@ -74,6 +74,7 @@ export default function Home() {
                 <h2>{p.name}</h2>
                 <span className="muted small">{p.updatedAt ? "Edited " + new Date(p.updatedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : ""}</span>
               </span>
+              <span className="project-open">Continue →</span>
             </button>
           ))}
         </div>

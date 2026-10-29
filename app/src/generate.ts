@@ -41,7 +41,7 @@ export async function makeTake(projectId: string, line: Line, voice: VoiceEntry,
       engine: voice.provider,
       voiceName: voice.name,
       quality: voice.provider === "elevenlabs" ? quality : undefined,
-      speed: line.direction.speed,
+      speed: voice.provider === "chatterbox" ? 1 : line.direction.speed,
       instructions: p.instructions,
       chars: p.text.length,
       sha256,
@@ -66,5 +66,5 @@ export async function makeSound(projectId: string, prompt: string, seconds: numb
 }
 
 export function modelLabel(m: Take["model"]): string {
-  return m === "eleven_v4" ? "Eleven v4" : m === "eleven_v3" ? "Eleven v3" : m === "voicekiller" ? "VoiceKiller" : m === "kie" ? "Kie" : m === "piper" ? "Piper" : "Local";
+  return m === "eleven_v4" ? "Eleven v4" : m === "eleven_v3" ? "Eleven v3" : m === "voicekiller" ? "VoiceKiller" : m === "kie" ? "Kie" : m === "piper" ? "Piper" : m === "chatterbox" ? "Chatterbox" : "Local";
 }

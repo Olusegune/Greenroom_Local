@@ -137,7 +137,7 @@ struct ClipOut {
     ms: u128,
 }
 
-fn make_clip(root: &std::path::Path, req: ClipReq) -> Result<Vec<u8>, String> {
+fn make_clip(root: &std::path::Path, models: &std::path::Path, req: ClipReq) -> Result<Vec<u8>, String> {
     let text = req.text.trim();
     if text.is_empty() || text.len() > 9000 {
         return Err("The text is empty or too long.".into());
@@ -149,6 +149,7 @@ fn make_clip(root: &std::path::Path, req: ClipReq) -> Result<Vec<u8>, String> {
         "eleven-sfx" => eleven()?.sound(text, req.seconds.unwrap_or(3.0), eleven::format_or_standard(req.quality.as_deref())),
         "piper" => local::piper_speak(root, &voice, text, req.speed.unwrap_or(1.0), &local::RealRunner),
         "local" => local::server_speak(&server_cfg(root), text, &voice, req.speed.unwrap_or(1.0)),
+        "chatterbox" => chatterbox_speak(root, models, text, &voice),
         p @ ("voicekiller" | "voicekiller-clone") => voicekiller_client()?.speak(text, &voice, req.instructions.as_deref(), p == "voicekiller-clone"),
         p @ ("kie-tts" | "kie-dialogue" | "kie-sfx") => {
             let c = kie::Client::new(kie::BASE, &get_key("kie")?);
@@ -176,15 +177,132 @@ fn make_clip(root: &std::path::Path, req: ClipReq) -> Result<Vec<u8>, String> {
 #[tauri::command]
 async fn run_clip(app: tauri::AppHandle, req: ClipReq) -> Result<ClipOut, String> {
     let dir = root(&app)?;
+    let models = model_manager::models_root(&app)?;
     blocking(move || {
         let t = Instant::now();
-        let bytes = make_clip(&dir, req)?;
+        let bytes = make_clip(&dir, &models, req)?;
         if bytes.len() < 200 {
             return Err("The provider returned an empty clip.".to_string());
         }
         Ok(ClipOut { mime: net::mime_of(&bytes).into(), audio_b64: b64(&bytes), ms: t.elapsed().as_millis() })
     })
     .await
+}
+
+fn chatterbox_paths(root: &std::path::Path, models: &std::path::Path) -> Result<(PathBuf, PathBuf), String> {
+    let python = root.join("runtime").join("chatterbox").join(if cfg!(windows) { "Scripts/python.exe" } else { "bin/python" });
+    if !python.is_file() { return Err("Chatterbox runtime is not installed on this computer yet.".into()); }
+    Ok((python, chatterbox_model_dir(root, models)?))
+}
+
+fn chatterbox_model_dir(root: &std::path::Path, models: &std::path::Path) -> Result<PathBuf, String> {
+    let installed = models.join("chatterbox-multilingual-v3").join("5bb1f6ee");
+    let downloaded = root.join("Model Downloads").join("Chatterbox");
+    let files = ["t3_mtl23ls_v3.safetensors", "s3gen.pt", "ve.pt", "conds.pt", "grapheme_mtl_merged_expanded_v1.json", "Cangjie5_TC.json"];
+    let model = [installed, downloaded].into_iter().find(|p| files.iter().all(|f| p.join(f).is_file()))
+        .ok_or("Chatterbox model files are missing. Download them in Model Center.")?;
+    Ok(model)
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ChatterboxRuntimeStatus {
+    installed: bool,
+    model_ready: bool,
+    detail: String,
+}
+
+fn chatterbox_python(root: &std::path::Path) -> PathBuf {
+    root.join("runtime").join("chatterbox").join(if cfg!(windows) { "Scripts/python.exe" } else { "bin/python" })
+}
+
+fn command_ok(program: &std::path::Path, args: &[&str]) -> bool {
+    std::process::Command::new(program).args(args).output().map(|x| x.status.success()).unwrap_or(false)
+}
+
+fn chatterbox_runtime_state(root: &std::path::Path, models: &std::path::Path) -> ChatterboxRuntimeStatus {
+    let python = chatterbox_python(root);
+    let installed = python.is_file() && command_ok(&python, &["-c", "import chatterbox, torch, torchaudio"]);
+    let model_ready = chatterbox_model_dir(root, models).is_ok();
+    let detail = match (installed, model_ready) {
+        (true, true) => "Chatterbox is ready for its default local voice.".into(),
+        (true, false) => "Runtime ready. Download Chatterbox model files to enable speech.".into(),
+        (false, true) => "Model files are ready. Install the local runtime to enable speech.".into(),
+        (false, false) => "Install the local runtime, then download the model files.".into(),
+    };
+    ChatterboxRuntimeStatus { installed, model_ready, detail }
+}
+
+fn hidden_command(program: &str) -> std::process::Command {
+    let mut command = std::process::Command::new(program);
+    #[cfg(windows)] { use std::os::windows::process::CommandExt; command.creation_flags(0x08000000); }
+    command
+}
+
+fn run_setup_command(program: &str, args: &[&str], label: &str) -> Result<(), String> {
+    let output = hidden_command(program).args(args).output().map_err(|_| format!("Could not start {label}."))?;
+    if output.status.success() { return Ok(()); }
+    let detail = String::from_utf8_lossy(&output.stderr).replace(['\r', '\n'], " ");
+    Err(format!("{label} did not finish. {}", detail.chars().take(240).collect::<String>()))
+}
+
+fn setup_chatterbox_runtime(root: &std::path::Path, models: &std::path::Path) -> Result<ChatterboxRuntimeStatus, String> {
+    static SETUP: Mutex<()> = Mutex::new(());
+    let _guard = SETUP.lock().map_err(|_| "Chatterbox setup is unavailable. Restart Greenroom and try again.")?;
+    if chatterbox_runtime_state(root, models).installed { return Ok(chatterbox_runtime_state(root, models)); }
+    let runtime = root.join("runtime").join("chatterbox");
+    std::fs::create_dir_all(runtime.parent().ok_or("Could not prepare the runtime folder.")?).map_err(|_| "Could not prepare Greenroom's runtime folder.")?;
+    // The Python launcher selects the tested 3.11 interpreter. A normal python.exe is the fallback for macOS/Linux.
+    let made = if cfg!(windows) {
+        run_setup_command("py", &["-3.11", "-m", "venv", runtime.to_string_lossy().as_ref()], "Python 3.11")
+    } else {
+        run_setup_command("python3", &["-m", "venv", runtime.to_string_lossy().as_ref()], "Python")
+    };
+    if let Err(error) = made {
+        return Err(format!("Greenroom needs Python 3.11 to set up Chatterbox. Install it from python.org, then press Install local runtime again. {error}"));
+    }
+    let python = chatterbox_python(root);
+    run_setup_command(python.to_string_lossy().as_ref(), &["-m", "pip", "install", "--disable-pip-version-check", "--no-input", "--upgrade", "pip"], "the Chatterbox installer")?;
+    run_setup_command(python.to_string_lossy().as_ref(), &["-m", "pip", "install", "--disable-pip-version-check", "--no-input", "chatterbox-tts==0.1.7"], "the Chatterbox runtime installer")?;
+    let status = chatterbox_runtime_state(root, models);
+    if !status.installed { return Err("Chatterbox installed but could not be verified. Try Install local runtime again.".into()); }
+    Ok(status)
+}
+
+#[tauri::command]
+fn chatterbox_runtime_status(app: tauri::AppHandle) -> Result<ChatterboxRuntimeStatus, String> {
+    Ok(chatterbox_runtime_state(&root(&app)?, &model_manager::models_root(&app)?))
+}
+
+#[tauri::command]
+async fn chatterbox_runtime_install(app: tauri::AppHandle) -> Result<ChatterboxRuntimeStatus, String> {
+    let docs = root(&app)?;
+    let models = model_manager::models_root(&app)?;
+    blocking(move || setup_chatterbox_runtime(&docs, &models)).await
+}
+
+#[tauri::command]
+fn chatterbox_ready(app: tauri::AppHandle) -> Result<bool, String> {
+    Ok(chatterbox_paths(&root(&app)?, &model_manager::models_root(&app)?).is_ok())
+}
+
+fn chatterbox_speak(root: &std::path::Path, models: &std::path::Path, text: &str, voice: &str) -> Result<Vec<u8>, String> {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    static GENERATION: Mutex<()> = Mutex::new(());
+    let _guard = GENERATION.lock().map_err(|_| "Chatterbox is unavailable. Restart Greenroom and try again.")?;
+    if voice != "chatterbox-default" { return Err("That Chatterbox voice is not available.".into()); }
+    if text.chars().count() > 1000 { return Err("Chatterbox supports up to 1,000 characters per line.".into()); }
+    let (python, model) = chatterbox_paths(root, models)?;
+    let mut cmd = Command::new(python);
+    cmd.args(["-c", include_str!("../../../runtime/chatterbox_once.py")]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
+    #[cfg(windows)] { use std::os::windows::process::CommandExt; cmd.creation_flags(0x08000000); }
+    let mut child = cmd.spawn().map_err(|_| "Could not start the Chatterbox runtime.")?;
+    let input = serde_json::json!({"text": text, "model_dir": model});
+    child.stdin.take().ok_or("Could not send text to Chatterbox.")?.write_all(input.to_string().as_bytes()).map_err(|_| "Could not send text to Chatterbox.")?;
+    let output = child.wait_with_output().map_err(|_| "Chatterbox stopped unexpectedly.")?;
+    if !output.status.success() || !output.stdout.starts_with(b"RIFF") { return Err("Chatterbox could not generate this line. Check that its runtime and model files are intact.".into()); }
+    Ok(output.stdout)
 }
 
 // ---- voices ---------------------------------------------------------------------------------------------------
@@ -653,7 +771,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads
+            model_hardware, model_states, model_install, chatterbox_import_downloads, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install
         ])
         .run(tauri::generate_context!())
         .expect("error while running Greenroom");

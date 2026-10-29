@@ -76,6 +76,13 @@ export function Provider({ children }: { children: ReactNode }) {
     setProject(p);
   }, []);
 
+  // Every main destination is its own workspace. Keeping an old scroll position
+  // made destination headings appear missing after moving between long screens.
+  useEffect(() => {
+    const stage = document.querySelector<HTMLElement>(".stage");
+    stage?.scrollTo({ top: 0, left: 0 });
+  }, [tab]);
+
   const refreshKeys = useCallback(() => void api.keyStatus().then(setKeys).catch(() => undefined), []);
   useEffect(refreshKeys, [refreshKeys]);
   useEffect(() => void api.libraryLoad().then((l) => ((libRef.current = l), setLibrary(l))).catch(() => undefined), []);

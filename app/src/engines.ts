@@ -1,7 +1,7 @@
 import type { Provider } from "./api";
 
 /** The places a voice can come from. A voice belongs to one engine, so choosing a voice chooses the engine. */
-export type Engine = "elevenlabs" | "voicekiller" | "kie" | "piper" | "local";
+export type Engine = "elevenlabs" | "voicekiller" | "kie" | "piper" | "local" | "chatterbox";
 
 export interface EngineInfo {
   label: string;
@@ -18,9 +18,10 @@ export const ENGINES: Record<Engine, EngineInfo> = {
   kie: { label: "Kie", local: false, tags: false, blurb: "ElevenLabs Turbo through Kie, with 67 preset voices. Sound tags are not used." },
   piper: { label: "Piper (offline)", local: true, tags: false, blurb: "Runs on this PC with no internet and no cost. Many languages. Plain speech only." },
   local: { label: "My local server", local: true, tags: false, blurb: "A speech program you run on this PC, such as a Kokoro or Chatterbox server." },
+  chatterbox: { label: "Chatterbox (offline)", local: true, tags: false, blurb: "Local English speech using the Chatterbox default voice. Acting controls and cloning are not connected yet." },
 };
 
-export const ENGINE_ORDER: Engine[] = ["elevenlabs", "voicekiller", "kie", "piper", "local"];
+export const ENGINE_ORDER: Engine[] = ["elevenlabs", "voicekiller", "kie", "piper", "chatterbox", "local"];
 
 export type ElevenModel = "eleven_v4" | "eleven_v3";
 
@@ -37,6 +38,8 @@ export function providerFor(engine: Engine, model: ElevenModel, vkClone = false)
       return "piper";
     case "local":
       return "local";
+    case "chatterbox":
+      return "chatterbox";
   }
 }
 

@@ -237,11 +237,14 @@ impl Client {
 /// voices. Their reply is terse, so say plainly what it means and what still works.
 pub fn plan_hint(msg: String) -> String {
     let m = msg.to_lowercase();
-    let limited = ["upgrade", "subscription", "plan", "tier", "quota", "limit", "payment", "not accept the key", "can_not", "not_allowed"].iter().any(|k| m.contains(k));
+    if m.contains("voices_write") && m.contains("permission") {
+        return "Your ElevenLabs API key is missing the voices_write permission. In ElevenLabs, open Developers → API Keys, edit the key and enable voice writing, then try again. If you replace the key, save the new one in Greenroom Settings. Your plan may also have separate limits.".into();
+    }
+    let limited = ["upgrade", "subscription", "quota", "payment"].iter().any(|k| m.contains(k));
     if !limited {
         return msg;
     }
-    format!("Your ElevenLabs plan does not allow this. Saving, adding or cloning voices usually needs a paid plan, and each plan caps how many custom voices you can keep. You can upgrade at elevenlabs.io, or use a premade voice, a VoiceKiller or Kie voice, or an offline Piper voice instead. ElevenLabs said: {}", msg.chars().take(200).collect::<String>())
+    format!("ElevenLabs reports an account or subscription limit for this action. Check your plan and available voice slots. You can also use an offline voice. ElevenLabs said: {}", msg.chars().take(200).collect::<String>())
 }
 
 pub fn clean_name(n: &str) -> Option<String> {
@@ -445,12 +448,20 @@ mod tests {
         let f = start(Box::new(|_| (402, br#"{"detail":{"status":"payment_required","message":"Please upgrade your subscription to use this."}}"#.to_vec())));
         let c = Client::new(&f.base, "K");
         let e = c.save_design("gen1", "Elder", "An older Nigerian man, warm and gravelly, calm and slow").unwrap_err();
-        assert!(e.contains("plan does not allow this") && e.contains("Piper") && e.contains("upgrade your subscription"));
+        assert!(e.contains("subscription limit") && e.contains("upgrade your subscription"));
         let e2 = c.add_shared("own1", "v9", "Tunde").unwrap_err();
-        assert!(e2.contains("plan does not allow this"));
+        assert!(e2.contains("subscription limit"));
         // an unrelated failure is passed through untouched
         let g = start(Box::new(|_| (500, b"{}".to_vec())));
-        assert!(!Client::new(&g.base, "K").add_shared("own1", "v9", "T").unwrap_err().contains("plan does not allow"));
+        assert!(!Client::new(&g.base, "K").add_shared("own1", "v9", "T").unwrap_err().contains("subscription limit"));
+    }
+
+    #[test]
+    fn missing_voice_permission_is_not_mistaken_for_a_plan_limit() {
+        let f = start(Box::new(|_| (403, br#"{"detail":{"message":"The API key you used is missing the permission voices_write to execute this operation."}}"#.to_vec())));
+        let e = Client::new(&f.base, "K").add_shared("own1", "v9", "T").unwrap_err();
+        assert!(e.contains("voices_write") && e.contains("API Keys"));
+        assert!(!e.contains("subscription limit"));
     }
 
     #[test]

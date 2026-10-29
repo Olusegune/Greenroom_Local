@@ -16,6 +16,7 @@ Thumbs.db
 models/
 /runtime/*
 !/runtime/chatterbox_server.py
+!/runtime/chatterbox_once.py
 downloads/
 *.part
 

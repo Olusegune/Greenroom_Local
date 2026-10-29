@@ -80,7 +80,7 @@ function Shell() {
             <Item id="history" label="History" icon={<Clock size={18} />} />
           </>
         )}
-        <h3>Library</h3>
+        <h3>Studio tools</h3>
         <Item id="voices" label="Voices" icon={<VoicesIcon size={18} />} />
         <Item id="models" label="Model Center" icon={<Layers size={18} />} />
         <Item id="engines" label="Engines" icon={<Layers size={18} />} />

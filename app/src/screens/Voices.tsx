@@ -62,6 +62,9 @@ function tagline(v: VoiceEntry): string {
 function Mine({ goFind }: { goFind: () => void }) {
   const { library, saveLibrary, keys, toast, project, edit, go } = useApp();
   const sample = useSample();
+  const add = useAdd();
+  const [chatterboxReady, setChatterboxReady] = useState(false);
+  useEffect(() => { void api.chatterboxReady().then(setChatterboxReady).catch(() => undefined); }, []);
   const { busy, run } = useBusy();
   const [sure, setSure] = useState("");
   const [only, setOnly] = useState<Engine | "all">("all");
@@ -108,6 +111,7 @@ function Mine({ goFind }: { goFind: () => void }) {
   return (
     <>
       <div className="row wrap">
+        {chatterboxReady && <button onClick={() => add({ id: "chatterbox-default", name: "Chatterbox", provider: "chatterbox", source: "library", language: "English", accent: "", gender: "", notes: "Default local voice. Plain English speech; acting and cloning controls are not connected." })}>Add Chatterbox voice</button>}
         <button className="primary" onClick={goFind}>
           <Plus size={16} /> Find a voice
         </button>
@@ -260,14 +264,14 @@ function LocalVoiceShelf() {
     finally { setBusy(""); }
   };
   return <div className="local-shelf">
-    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Explore voices</h2><p className="muted">Listen to online samples before adding a voice. Installed voices generate samples locally. Portraits are illustrations.</p></div><div className="row wrap"><button aria-pressed={onlyFavorites} onClick={() => setOnlyFavorites(!onlyFavorites)}>{onlyFavorites ? "★ Favorites" : "☆ Favorites"}</button><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div></div>
+    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Explore voices</h2><p className="muted">Preview a voice, save it to favorites, then add it for local use. Voice portraits are illustrations.</p></div><div className="row wrap"><button aria-pressed={onlyFavorites} onClick={() => setOnlyFavorites(!onlyFavorites)}>{onlyFavorites ? "★ Favorites" : "☆ Favorites"}</button><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div></div>
     {loading && <p className="muted">Loading local voice catalogue…</p>}
     {error && <Note>Could not load the voice catalogue: {error}. Check your connection or try Find a voice.</Note>}
     {!loading && !error && shown.length === 0 && <p className="muted">No voices match your search.</p>}
     <div className="shelf-grid">{shown.map((v) => <article className={selected === v.key ? "shelf-voice selected" : "shelf-voice"} key={v.key}>
       <Avatar seed={v.key} size={54} />
-      <div className="shelf-info"><strong>{v.name}</strong><span>{v.language} · {v.country}</span><small>{v.quality} · {v.sizeMb} MB</small>{project && library.some((x) => x.provider === "piper" && x.id === v.key) && <select aria-label={`Select character for ${v.name}`} value="" onChange={(e) => { const id = e.target.value; if (id) { edit((p) => ({ ...p, characters: p.characters.map((c) => c.id === id ? { ...c, voiceId: v.key } : c) })); toast(`${v.name} assigned.`); } }}><option value="">Assign to character…</option>{project.characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>}</div>
-      <div className="shelf-actions"><button className="shelf-icon" aria-label={`${favorites.includes(v.key) ? "Remove from" : "Add to"} favorites: ${v.name}`} aria-pressed={favorites.includes(v.key)} onClick={() => favorite(v.key)}>{favorites.includes(v.key) ? "★" : "☆"}</button><button className="shelf-icon" disabled={!!busy} aria-label={`${playing === v.key ? "Pause" : "Play"} ${v.name}`} title="Play voice sample" onClick={() => void play(v)}>{playing === v.key ? "Ⅱ" : "▶"}</button>{library.some((x) => x.provider === "piper" && x.id === v.key) ? !project && <button className="sm" onClick={() => go("home")}>Select</button> : <button className="sm" disabled={!!busy} onClick={() => void download(v)}>{busy === v.key ? "Adding…" : "Add"}</button>}</div>
+      <div className="shelf-info"><strong>{v.name}</strong><span>{v.language} · {v.country}</span><small>{v.quality} quality · {v.sizeMb} MB</small>{project && library.some((x) => x.provider === "piper" && x.id === v.key) && <select aria-label={`Select character for ${v.name}`} value="" onChange={(e) => { const id = e.target.value; if (id) { edit((p) => ({ ...p, characters: p.characters.map((c) => c.id === id ? { ...c, voiceId: v.key } : c) })); toast(`${v.name} assigned.`); } }}><option value="">Assign to character…</option>{project.characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>}</div>
+      <div className="shelf-actions"><button className="shelf-icon" aria-label={`${favorites.includes(v.key) ? "Remove from" : "Add to"} favorites: ${v.name}`} title={favorites.includes(v.key) ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorites.includes(v.key)} onClick={() => favorite(v.key)}>{favorites.includes(v.key) ? "★" : "☆"}</button><button className="shelf-icon play" disabled={!!busy} aria-label={`${playing === v.key ? "Pause" : "Play"} ${v.name}`} title="Play voice sample" onClick={() => void play(v)}>{playing === v.key ? "Ⅱ" : "▶"}</button>{library.some((x) => x.provider === "piper" && x.id === v.key) ? !project && <button className="sm" onClick={() => go("home")}>Use</button> : <button className="sm" disabled={!!busy} onClick={() => void download(v)}>{busy === v.key ? "Adding…" : "Add"}</button>}</div>
     </article>)}</div>
     {voices.length > 24 && <p className="muted small">Showing up to 24 matches. Search for a language or region to explore more.</p>}
   </div>;
@@ -290,13 +294,13 @@ function Find() {
   const [gender, setGender] = useState("");
   const [accent, setAccent] = useState("");
   const [text, setText] = useState("");
-  const [on, setOn] = useState<Record<Engine, boolean>>({ elevenlabs: true, voicekiller: true, kie: true, piper: true, local: false });
+  const [on, setOn] = useState<Record<Engine, boolean>>({ elevenlabs: true, voicekiller: true, kie: true, piper: true, chatterbox: false, local: false });
   const [slots, setSlots] = useState<Partial<Record<Engine, Slot>>>({});
   const [busyKey, setBusyKey] = useState("");
   const [expanded, setExpanded] = useState<Partial<Record<Engine, boolean>>>({});
   const token = useRef(0);
 
-  const ready: Record<Engine, boolean> = { elevenlabs: keys.elevenlabs, voicekiller: keys.voicekiller, kie: keys.kie, piper: true, local: false };
+  const ready: Record<Engine, boolean> = { elevenlabs: keys.elevenlabs, voicekiller: keys.voicekiller, kie: keys.kie, piper: true, chatterbox: false, local: false };
   const set = (e: Engine, s: Slot) => setSlots((all) => ({ ...all, [e]: s }));
 
   const tiles = useMemo(() => TILES.filter((t) => t.name.toLowerCase().includes(filter.trim().toLowerCase())), [filter]);
@@ -374,7 +378,7 @@ function Find() {
   const inLib = (f: Found) => library.some((x) => x.id === f.id && x.provider === f.engine);
   const hear = (f: Found) => () => (f.engine === "piper" ? Promise.reject(new Error("Add this voice first to hear it.")) : sample(asVoice(f)));
 
-  const engineList = ENGINE_ORDER.filter((e) => e !== "local");
+  const engineList = ENGINE_ORDER.filter((e) => e !== "local" && e !== "chatterbox");
   return (
     <>
       <p className="muted">Pick a language to see voices for it from every engine you have set up. No need to know a voice by name.</p>

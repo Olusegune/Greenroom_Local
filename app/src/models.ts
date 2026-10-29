@@ -15,6 +15,9 @@ export interface LocalModel {
   languages: string[];
   accents: string[];
   licence: string;
+  /** Official model card or project page. Greenroom never sends users to a third-party mirror. */
+  sourceUrl: string;
+  sourceLabel: string;
   recommended?: boolean;
   experimental?: boolean;
 }
@@ -43,11 +46,12 @@ export const MODEL_CATALOG: LocalModel[] = [
     maker: "Greenroom Local",
     kind: "runtime",
     tier: "compact",
-    description: "Managed local inference environment. Greenroom installs and updates it for you.",
+    description: "Shared local runtime requirements. Greenroom installs a verified runtime only for engines that explicitly support in-app setup.",
     sizeGb: 1.2,
     memoryGb: 4,
     capabilities: ["Model isolation", "Background jobs", "CUDA", "Apple Metal", "CPU"],
     languages: [], accents: [], licence: "Greenroom components and third-party notices",
+    sourceUrl: "https://github.com/resemble-ai/chatterbox", sourceLabel: "Runtime requirements",
     recommended: true,
   },
   {
@@ -56,26 +60,28 @@ export const MODEL_CATALOG: LocalModel[] = [
     maker: "Resemble AI",
     kind: "speech",
     tier: "standard",
-    description: "Expressive multilingual acting, voice cloning and paralinguistic performance.",
+    description: "Model files and a local runtime are available in Greenroom. The current built-in voice is plain English speech; advanced acting and cloning remain model capabilities to connect.",
     sizeGb: 3.2,
     memoryGb: 8,
     capabilities: ["Voice cloning", "Emotion", "Chuckle", "Breath", "Exertion", "23+ languages"],
     languages: ["English", "Korean", "French", "Spanish", "Swahili", "Arabic", "Hindi"],
     accents: ["Voice-reference dependent"], licence: "MIT (verify model card at install)",
+    sourceUrl: "https://huggingface.co/ResembleAI/chatterbox", sourceLabel: "Open Chatterbox model page",
     recommended: true,
   },
   {
     id: "qwen3-tts-17b",
-    name: "Qwen3-TTS 1.7B",
+    name: "Qwen3-TTS VoiceDesign 1.7B",
     maker: "Qwen",
     kind: "speech",
     tier: "studio",
     description: "High-end voice design, cloning and natural-language performance direction.",
-    sizeGb: 5.0,
+    sizeGb: 4.5,
     memoryGb: 12,
     capabilities: ["Voice design", "Voice cloning", "Natural-language direction", "Korean"],
     languages: ["English", "Korean", "Chinese", "Japanese", "German", "French", "Spanish"],
-    accents: ["Reference dependent"], licence: "Shown and accepted before download",
+    accents: ["Reference dependent"], licence: "Apache-2.0 (verify model card before use)",
+    sourceUrl: "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign", sourceLabel: "Open Qwen model page",
   },
   {
     id: "wazobia-voice",
@@ -89,6 +95,7 @@ export const MODEL_CATALOG: LocalModel[] = [
     capabilities: ["Voice cloning", "Expressive controls", "Code-switching"],
     languages: ["Yoruba", "Igbo", "Hausa", "Nigerian Pidgin", "English"],
     accents: ["Nigerian English — not independently verified"], licence: "Axiveri Research License: non-commercial; commercial licence required",
+    sourceUrl: "https://huggingface.co/Axiveri/WazobiaVoice", sourceLabel: "Open Wazobia model page",
     experimental: true,
   },
   {
@@ -101,7 +108,8 @@ export const MODEL_CATALOG: LocalModel[] = [
     sizeGb: 5.2,
     memoryGb: 10,
     capabilities: ["Scene analysis", "Emotional arcs", "Physical-state continuity", "Pronunciation help"],
-    languages: ["Multilingual"], accents: [], licence: "Model-specific; shown before download",
+    languages: ["Multilingual"], accents: [], licence: "Check the selected model card",
+    sourceUrl: "https://huggingface.co/models?library=gguf", sourceLabel: "Browse GGUF models",
     recommended: true,
   },
   {
@@ -115,6 +123,7 @@ export const MODEL_CATALOG: LocalModel[] = [
     memoryGb: 6,
     capabilities: ["Transcription", "Language detection", "Timing", "Clone sample checks"],
     languages: ["Multilingual"], accents: [], licence: "MIT",
+    sourceUrl: "https://huggingface.co/openai/whisper-large-v3-turbo", sourceLabel: "Open Whisper model page",
   },
 ];
 

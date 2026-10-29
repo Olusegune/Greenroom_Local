@@ -144,6 +144,9 @@ export const mock: Api = {
   modelStates: async (ids: string[]) => ids.map((id) => ({ id, state: "available" as const, progress: 0 })),
   modelInstall: async (id: string) => (await wait(900), { id, state: "installed" as const, progress: 100, version: "demo" }),
   chatterboxImportDownloads: async () => (await wait(900), { id: "chatterbox-multilingual-v3", state: "installed" as const, progress: 100, version: "demo" }),
+  chatterboxReady: async () => false,
+  chatterboxRuntimeStatus: async () => ({ installed: false, modelReady: false, detail: "Install the local runtime, then download the model files." }),
+  chatterboxRuntimeInstall: async () => (await wait(1000), { installed: true, modelReady: false, detail: "Runtime ready. Download Chatterbox model files to enable speech." }),
   directorComplete: async (_s: string, user: string) => {
     await wait(700);
     const ids = [...user.matchAll(/^(l-[\w-]+) \|/gm)].map((x) => x[1]!);

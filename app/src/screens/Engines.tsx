@@ -33,6 +33,10 @@ export default function Engines() {
         <h1>Engines</h1>
         <p className="lede">An engine is where a voice comes from. Each voice belongs to one engine, so choosing a voice in Cast chooses the engine. Set up the ones you want here.</p>
       </div>
+      <div className="engine-quick card">
+        <div><strong>Quick setup</strong><p className="muted small">Piper is the offline starting point. Cloud engines stay optional and use your own accounts.</p></div>
+        <div className="row wrap"><button className="primary" onClick={() => go("voices")}>Find local voices</button><button onClick={() => go("settings")}>Manage connections</button><button className="sm" onClick={() => go("lab")}>Test voices</button></div>
+      </div>
 
       <EngineCard mark="E" tone="e1" title={ENGINES.elevenlabs.label} status={keys.elevenlabs ? "Key saved" : "Needs a key"} ok={keys.elevenlabs} blurb="Speech, sound effects, voice design and cloning">
         <p className="muted small">{ENGINES.elevenlabs.blurb}</p>

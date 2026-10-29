@@ -16,7 +16,8 @@ export default function Lab() {
   const [saved, setSaved] = useState("");
   const stop = useRef(false);
 
-  useEffect(() => setPicked(new Set(available.map((c) => c.id))), [available]);
+  // A short, varied first pass avoids accidentally firing every cloud benchmark.
+  useEffect(() => setPicked(new Set(available.slice(0, 6).map((c) => c.id))), [available]);
   useEffect(() => {
     if (!keys.elevenlabs) return;
     api
@@ -33,7 +34,7 @@ export default function Lab() {
   const patch = (id: string, r: Partial<Result>) => setResults((all) => ({ ...all, [id]: { state: "idle", ...all[id], ...r } }));
 
   const run = async () => {
-    const ok = await confirmSpend({ title: "Run these clips?", lines: countByProvider(chosen).map((s) => `${PROVIDER_INFO[s.provider].label}: ${s.n} clips, ${s.chars} characters`) });
+    const ok = await confirmSpend({ title: `Run ${chosen.length} comparison clips?`, lines: ["This is a comparison run. Each selected cloud clip sends only its displayed line to its provider.", ...countByProvider(chosen).map((s) => `${PROVIDER_INFO[s.provider].label}: ${s.n} clips, ${s.chars} characters`)] });
     if (!ok) return;
     setRunning(true);
     stop.current = false;
@@ -86,6 +87,10 @@ export default function Lab() {
           {voiceErr && <span className="err-text small">{voiceErr}</span>}
         </div>
       )}
+      <div className="lab-preset card">
+        <div><strong>Comparison set</strong><p className="muted small">Start with six representative clips, then add only the expressions or providers you want to judge.</p></div>
+        <div className="row wrap"><button onClick={() => setPicked(new Set(available.slice(0, 6).map((c) => c.id)))} disabled={running}>Recommended 6</button><button className="sm" onClick={() => setPicked(new Set())} disabled={running}>Clear selection</button><span className="muted small">{chosen.length} selected</span></div>
+      </div>
       {(["Speech with feeling", "Body sounds"] as const).map((g) => (
         <details key={g} className="card fold" open>
           <summary>
@@ -123,7 +128,7 @@ export default function Lab() {
         </details>
       ))}
       <div className="bar">
-        <span className="muted">{chosen.length} clips selected</span>
+        <span className="muted">{chosen.length} clips selected · confirmation shows provider totals</span>
         <span className="spacer" />
         {saved && <span className="muted small" role="status">{saved}</span>}
         <button onClick={async () => setSaved(await api.saveReport(buildReport(results, new Date().toISOString().slice(0, 10))).catch((e: Error) => e.message))} disabled={Object.keys(results).length === 0}>
