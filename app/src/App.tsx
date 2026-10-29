@@ -111,7 +111,20 @@ function Shell() {
         <details><summary>Edit</summary><div className="menu-popup"><button disabled={!canUndo} onClick={undo}>Undo <span>Ctrl+Z</span></button><button disabled={!canRedo} onClick={redo}>Redo <span>Ctrl+Shift+Z</span></button></div></details>
         <details><summary>View</summary><div className="menu-popup"><button onClick={() => go("voices")}>Voice library</button><button onClick={() => go("models")}>Model Center</button><button onClick={() => go("settings")}>Settings</button></div></details>
         <details><summary>Help</summary><div className="menu-popup"><button onClick={() => go("help")}>Help & guide</button></div></details>
+        <AppearanceToggle />
       </div><main className="stage">{screens[tab]}</main></div>
     </div>
   );
+}
+
+function AppearanceToggle() {
+  const [theme, setTheme] = useState(() => localStorage.getItem("greenroom-appearance") ?? "system");
+  const apply = (next: string) => {
+    setTheme(next);
+    localStorage.setItem("greenroom-appearance", next);
+    const resolved = next === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : next;
+    document.documentElement.dataset.theme = resolved;
+  };
+  useEffect(() => apply(theme), []); // Restore the person's choice before navigating any screen.
+  return <div className="appearance-toggle" role="group" aria-label="Appearance"><button className={theme === "light" ? "on" : ""} onClick={() => apply("light")}>Light</button><button className={theme === "dark" ? "on" : ""} onClick={() => apply("dark")}>Dark</button><button className={theme === "system" ? "on" : ""} onClick={() => apply("system")}>Auto</button></div>;
 }

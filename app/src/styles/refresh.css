@@ -253,3 +253,75 @@ button.primary:hover:not(:disabled) { box-shadow:none; background:#83e6af; }
 input:focus-visible, select:focus-visible, textarea:focus-visible { box-shadow:0 0 0 2px rgba(82,214,138,.16); }
 .hero { border-radius:7px; }
 .shelf-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); }
+
+/* Appearance: a calm paper-like studio in light mode, with the same contrast and hierarchy as the dark stage. */
+.appearance-toggle { margin-left:auto; display:flex; align-items:center; gap:2px; padding:2px; border:1px solid var(--line); border-radius:5px; }
+.appearance-toggle button { height:26px; padding:0 8px; border:0; border-radius:3px; background:transparent; color:var(--text-3); font-size:11px; }
+.appearance-toggle button.on { color:var(--text); background:var(--surface-3); }
+.appearance-card { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.appearance-card h2 { margin:0 0 3px; }
+.appearance-card p { margin:0; }
+.appearance-options { display:flex; gap:6px; padding:4px; border:1px solid var(--line); border-radius:6px; background:var(--surface-1); }
+.appearance-options button { border-color:transparent; background:transparent; }
+.appearance-options button.selected { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+
+/* Model Center: designed as an editorial catalogue, not a wall of technical tiles. */
+.models-screen .models-hero { padding:8px 0 24px; }
+.models-hero { align-items:flex-end; }
+.models-hero .lede { font-size:16px; }
+.models-screen .setup-strip { padding:20px 22px; margin:0; background:linear-gradient(105deg, var(--accent-wash), transparent 60%), var(--surface-2); }
+.models-screen > .small { margin:0 0 20px; padding:0 2px; }
+.runtime-group { margin-top:0; }
+.runtime-overview { display:flex; align-items:center; justify-content:space-between; gap:32px; padding:18px 20px; border:1px solid var(--line); border-radius:7px; background:var(--surface-1); }
+.runtime-overview h3 { margin:5px 0 6px; color:var(--text); font-size:16px; letter-spacing:0; text-transform:none; }
+.runtime-overview p { max-width:640px; margin:0; }
+.runtime-points { display:grid; grid-template-columns:repeat(3, minmax(110px, 1fr)); gap:8px; }
+.runtime-points span { padding:8px 10px; border-left:2px solid var(--accent); background:var(--surface-2); color:var(--text-2); font-size:12px; }
+.model-group { margin:30px 0; }
+.model-group h2 { margin-bottom:12px; font-size:18px; letter-spacing:-.01em; text-transform:none; color:var(--text); }
+.model-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
+.model-card { position:relative; min-height:0; padding:22px; gap:14px; background:var(--surface-2); border-color:var(--line); }
+.model-card:hover { border-color:var(--line-strong); }
+.model-card .model-top h3 { color:var(--text); font-size:13px; letter-spacing:.075em; }
+.model-card > p:not(.integration-state) { color:var(--text); font-size:15px; line-height:1.55; }
+.model-card .model-facts { gap:6px; }
+.model-card .model-facts span { background:var(--surface-1); border:1px solid var(--line); }
+.model-card .chips { gap:6px; }
+.model-card .chip.static { height:28px; padding:0 10px; font-size:11px; color:var(--text-2); }
+.integration-state { border:0; border-left:2px solid var(--accent); border-radius:0; padding:2px 0 2px 8px; background:none; color:var(--text-2); }
+.integration-state.link { border-left-color:var(--text-3); }
+.integration-state.setup { border-left-color:var(--accent); }
+.integration-state.ready { border-left-color:var(--ok); background:none; }
+.model-bottom { align-items:center; padding-top:12px; border-top:1px solid var(--line); }
+.model-bottom > span { max-width:52%; }
+
+/* Voice cards retain personality without giving every supporting action the same weight. */
+.grid .vc { padding:20px; }
+.vc-top { gap:14px; }
+.vc-face { width:64px; height:64px; }
+.vc-face .avatar { width:64px !important; height:64px !important; }
+.vc-id h2 { font-size:17px; }
+.vc-use { background:var(--surface-1); }
+.shelf-voice { background:var(--surface-2); border-color:var(--line); }
+.shelf-actions { gap:8px; }
+
+:root[data-theme="light"] {
+  color-scheme:light;
+  --bg:#f4f7f4; --surface-1:#ffffff; --surface-2:#f8fbf8; --surface-3:#eaf0eb; --surface-4:#dce7de;
+  --line:rgba(24,55,38,.13); --line-strong:rgba(24,55,38,.25); --control-line:#94a99a;
+  --text:#17251b; --text-2:#536758; --text-3:#718174;
+  --accent:#198754; --accent-hi:#2ca96d; --on-accent:#ffffff; --accent-text:#117143;
+  --accent-wash:rgba(25,135,84,.11); --accent-line:rgba(25,135,84,.42);
+  --ok:#137a58; --warn:#ad620f; --err:#b6403b; --ok-wash:rgba(19,122,88,.10); --warn-wash:rgba(173,98,15,.10); --err-wash:rgba(182,64,59,.10);
+  --focus:#0b6b42; --shadow-2:0 16px 40px rgba(28,50,35,.16), 0 0 0 1px var(--line); --scrim:rgba(25,35,28,.25);
+}
+:root[data-theme="light"] body { background:#f4f7f4; background-image:radial-gradient(900px 420px at 20% -120px, rgba(78,170,115,.18), transparent 70%), radial-gradient(800px 520px at 100% 100%, rgba(241,210,138,.18), transparent 70%); }
+:root[data-theme="light"] .rail { background:#eef4ef; }
+:root[data-theme="light"] .app-menu { background:rgba(255,255,255,.8); }
+:root[data-theme="light"] .card, :root[data-theme="light"] .linecard, :root[data-theme="light"] .model-card, :root[data-theme="light"] .shelf-voice { background:rgba(255,255,255,.78); }
+:root[data-theme="light"] .models-screen .setup-strip { background:linear-gradient(105deg, rgba(25,135,84,.14), rgba(255,255,255,.86) 60%); }
+:root[data-theme="light"] .runtime-overview, :root[data-theme="light"] .runtime-points span { background:rgba(255,255,255,.72); }
+:root[data-theme="light"] .model-facts span, :root[data-theme="light"] .chip.static { background:#f3f7f3; }
+:root[data-theme="light"] .bar { background:rgba(255,255,255,.92); }
+@media (max-width:900px) { .model-grid { grid-template-columns:1fr; } .runtime-overview { align-items:stretch; flex-direction:column; } }
+@media (max-width:720px) { .appearance-toggle { display:none; } .appearance-card { align-items:stretch; flex-direction:column; } .runtime-points { grid-template-columns:1fr; } }

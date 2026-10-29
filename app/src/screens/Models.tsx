@@ -84,6 +84,7 @@ export default function Models() {
       {GROUPS.map((group) => {
         const rows = MODEL_CATALOG.filter((m) => m.kind === group.id);
         if (!rows.length) return null;
+        if (group.id === "runtime") return <div className="model-group runtime-group" key={group.id}><h2>Local foundation</h2><article className="runtime-overview"><div><span className="eyebrow">LOCAL RUNTIME</span><h3>Everything stays on your computer</h3><p className="muted">Greenroom sets up a verified runtime only when an engine has an in-app installer. No separate “runtime” download is needed.</p></div><div className="runtime-points"><span>Private model folders</span><span>Background jobs</span><span>CPU, CUDA & Apple Silicon</span></div></article></div>;
         return <div className="model-group" key={group.id}>
           <h2>{group.label}</h2>
           <div className="model-grid">

@@ -217,7 +217,7 @@ fn chatterbox_python(root: &std::path::Path) -> PathBuf {
 }
 
 fn command_ok(program: &std::path::Path, args: &[&str]) -> bool {
-    std::process::Command::new(program).args(args).output().map(|x| x.status.success()).unwrap_or(false)
+    hidden_command(program).args(args).output().map(|x| x.status.success()).unwrap_or(false)
 }
 
 fn chatterbox_runtime_state(root: &std::path::Path, models: &std::path::Path) -> ChatterboxRuntimeStatus {
@@ -233,7 +233,7 @@ fn chatterbox_runtime_state(root: &std::path::Path, models: &std::path::Path) ->
     ChatterboxRuntimeStatus { installed, model_ready, detail }
 }
 
-fn hidden_command(program: &str) -> std::process::Command {
+fn hidden_command(program: impl AsRef<std::ffi::OsStr>) -> std::process::Command {
     let mut command = std::process::Command::new(program);
     #[cfg(windows)] { use std::os::windows::process::CommandExt; command.creation_flags(0x08000000); }
     command

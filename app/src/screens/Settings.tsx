@@ -13,6 +13,7 @@ export default function Settings() {
         <h1>Settings</h1>
         <p className="lede">Your keys are saved in the Windows Credential Manager. Greenroom can use them but never shows them again, and never writes them to a file.</p>
       </div>
+      <AppearanceSettings />
       <KeyCard mark="E" tone="e1" title="ElevenLabs" hint="From elevenlabs.io, Developers, API keys. Used for speech, sound effects, voice design and cloning." fields={[["elevenlabs", "API key"]]} has={keys.elevenlabs} changed={refreshKeys} />
       <KeyCard mark="V" tone="e2" title="VoiceKiller" hint="From voicekiller.com, API page. It needs both the API key and your user id." fields={[["voicekiller", "API key"], ["voicekiller-userid", "User id"]]} has={keys.voicekiller} changed={refreshKeys} />
       <KeyCard mark="K" tone="e3" title="Kie" hint="From kie.ai, API Key page. Used for Kie voices, sound effects, the AI Director and Suno music." fields={[["kie", "API key"]]} has={keys.kie} changed={refreshKeys} />
@@ -76,6 +77,15 @@ export default function Settings() {
       </div>
     </section>
   );
+}
+
+function AppearanceSettings() {
+  const [theme, setTheme] = useState(() => localStorage.getItem("greenroom-appearance") ?? "system");
+  const apply = (next: string) => {
+    setTheme(next); localStorage.setItem("greenroom-appearance", next);
+    document.documentElement.dataset.theme = next === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : next;
+  };
+  return <div className="card appearance-card"><div><h2>Appearance</h2><p className="muted small">Choose a bright studio surface, a dark stage, or follow your computer.</p></div><div className="appearance-options" role="group" aria-label="Appearance"><button className={theme === "light" ? "selected" : ""} onClick={() => apply("light")}>Light</button><button className={theme === "dark" ? "selected" : ""} onClick={() => apply("dark")}>Dark</button><button className={theme === "system" ? "selected" : ""} onClick={() => apply("system")}>System</button></div></div>;
 }
 
 function HuggingFaceConnection({ saved }: { saved: boolean }) {
