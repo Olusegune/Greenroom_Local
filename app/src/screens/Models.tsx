@@ -61,7 +61,7 @@ export default function Models() {
     finally { setChatterboxBusy(false); }
   };
   const installWazobia = async () => {
-    const ok = await confirmSpend({ title: "Install Wazobia model file?", lines: ["Greenroom looks only on your Desktop and in Downloads for t3_mtl23ls_v2.safetensors.", "It copies the file into Greenroom’s private model folder. The original download is left untouched.", "The model file will be ready for a compatible Wazobia runtime; it does not enable speech by itself yet."], download: true });
+    const ok = await confirmSpend({ title: "Find a Wazobia model file?", lines: ["Greenroom will look on your Desktop and in Downloads for t3_mtl23ls_v2.safetensors.", "This does not download Wazobia: the model has no pinned, Greenroom-tested release artifact yet.", "The file is only stored locally; a compatible Wazobia runtime is still required for speech."], download: true });
     if (!ok) return;
     const id = "wazobia-voice";
     setStates((s) => ({ ...s, [id]: "downloading" }));
@@ -140,7 +140,7 @@ function tierRank(t: "compact" | "standard" | "studio") { return t === "compact"
 
 function modelSetupLabel(id: string, state: InstallState, runtimeInstalled: boolean) {
   if (id === "chatterbox-multilingual-v3") return state === "installed" && runtimeInstalled ? { kind: "ready", label: "Ready in Greenroom · default local voice" } : { kind: "setup", label: "In-app setup available · model files and runtime required" };
-  if (id === "wazobia-voice") return state === "installed" ? { kind: "ready", label: "Model file stored locally · a compatible runtime is required to speak" } : { kind: "setup", label: "One-click local file setup · looks in Desktop and Downloads" };
+  if (id === "wazobia-voice") return state === "installed" ? { kind: "ready", label: "Model file stored locally · a compatible runtime is required to speak" } : { kind: "setup", label: "Import only · download and runtime are not integrated yet" };
   if (id === "director-8b") return { kind: "setup", label: "Use the AI Director now with Kie · local GGUF support is a separate engine" };
   if (id === "greenroom-runtime") return { kind: "info", label: "Shared requirements · not a separate install" };
   return { kind: "link", label: "Official source link · not yet integrated" };
