@@ -140,10 +140,14 @@ fn state(root: &Path, id: &str) -> ModelState {
             };
         }
     }
-    let partial = dir.join("download.part");
+    let partial = fs::read_dir(&dir).into_iter().flatten().flatten().any(|entry| {
+        entry.file_name().to_string_lossy().ends_with(".staging")
+            && fs::read_dir(entry.path()).into_iter().flatten().flatten()
+                .any(|file| file.file_name().to_string_lossy().ends_with(".part"))
+    });
     ModelState {
         id: id.into(),
-        state: if partial.exists() {
+        state: if partial {
             "queued"
         } else {
             "available"
@@ -162,6 +166,17 @@ pub fn install(app: &tauri::AppHandle, manifest: &Manifest) -> Result<ModelState
     }
     let root = models_root(app)?;
     let model_dir = root.join(manifest.id);
+    // Recover a completed installation whose active-pointer write was interrupted,
+    // and make retries idempotent without downloading gigabytes again.
+    let target = model_dir.join(manifest.version);
+    if target.join("installed.json").is_file() && manifest.artifacts.iter().all(|artifact| {
+        let path = target.join(artifact.filename);
+        fs::metadata(&path).map(|m| m.len()).ok() == Some(artifact.bytes)
+            && verify_sha256(&path, artifact.sha256).is_ok()
+    }) {
+        crate::store::atomic_write(&model_dir.join("active"), manifest.version.as_bytes())?;
+        return Ok(state(&root, manifest.id));
+    }
     let stage = model_dir.join(format!("{}.staging", manifest.version));
     fs::create_dir_all(&stage).map_err(|_| "Could not create the model staging folder.")?;
     for artifact in manifest.artifacts {
@@ -268,20 +283,45 @@ fn download_artifact(
         fs::remove_file(&part).map_err(|_| "Could not restart the damaged model download.")?;
         have = 0;
     }
-    let mut request = crate::net::agent().get(artifact.url);
-    if have > 0 {
-        request = request.set("Range", &format!("bytes={have}-"));
+    download_to_file(artifact, stage, have, |offset| {
+    let mut request = crate::net::agent().get(artifact.url).set("Accept-Encoding", "identity");
+    if offset > 0 {
+        request = request.set("Range", &format!("bytes={offset}-"));
     }
-    let response = request
-        .call()
-        .map_err(|_| "The model download could not be started.".to_string())?;
-    if have > 0 && response.status() != 206 {
-        fs::remove_file(&part).map_err(|_| "Could not restart the model download.")?;
-        return download_artifact(app, id, artifact, stage);
+    request.call().map_err(|error| match error {
+        ureq::Error::Status(status, _) => format!("The model server returned HTTP {status} for {}. Retry the download; existing partial files are kept.", artifact.filename),
+        ureq::Error::Transport(_) => format!("Could not connect to the model server for {}. Check your connection and retry; existing partial files are kept.", artifact.filename),
+    })
+    }, |have| {
+        let _ = app.emit("model-download-progress", DownloadProgress {
+            id: id.into(), downloaded: have, total: artifact.bytes,
+            percent: ((have.saturating_mul(100) / artifact.bytes).min(100)) as u8,
+        });
+    })
+}
+
+/// Transport is injected so tests exercise real streaming and filesystem behavior.
+fn download_to_file(
+    artifact: &Artifact, stage: &Path, mut have: u64,
+    request: impl Fn(u64) -> Result<ureq::Response, String>,
+    progress: impl Fn(u64),
+) -> Result<(), String> {
+    let part = stage.join(format!("{}.part", artifact.filename));
+    let response = request(have)?;
+    if response.status() == 200 {
+        // The server ignored Range. Reuse this complete response, truncating the
+        // old prefix instead of issuing a second request or appending duplicate data.
+        have = 0;
+    } else if response.status() == 206 {
+        validate_range(response.header("Content-Range"), have, artifact.bytes)?;
+    } else {
+        return Err(format!("Unexpected model download response: HTTP {}.", response.status()));
     }
     let mut output = OpenOptions::new()
         .create(true)
-        .append(true)
+        .write(true)
+        .append(have > 0)
+        .truncate(have == 0)
         .open(&part)
         .map_err(|_| "Could not open the model download file.")?;
     let mut reader = response.into_reader();
@@ -300,20 +340,13 @@ fn download_artifact(
         output
             .write_all(&buffer[..count])
             .map_err(|_| "Could not save the model download.")?;
-        let percent = ((have.saturating_mul(100) / artifact.bytes).min(100)) as u8;
-        let _ = app.emit(
-            "model-download-progress",
-            DownloadProgress {
-                id: id.into(),
-                downloaded: have,
-                total: artifact.bytes,
-                percent,
-            },
-        );
+        progress(have);
     }
     output
         .sync_all()
         .map_err(|_| "Could not finish saving the model download.")?;
+    // Close the handle before rename/removal (required on Windows).
+    drop(output);
     if have != artifact.bytes {
         return Err("The model download ended before it was complete.".into());
     }
@@ -323,6 +356,14 @@ fn download_artifact(
     }
     fs::rename(&part, stage.join(artifact.filename))
         .map_err(|_| "Could not finish the verified model artifact.".to_string())
+}
+
+fn validate_range(header: Option<&str>, offset: u64, total: u64) -> Result<(), String> {
+    let expected = format!("bytes {offset}-{}/{total}", total.saturating_sub(1));
+    if header != Some(expected.as_str()) {
+        return Err("The model server returned an invalid resume range. The partial download was kept; retry later.".into());
+    }
+    Ok(())
 }
 
 fn verify_sha256(path: &Path, wanted: &str) -> Result<(), String> {
@@ -355,6 +396,7 @@ fn valid_id(s: &str) -> bool {
 }
 fn valid_version(s: &str) -> bool {
     !s.is_empty()
+        && s != "." && s != ".."
         && s.len() <= 48
         && s.bytes()
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_'))
@@ -370,6 +412,78 @@ fn valid_filename(s: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn temp(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("greenroom-download-{name}-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+    fn fixture() -> Artifact {
+        Artifact { url: "https://example.com/model", bytes: 6,
+            sha256: "bef57ec7f53a6d40beb640a780a639c83bc29ac8a9816f1fc6c5c6dcd93c4721", filename: "model.bin" }
+    }
+    fn response(status: u16, body: &[u8]) -> ureq::Response {
+        ureq::Response::new(status, "Test", &String::from_utf8_lossy(body)).unwrap()
+    }
+    #[test]
+    fn fresh_download_verifies_and_renames() {
+        let dir = temp("fresh");
+        download_to_file(&fixture(), &dir, 0, |_| Ok(response(200, b"abcdef")), |_| {}).unwrap();
+        assert_eq!(fs::read(dir.join("model.bin")).unwrap(), b"abcdef");
+        assert!(!dir.join("model.bin.part").exists());
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn resumes_only_the_requested_range() {
+        let dir = temp("resume"); fs::write(dir.join("model.bin.part"), b"abc").unwrap();
+        assert!(validate_range(Some("bytes 3-5/6"), 3, 6).is_ok());
+        download_to_file(&fixture(), &dir, 3, |offset| {
+            assert_eq!(offset, 3);
+            Ok(response(200, b"abcdef"))
+        }, |_| {}).unwrap();
+        assert_eq!(fs::read(dir.join("model.bin")).unwrap(), b"abcdef");
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn ignored_range_restarts_without_appending_or_requesting_again() {
+        let dir = temp("ignored"); fs::write(dir.join("model.bin.part"), b"abc").unwrap();
+        download_to_file(&fixture(), &dir, 3, |_| Ok(response(200, b"abcdef")), |_| {}).unwrap();
+        assert_eq!(fs::read(dir.join("model.bin")).unwrap(), b"abcdef");
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn invalid_range_preserves_partial_download() {
+        let dir = temp("range"); fs::write(dir.join("model.bin.part"), b"abc").unwrap();
+        for header in [None, Some("bytes 0-2/6"), Some("bytes 3-5/9")] { assert!(validate_range(header, 3, 6).is_err()); }
+        assert_eq!(fs::read(dir.join("model.bin.part")).unwrap(), b"abc");
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn corruption_is_rejected_and_retry_can_succeed() {
+        let dir = temp("corrupt");
+        assert!(download_to_file(&fixture(), &dir, 0, |_| Ok(response(200, b"abcdeg")), |_| {}).is_err());
+        assert!(!dir.join("model.bin").exists());
+        assert!(!dir.join("model.bin.part").exists());
+        download_to_file(&fixture(), &dir, 0, |_| Ok(response(200, b"abcdef")), |_| {}).unwrap();
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn incomplete_download_remains_resumable() {
+        let dir = temp("short");
+        assert!(download_to_file(&fixture(), &dir, 0, |_| Ok(response(200, b"abc")), |_| {}).is_err());
+        assert_eq!(fs::read(dir.join("model.bin.part")).unwrap(), b"abc");
+        assert!(!dir.join("model.bin").exists());
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn state_finds_real_staging_partials() {
+        let dir = temp("state");
+        fs::create_dir_all(dir.join("model/v1.staging")).unwrap();
+        fs::write(dir.join("model/v1.staging/model.bin.part"), b"abc").unwrap();
+        assert_eq!(state(&dir, "model").state, "queued");
+        assert!(!valid_version("..")); assert!(!valid_version("."));
+        fs::remove_dir_all(dir).unwrap();
+    }
     #[test]
     fn identifiers_cannot_escape_storage() {
         for bad in ["../x", "A", "a/b", "", ".hidden"] {

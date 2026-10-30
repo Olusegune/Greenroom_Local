@@ -6,6 +6,7 @@ mod kie;
 mod history;
 mod local;
 mod model_manager;
+mod managed_python;
 mod mux;
 mod net;
 mod store;
@@ -194,7 +195,7 @@ async fn run_clip(app: tauri::AppHandle, req: ClipReq) -> Result<ClipOut, String
 }
 
 fn chatterbox_paths(root: &std::path::Path, models: &std::path::Path) -> Result<(PathBuf, PathBuf), String> {
-    let python = root.join("runtime").join("chatterbox").join(if cfg!(windows) { "Scripts/python.exe" } else { "bin/python" });
+    let python = chatterbox_python(root);
     if !python.is_file() { return Err("Chatterbox runtime is not installed on this computer yet.".into()); }
     Ok((python, chatterbox_model_dir(root, models)?))
 }
@@ -217,6 +218,8 @@ struct ChatterboxRuntimeStatus {
 }
 
 fn chatterbox_python(root: &std::path::Path) -> PathBuf {
+    let managed = root.join("runtime/chatterbox-managed");
+    if managed.join("complete").is_file() { return managed.join("python.exe"); }
     root.join("runtime").join("chatterbox").join(if cfg!(windows) { "Scripts/python.exe" } else { "bin/python" })
 }
 
@@ -229,7 +232,7 @@ fn chatterbox_runtime_state(root: &std::path::Path, models: &std::path::Path) ->
     let installed = python.is_file() && command_ok(&python, &["-c", "import chatterbox, torch, torchaudio"]);
     let model_ready = chatterbox_model_dir(root, models).is_ok();
     let detail = match (installed, model_ready) {
-        (true, true) => "Chatterbox is ready for its default local voice.".into(),
+        (true, true) => "Runtime and model files installed. Use Try voice to verify speech generation.".into(),
         (true, false) => "Runtime ready. Download Chatterbox model files to enable speech.".into(),
         (false, true) => "Model files are ready. Install the local runtime to enable speech.".into(),
         (false, false) => "Install the local runtime, then download the model files.".into(),
@@ -254,6 +257,18 @@ fn setup_chatterbox_runtime(root: &std::path::Path, models: &std::path::Path) ->
     static SETUP: Mutex<()> = Mutex::new(());
     let _guard = SETUP.lock().map_err(|_| "Chatterbox setup is unavailable. Restart Greenroom and try again.")?;
     if chatterbox_runtime_state(root, models).installed { return Ok(chatterbox_runtime_state(root, models)); }
+    if cfg!(all(target_os = "windows", target_arch = "x86_64")) {
+        let managed = root.join("runtime/chatterbox-managed");
+        let python = managed_python::bootstrap(&managed)?;
+        let program = python.to_string_lossy();
+        run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--only-binary=:all:", "--index-url", "https://download.pytorch.org/whl/cpu", "torch==2.6.0", "torchaudio==2.6.0"], "the CPU speech runtime installer")?;
+        run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--only-binary=:all:", "chatterbox-tts==0.1.7"], "the Chatterbox runtime installer")?;
+        if !command_ok(&python, &["-c", "from chatterbox.mtl_tts import ChatterboxMultilingualTTS; import torch, torchaudio"]) {
+            return Err("The speech runtime could not load. Retry setup; the previous runtime has been preserved.".into());
+        }
+        crate::store::atomic_write(&managed.join("complete"), b"python-3.11.9;chatterbox-0.1.7;torch-2.6.0-cpu")?;
+        return Ok(chatterbox_runtime_state(root, models));
+    }
     let runtime = root.join("runtime").join("chatterbox");
     std::fs::create_dir_all(runtime.parent().ok_or("Could not prepare the runtime folder.")?).map_err(|_| "Could not prepare Greenroom's runtime folder.")?;
     // The Python launcher selects the tested 3.11 interpreter. A normal python.exe is the fallback for macOS/Linux.
@@ -274,8 +289,10 @@ fn setup_chatterbox_runtime(root: &std::path::Path, models: &std::path::Path) ->
 }
 
 #[tauri::command]
-fn chatterbox_runtime_status(app: tauri::AppHandle) -> Result<ChatterboxRuntimeStatus, String> {
-    Ok(chatterbox_runtime_state(&root(&app)?, &model_manager::models_root(&app)?))
+async fn chatterbox_runtime_status(app: tauri::AppHandle) -> Result<ChatterboxRuntimeStatus, String> {
+    let docs = root(&app)?;
+    let models = model_manager::models_root(&app)?;
+    blocking(move || Ok(chatterbox_runtime_state(&docs, &models))).await
 }
 
 #[tauri::command]
