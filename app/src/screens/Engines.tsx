@@ -250,6 +250,11 @@ function LocalServer() {
   return (
     <EngineCard mark="L" tone="e6" title={ENGINES.local.label} status="Optional" blurb="Your own speech server on this computer">
       <p className="muted small">{ENGINES.local.blurb} It must speak the OpenAI-style speech API (<code>/v1/audio/speech</code>) and run on this computer. For privacy, only 127.0.0.1 and localhost addresses are accepted.</p>
+      <div className="row wrap" aria-label="Local server presets">
+        <span className="muted small">Presets:</span>
+        <button className="sm" onClick={() => setCfg({ url: "http://127.0.0.1:8880", model: "kokoro" })}>Kokoro server</button>
+        <button className="sm" onClick={() => setCfg({ url: "http://127.0.0.1:8000", model: "qwen3-tts" })}>Qwen3-TTS server</button>
+      </div>
       <div className="row wrap">
         <label className="field" style={{ flex: 2, minWidth: "min(220px, 100%)" }}>
           Address
