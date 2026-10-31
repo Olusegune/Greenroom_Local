@@ -519,6 +519,10 @@ function Design() {
   const [sample, setSample] = useState("");
   const [accent, setAccent] = useState("");
   const [previews, setPreviews] = useState<{ p: DesignPreview; url: string; name: string }[]>([]);
+  const [vault, setVault] = useState<{ id: string; name: string; description: string; audioB64: string; createdAt: string }[]>(() => {
+    try { return JSON.parse(localStorage.getItem("greenroom-designed-voice-vault") ?? "[]"); } catch { return []; }
+  });
+  const persistVault = (next: typeof vault) => { setVault(next); localStorage.setItem("greenroom-designed-voice-vault", JSON.stringify(next.slice(-24))); };
   const ok = desc.trim().length >= 20;
   const pick = (label: string) => {
     const old = DESIGN_ACCENTS.find((a) => a.label === accent);
@@ -538,7 +542,9 @@ function Design() {
       try {
         const out = await api.voiceDesign(desc, sample.trim() || undefined);
         addLedger({ kind: "design", engine: "ElevenLabs voice design", chars: desc.length, items: [{ kind: "design", count: out.length }] });
-        setPreviews(out.map((p, i) => ({ p, url: URL.createObjectURL(new Blob([fromBase64(p.audioB64) as BlobPart], { type: "audio/mpeg" })), name: `Designed voice ${i + 1}` })));
+        const made = out.map((p, i) => ({ p, url: URL.createObjectURL(new Blob([fromBase64(p.audioB64) as BlobPart], { type: "audio/mpeg" })), name: `Designed voice ${i + 1}` }));
+        setPreviews(made);
+        persistVault([...vault, ...made.map((x) => ({ id: x.p.generatedVoiceId, name: x.name, description: desc, audioB64: x.p.audioB64, createdAt: new Date().toISOString() }))]);
       } catch (e) {
         toast((e as Error).message, true);
       }
@@ -550,7 +556,7 @@ function Design() {
       const id = await api.voiceDesignSave(it.p.generatedVoiceId, it.name, desc);
       add({ id, name: it.name, provider: "elevenlabs", source: "designed", language: "", accent: accent, gender: "", notes: desc.slice(0, 160), consent: { speaker: "No real person: designed from a description", basis: "designed", reference: desc.slice(0, 120), date: new Date().toISOString().slice(0, 10) } });
     } catch (e) {
-      toast((e as Error).message, true);
+      toast(`ElevenLabs could not save this voice. The preview is safe in your local Design Vault. ${(e as Error).message}`, true);
     }
   };
 
@@ -602,6 +608,7 @@ function Design() {
           </button>
         </div>
       ))}
+      {vault.length > 0 && <div className="card stack"><h2>Local Design Vault</h2><p className="muted small">Every generated preview is kept on this computer, even when ElevenLabs refuses to save it. These are audition records; they do not create an ElevenLabs voice slot.</p>{vault.slice().reverse().map((v) => <div className="row wrap" key={v.id}><audio controls src={`data:audio/mpeg;base64,${v.audioB64}`} /><span style={{ flex: 1 }}><strong>{v.name}</strong><br /><span className="muted small">{v.description.slice(0, 120)}</span></span><button className="sm" onClick={() => persistVault(vault.filter((x) => x.id !== v.id))}>Remove</button></div>)}</div>}
     </>
   );
 }
