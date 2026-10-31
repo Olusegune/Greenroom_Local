@@ -25,7 +25,7 @@ export default function Perform() {
   const [thinking, setThinking] = useState(false);
   const [review, setReview] = useState<DirectorResult | null>(null);
   const stop = useRef(false);
-  if (!project) return null;
+  if (!project) return <section><h1>Perform</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then direct lines and generate takes here.</Empty></section>;
 
   const dict: Pronunciation[] = project.pronunciations ?? [];
   const charOf = (l: Line): Character | undefined => project.characters.find((c) => c.id === l.characterId);

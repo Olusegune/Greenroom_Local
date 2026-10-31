@@ -15,7 +15,7 @@ export default function Cast() {
   const { project, edit, library, go } = useApp();
   const sample = useSample();
   const [engine, setEngine] = useState<Engine | "all">("all");
-  if (!project) return null;
+  if (!project) return <section><h1>Cast</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then assign voices to its characters here.</Empty></section>;
 
   const used = new Set(project.lines.map((l) => l.characterId));
   const cast = project.characters.filter((c) => used.has(c.id));

@@ -38,6 +38,7 @@ interface Lane {
 
 export default function Timeline() {
   const { project, edit, toast, go, undo, redo, canUndo, canRedo } = useApp();
+  if (!project) return <section><h1>Timeline</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then arrange dialogue, music, and effects here.</Empty></section>;
   const { busy, run } = useBusy();
   const scroller = useRef<HTMLDivElement>(null);
   const audio = useRef<HTMLAudioElement>(null);

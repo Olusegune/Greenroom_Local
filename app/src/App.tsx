@@ -82,6 +82,11 @@ function Shell() {
           </>
         )}
         <h3>Studio tools</h3>
+        {!project && <>
+          <Item id="cast" label="Cast" icon={<CastIcon size={18} />} />
+          <Item id="perform" label="Perform" icon={<Render size={18} />} />
+          <Item id="timeline" label="Timeline" icon={<Wave size={18} />} />
+        </>}
         <Item id="voices" label="Voices" icon={<VoicesIcon size={18} />} />
         <Item id="models" label="Model Center" icon={<Layers size={18} />} />
         <Item id="engines" label="Engines" icon={<Layers size={18} />} />
