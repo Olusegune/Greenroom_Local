@@ -149,6 +149,10 @@ export const mock: Api = {
   chatterboxReady: async () => false,
   chatterboxRuntimeStatus: async () => ({ installed: false, modelReady: false, detail: "Install the local runtime, then download the model files." }),
   chatterboxRuntimeInstall: async () => (await wait(1000), { installed: true, modelReady: false, detail: "Runtime ready. Download Chatterbox model files to enable speech." }),
+  kokoroRuntimeStatus: async () => ({ installed: false, modelReady: false, detail: "Install the managed Kokoro runtime to enable local speech." }),
+  kokoroRuntimeInstall: async () => (await wait(800), { installed: true, modelReady: false, detail: "Kokoro runtime ready. Model weights load on first use." }),
+  qwenRuntimeStatus: async () => ({ installed: false, modelReady: false, detail: "Install the managed Qwen3-TTS runtime to enable local speech." }),
+  qwenRuntimeInstall: async () => (await wait(800), { installed: true, modelReady: false, detail: "Qwen3-TTS runtime ready. Model weights load on first use." }),
   directorComplete: async (_s: string, user: string) => {
     await wait(700);
     const ids = [...user.matchAll(/^(l-[\w-]+) \|/gm)].map((x) => x[1]!);

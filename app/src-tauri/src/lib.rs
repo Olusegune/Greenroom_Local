@@ -217,6 +217,41 @@ struct ChatterboxRuntimeStatus {
     detail: String,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LocalRuntimeStatus { installed: bool, model_ready: bool, detail: String }
+
+fn managed_runtime_status(root: &std::path::Path, name: &str, import_check: &str) -> LocalRuntimeStatus {
+    let dir = root.join("runtime").join(format!("{name}-managed"));
+    let python = dir.join("python.exe");
+    let installed = dir.join("complete").is_file() && python.is_file() && command_ok(&python, &["-c", import_check]);
+    LocalRuntimeStatus { installed, model_ready: false, detail: if installed { format!("{name} runtime ready. Download or select model weights to enable speech.") } else { format!("Install the managed {name} runtime to enable local speech.") } }
+}
+
+fn setup_managed_runtime(root: &std::path::Path, name: &str, package: &str, import_check: &str) -> Result<LocalRuntimeStatus, String> {
+    static SETUP: Mutex<()> = Mutex::new(());
+    let _guard = SETUP.lock().map_err(|_| "Runtime setup is unavailable. Restart Greenroom and try again.")?;
+    let dir = root.join("runtime").join(format!("{name}-managed"));
+    if managed_runtime_status(root, name, import_check).installed { return Ok(managed_runtime_status(root, name, import_check)); }
+    if !cfg!(all(target_os = "windows", target_arch = "x86_64")) { return Err("Managed runtimes currently support Windows x64. Use the Local Server preset on this platform.".into()); }
+    let python = managed_python::bootstrap(&dir)?;
+    let program = python.to_string_lossy();
+    run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--only-binary=:all:", "--index-url", "https://download.pytorch.org/whl/cpu", "torch==2.6.0", "torchaudio==2.6.0"], "the CPU speech runtime installer")?;
+    run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", package], "the local speech package installer")?;
+    if !command_ok(&python, &["-c", import_check]) { return Err(format!("{name} installed but could not be verified. Retry setup.")); }
+    crate::store::atomic_write(&dir.join("complete"), package.as_bytes())?;
+    Ok(managed_runtime_status(root, name, import_check))
+}
+
+#[tauri::command]
+async fn kokoro_runtime_status(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || Ok(managed_runtime_status(&docs, "kokoro", "from kokoro import KPipeline; import torch"))).await }
+#[tauri::command]
+async fn kokoro_runtime_install(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || setup_managed_runtime(&docs, "kokoro", "kokoro==0.9.4", "from kokoro import KPipeline; import torch")).await }
+#[tauri::command]
+async fn qwen_runtime_status(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || Ok(managed_runtime_status(&docs, "qwen", "from qwen_tts import Qwen3TTS; import torch"))).await }
+#[tauri::command]
+async fn qwen_runtime_install(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || setup_managed_runtime(&docs, "qwen", "qwen-tts==0.1.1", "from qwen_tts import Qwen3TTS; import torch")).await }
+
 fn chatterbox_python(root: &std::path::Path) -> PathBuf {
     let managed = root.join("runtime/chatterbox-managed");
     if managed.join("complete").is_file() { return managed.join("python.exe"); }
@@ -815,7 +850,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install
+            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, qwen_runtime_status, qwen_runtime_install
         ])
         .run(tauri::generate_context!())
         .expect("error while running Greenroom");

@@ -58,6 +58,7 @@ export interface ChatterboxRuntimeStatus {
   modelReady: boolean;
   detail: string;
 }
+export interface LocalRuntimeStatus { installed: boolean; modelReady: boolean; detail: string; }
 export interface VideoInfo {
   container: string;
   /** True when the frame rate and length were read from the file. */
@@ -195,6 +196,10 @@ const real = {
   chatterboxReady: () => call<boolean>("chatterbox_ready"),
   chatterboxRuntimeStatus: () => call<ChatterboxRuntimeStatus>("chatterbox_runtime_status"),
   chatterboxRuntimeInstall: () => call<ChatterboxRuntimeStatus>("chatterbox_runtime_install"),
+  kokoroRuntimeStatus: () => call<LocalRuntimeStatus>("kokoro_runtime_status"),
+  kokoroRuntimeInstall: () => call<LocalRuntimeStatus>("kokoro_runtime_install"),
+  qwenRuntimeStatus: () => call<LocalRuntimeStatus>("qwen_runtime_status"),
+  qwenRuntimeInstall: () => call<LocalRuntimeStatus>("qwen_runtime_install"),
   directorComplete: (system: string, user: string) => call<string>("director_complete", { system, user }),
   musicGenerate: (project: string, req: MusicReq) => call<MadeMusic[]>("music_generate", { project, req }),
   audioImport: (project: string, path: string) => call<Imported>("audio_import", { project, path }),

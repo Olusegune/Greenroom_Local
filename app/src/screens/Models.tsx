@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { api, inApp, type ChatterboxRuntimeStatus } from "../api";
+import { api, inApp, type ChatterboxRuntimeStatus, type LocalRuntimeStatus } from "../api";
 import { useApp } from "../ctx";
 import { MODEL_CATALOG, recommendedModels, type HardwareProfile, type InstallState, type ModelKind } from "../models";
 
@@ -17,12 +17,17 @@ export default function Models() {
   const [piperBusy, setPiperBusy] = useState(false);
   const [chatterboxRuntime, setChatterboxRuntime] = useState<ChatterboxRuntimeStatus | null>(null);
   const [chatterboxBusy, setChatterboxBusy] = useState(false);
+  const [kokoroRuntime, setKokoroRuntime] = useState<LocalRuntimeStatus | null>(null);
+  const [qwenRuntime, setQwenRuntime] = useState<LocalRuntimeStatus | null>(null);
+  const [runtimeBusy, setRuntimeBusy] = useState<string | null>(null);
   const openSource = (url: string) => { void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl(url)).catch(() => window.open(url, "_blank", "noopener")); };
 
   useEffect(() => {
     void api.modelHardware().then(setProfile).catch(() => undefined);
     void api.piperStatus().then((s) => setPiperInstalled(s.installed)).catch(() => undefined);
     void api.chatterboxRuntimeStatus().then(setChatterboxRuntime).catch(() => undefined);
+    void api.kokoroRuntimeStatus().then(setKokoroRuntime).catch(() => undefined);
+    void api.qwenRuntimeStatus().then(setQwenRuntime).catch(() => undefined);
     void api.modelStates(MODEL_CATALOG.map((m) => m.id)).then((rows) => setStates(Object.fromEntries(rows.map((r) => [r.id, r.state])))).catch(() => undefined);
     if (!inApp()) return;
     let stop: (() => void) | undefined;
@@ -37,6 +42,15 @@ export default function Models() {
     try { await api.piperInstall(); const status = await api.piperStatus(); setPiperInstalled(status.installed); toast(status.installed ? "Piper installed. Choose a voice to download." : "Piper could not be verified.", !status.installed); }
     catch (e) { toast((e as Error).message, true); }
     finally { setPiperBusy(false); }
+  };
+  const installManaged = async (id: "kokoro" | "qwen") => {
+    const label = id === "kokoro" ? "Kokoro" : "Qwen3-TTS";
+    const ok = await confirmSpend({ title: `Install ${label} local runtime?`, lines: [`Downloads the managed ${label} Python runtime and CPU dependencies.`, "The runtime is installed privately in Documents/Greenroom Local and can be removed there.", "Model weights are downloaded separately by the engine when first used."], download: true });
+    if (!ok) return;
+    setRuntimeBusy(id);
+    try { const status = id === "kokoro" ? await api.kokoroRuntimeInstall() : await api.qwenRuntimeInstall(); id === "kokoro" ? setKokoroRuntime(status) : setQwenRuntime(status); toast(status.detail); }
+    catch (e) { toast((e as Error).message, true); }
+    finally { setRuntimeBusy(null); }
   };
   const downloadChatterbox = async () => {
     const ok = await confirmSpend({ title: "Download Chatterbox model files?", lines: ["Downloads approximately 3.2 GB from Resemble AI’s Hugging Face repository.", "The model files are checked against pinned SHA-256 hashes.", "The separate Chatterbox runtime must also be installed from this page before the voice can run."], download: true });
@@ -106,7 +120,7 @@ export default function Models() {
             {rows.map((m) => {
               const state = states[m.id] ?? "available";
               const fits = tierRank(m.tier) <= tierRank(profile.tier);
-              const setup = modelSetupLabel(m.id, state, chatterboxRuntime?.installed ?? false);
+              const setup = modelSetupLabel(m.id, state, m.id === "kokoro-82m" ? (kokoroRuntime?.installed ?? false) : m.id === "qwen3-tts-17b" ? (qwenRuntime?.installed ?? false) : (chatterboxRuntime?.installed ?? false));
               return <article className={`model-card ${m.experimental ? "experimental" : ""}`} key={m.id}>
                 <div className="model-top">
                   <span className="model-marker" aria-hidden="true" />
@@ -123,9 +137,10 @@ export default function Models() {
                 <div className="model-bottom">
                   <span className="muted small">{m.experimental ? `Experimental · ${m.licence}` : m.licence}</span>
                   {state === "downloading" ? <div className="download-progress" title="Progress for the current file"><span style={{ width: `${progress[m.id] ?? 0}%` }} /><small>{progress[m.id] ?? 0}% file</small></div> :
-                    m.id === "chatterbox-multilingual-v3" ? <div className="row wrap">{!chatterboxRuntime?.installed && <button className="primary" disabled={chatterboxBusy} onClick={() => void installChatterboxRuntime()}>{chatterboxBusy ? "Installing runtime…" : "Install local runtime"}</button>}{state !== "installed" && <button title="Import files from Documents/Greenroom Local/Model Downloads/Chatterbox" onClick={() => void importChatterbox()}>Use existing files</button>}<button disabled={state === "installed"} onClick={() => void downloadChatterbox()}>{state === "installed" ? "Model files ready" : state === "error" ? "Retry download" : "Download files"}</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Model page ↗</button></div> : m.id === "wazobia-voice" ? <div className="row wrap">{state === "installed" ? <button disabled>Model file added</button> : <button className="primary" onClick={() => void installWazobia()}>{state === "error" ? "Try automatic install" : "Install automatically"}</button>}<button onClick={() => void chooseWazobia()}>Choose model file</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Model page ↗</button></div> : m.id === "director-8b" ? <div className="row wrap"><button className="primary" onClick={() => go("settings")}>Set up AI Director</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Browse local models ↗</button></div> : <button className="sm" onClick={() => openSource(m.sourceUrl)}>{m.sourceLabel} ↗</button>}
+                    m.id === "chatterbox-multilingual-v3" ? <div className="row wrap">{!chatterboxRuntime?.installed && <button className="primary" disabled={chatterboxBusy} onClick={() => void installChatterboxRuntime()}>{chatterboxBusy ? "Installing runtime…" : "Install local runtime"}</button>}{state !== "installed" && <button title="Import files from Documents/Greenroom Local/Model Downloads/Chatterbox" onClick={() => void importChatterbox()}>Use existing files</button>}<button disabled={state === "installed"} onClick={() => void downloadChatterbox()}>{state === "installed" ? "Model files ready" : state === "error" ? "Retry download" : "Download files"}</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Model page ↗</button></div> : m.id === "kokoro-82m" || m.id === "qwen3-tts-17b" ? <div className="row wrap"><button className="primary" disabled={runtimeBusy !== null} onClick={() => void installManaged(m.id === "kokoro-82m" ? "kokoro" : "qwen")}>{runtimeBusy === (m.id === "kokoro-82m" ? "kokoro" : "qwen") ? "Installing runtime…" : ((m.id === "kokoro-82m" ? kokoroRuntime : qwenRuntime)?.installed ? "Runtime ready" : "Install local runtime")}</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Model page ↗</button></div> : m.id === "wazobia-voice" ? <div className="row wrap">{state === "installed" ? <button disabled>Model file added</button> : <button className="primary" onClick={() => void installWazobia()}>{state === "error" ? "Try automatic install" : "Install automatically"}</button>}<button onClick={() => void chooseWazobia()}>Choose model file</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Model page ↗</button></div> : m.id === "director-8b" ? <div className="row wrap"><button className="primary" onClick={() => go("settings")}>Set up AI Director</button><button className="sm" onClick={() => openSource(m.sourceUrl)}>Browse local models ↗</button></div> : <button className="sm" onClick={() => openSource(m.sourceUrl)}>{m.sourceLabel} ↗</button>}
                 </div>
                 {m.id === "chatterbox-multilingual-v3" && chatterboxRuntime && <p className={chatterboxRuntime.installed ? "runtime-status ready" : "runtime-status"}>{chatterboxRuntime.installed ? "● " : "○ "}{chatterboxRuntime.detail}</p>}
+                {(m.id === "kokoro-82m" || m.id === "qwen3-tts-17b") && <p className={((m.id === "kokoro-82m" ? kokoroRuntime : qwenRuntime)?.installed) ? "runtime-status ready" : "runtime-status"}>{((m.id === "kokoro-82m" ? kokoroRuntime : qwenRuntime)?.detail) ?? "Managed runtime status unavailable."}</p>}
               </article>;
             })}
           </div>
@@ -142,6 +157,7 @@ function modelSetupLabel(id: string, state: InstallState, runtimeInstalled: bool
   if (id === "chatterbox-multilingual-v3") return state === "installed" && runtimeInstalled ? { kind: "ready", label: "Ready in Greenroom · default local voice" } : { kind: "setup", label: "In-app setup available · model files and runtime required" };
   if (id === "wazobia-voice") return state === "installed" ? { kind: "ready", label: "Model file stored locally · a compatible runtime is required to speak" } : { kind: "setup", label: "Import only · download and runtime are not integrated yet" };
   if (id === "director-8b") return { kind: "setup", label: "Use the AI Director now with Kie · local GGUF support is a separate engine" };
+  if (id === "kokoro-82m" || id === "qwen3-tts-17b") return runtimeInstalled ? { kind: "ready", label: "Managed local runtime ready · model weights load on first use" } : { kind: "setup", label: "Managed local runtime available · install once to use offline" };
   if (id === "greenroom-runtime") return { kind: "info", label: "Shared requirements · not a separate install" };
   return { kind: "link", label: "Official source link · not yet integrated" };
 }
