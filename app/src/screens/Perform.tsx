@@ -5,6 +5,8 @@ import { applySuggestion, cleanWritten, describe, parsePlans, parseSceneDirectio
 import { DirectorPanel } from "./DirectorPanel";
 import { effectiveLine } from "../performance";
 import { steers } from "../inworld";
+import { actsOnWords } from "../engineCaps";
+import { VARIATIONS, type VariationId } from "../acting";
 import { applyPreset, chosenTake, cleanNote, ALL_SOUND_TAGS, EMOTIONS, hasStyle, MORE_SOUNDS, NOTE_MAX, PRESETS, pushHistory, SOUNDS, STYLES, toggleIn, toggleStyle, vkUnsupported } from "../direct";
 import { VisualLine } from "../VisualLine";
 import { api } from "../api";
@@ -50,25 +52,27 @@ export default function Perform() {
     return { chars, voices: [...new Set(lines.map((l) => voiceOf(l)?.name).filter(Boolean))].join(", ") };
   };
 
-  const make = async (line: Line, count = 1): Promise<boolean> => {
+  const make = async (line: Line, count = 1, variations?: VariationId[]): Promise<boolean> => {
     const voice = voiceOf(line);
     if (!voice) {
       toast("Choose a voice for this character on the Cast screen first.", true);
       return false;
     }
-    const { chars } = spend([line]);
+    const runs: (VariationId | undefined)[] = variations ?? Array.from({ length: count }, () => undefined);
+    const chars = runs.reduce((n, v) => n + plan(line, voice, model, dict, { inworldModel: engines.inworldModel, variation: v }).text.length, 0);
     const e = ENGINES[voice.provider];
     const pl = plan(line, voice, model, dict, { inworldModel: engines.inworldModel });
     const extra: string[] = voice.provider === "inworld" ? [`Character: ${charOf(line)?.name ?? "?"}`, `Model: ${pl.modelId}`, ...(pl.notSent ?? []).map((n) => `Not sent: ${n}`)] : !e.tags && vkUnsupported(effectiveLine(line)).length ? [`${e.label} cannot make: ${vkUnsupported(effectiveLine(line)).join(", ")}. Those will be left out.`] : [];
     if (!e.local) {
-      const price = priceLines([{ kind: "speech", engine: voice.provider, chars: chars * count }]);
-      const ok = await confirmSpend({ title: count > 1 ? `Make ${count} takes?` : "Make a take?", lines: [`${chars * count} characters (${count} take${count > 1 ? "s" : ""})`, `Voice: ${voice.name}`, ...extra, ...price.lines], warn: price.warn, skipKey: count > 1 ? undefined : "take" });
+      const price = priceLines([{ kind: "speech", engine: voice.provider, chars }]);
+      const ok = await confirmSpend({ title: runs.length > 1 ? (variations ? `Make ${runs.length} interpretations?` : `Make ${runs.length} takes?`) : "Make a take?", lines: [`${chars} characters (${runs.length} take${runs.length > 1 ? "s" : ""}${variations ? `: ${variations.join(", ")}` : ""})`, `Voice: ${voice.name}`, ...extra, ...price.lines], warn: price.warn, skipKey: runs.length > 1 ? undefined : "take" });
       if (!ok) return false;
     }
     try {
-      for (let i = 0; i < count; i++) {
-        const t = await makeTake(project.id, line, voice, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
-        patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }), "~take");
+      for (let i = 0; i < runs.length; i++) {
+        const t = await makeTake(project.id, line, voice, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i] });
+        // A set of interpretations never replaces a take you already chose.
+        patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: variations ? l.chosen ?? t.id : t.id }), "~take");
         const sent = t.provenance?.chars ?? chars;
         addLedger({ kind: "speech", engine: e.label, chars: sent, items: [{ kind: "speech", engine: voice.provider, chars: sent }] });
       }
@@ -484,7 +488,7 @@ const saveHistory = (h: string[]) => {
   }
 };
 
-function LineCard({ line, index, character, voice, model, dict, patch, make }: { line: Line; index: number; character?: Character; voice?: VoiceEntry; model: Model; dict: Pronunciation[]; patch: (fn: (l: Line) => Line) => void; make: (l: Line, n?: number) => Promise<boolean> }) {
+function LineCard({ line, index, character, voice, model, dict, patch, make }: { line: Line; index: number; character?: Character; voice?: VoiceEntry; model: Model; dict: Pronunciation[]; patch: (fn: (l: Line) => Line) => void; make: (l: Line, n?: number, v?: VariationId[]) => Promise<boolean> }) {
   const { project, confirmSpend, toast, engines, priceLines, addLedger, library, edit, go: goTo, keys } = useApp();
   const localDirector = useLocalDirectorReady();
   const [writing, setWriting] = useState(false);
@@ -511,6 +515,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
   const fineNames = [d.emotion ? label(EMOTIONS, d.emotion) : "", ...d.sounds.filter((t) => !QUICK_SOUNDS.includes(t)).map((t) => label(ALL_SOUND_TAGS, t)), Math.abs(d.speed - 1) > 0.001 ? `${d.speed.toFixed(2)}×` : "", (d.gain ?? 0) !== 0 ? `${(d.gain ?? 0) > 0 ? "+" : ""}${(d.gain ?? 0).toFixed(1)} dB` : ""].filter(Boolean).slice(0, 3);
 
   // Written direction reaches every engine that can act on words; the line below says honestly which this voice is.
+  const capable = library.filter((v) => actsOnWords(v.provider, engines.inworldModel));
   const reach = !voice || !note.trim() ? null : ENGINES[voice.provider].tags ? "ok" : voice.provider === "voicekiller" ? "ok" : voice.provider === "inworld" ? ((planned?.steering?.length ?? 0) > 0 ? "ok" : "inworld-flash") : "none";
 
   const writeIt = async () => {
@@ -651,7 +656,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
         {reach === "ok" && <p className="dir-reach ok small">{ENGINES[voice!.provider].label} will act on your direction.</p>}
         {reach === "none" && (
           <p className="dir-reach warn small">
-            {ENGINES[voice!.provider].label} cannot act on written direction. Use Re-voice a recording to perform it yourself, or choose an ElevenLabs or VoiceKiller voice.
+            {ENGINES[voice!.provider].label} cannot act on written direction. {capable.length > 0 ? `Voices in your library that can: ${capable.slice(0, 4).map((v) => v.name).join(", ")}.` : "None of your library voices can: add an ElevenLabs, Inworld or VoiceKiller voice in Voices."} Or use Re-voice a recording to perform it yourself.
           </p>
         )}
         {reach === "inworld-flash" && <p className="dir-reach warn small">{engines.inworldModel === "inworld-tts-2-flash" ? "Inworld TTS 2 Flash does not follow written direction. Switch to Inworld TTS 2 in Voices, or choose another voice." : "Inworld could not use that direction."}</p>}
@@ -758,6 +763,17 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
               <button
                 role="menuitem"
                 disabled={busy || !voice}
+                title="The same line four ways: natural, restrained, expressive and intense. Your chosen take is kept."
+                onClick={() => {
+                  setMenuOpen(false);
+                  void make(line, 1, VARIATIONS.map((x) => x.id));
+                }}
+              >
+                Make 4 interpretations
+              </button>
+              <button
+                role="menuitem"
+                disabled={busy || !voice}
                 onClick={() => {
                   setMenuOpen(false);
                   setRevoice(true);
@@ -845,6 +861,7 @@ function TakeFacts({ t }: { t: Take }) {
         Made {t.at.slice(0, 19).replace("T", " ")} with {p ? ENGINES[p.engine].label : "an engine"} ({modelLabel(t.model)}) using the voice {p?.voiceName ?? t.voiceId}.
       </span>
       {(p?.note || p?.emotion || (p?.sounds?.length ?? 0) > 0) && <span>Direction: {[p?.emotion, ...(p?.sounds ?? []), p?.note ? `“${p.note}”` : ""].filter(Boolean).join(" · ")}</span>}
+      {p?.variation && <span>Made as the {p.variation} interpretation.</span>}
       {p?.quality && <span>Audio quality asked for: {p.quality}.</span>}
       <span>
         Sent: <code>{t.sent}</code>

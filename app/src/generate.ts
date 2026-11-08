@@ -4,6 +4,7 @@ import { api, type Provider } from "./api";
 import { applyPronunciations, composeText, stripTags, vkInstructions } from "./direct";
 import { ENGINES, providerFor, type ElevenModel, type InworldModel } from "./engines";
 import { DEFAULT_INWORLD_MODEL, inworldPlan } from "./inworld";
+import { applyVariation, type VariationId } from "./acting";
 import { effectiveLine } from "./performance";
 import { fromBase64 } from "./audio";
 import { remember } from "./media";
@@ -17,6 +18,8 @@ export type Model = ElevenModel;
 /** What is sent for this line and voice. Engines without tags get the plain words, plus delivery in words where they take it. */
 export interface PlanOptions {
   inworldModel?: InworldModel;
+  /** Make the line as one of four interpretations. The saved line is not changed. */
+  variation?: VariationId;
 }
 
 export interface Plan {
@@ -34,7 +37,7 @@ export interface Plan {
 
 export function plan(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
   // The performance plan (if any) is compiled into the direction here; the saved line is never changed.
-  const line = effectiveLine(saved);
+  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved);
   const e = voice.provider;
   const provider = providerFor(e, model, voice.vkClone);
   if (e === "inworld") {
@@ -48,7 +51,7 @@ export function plan(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunc
 }
 
 export async function makeTake(projectId: string, saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
-  const line = effectiveLine(saved);
+  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved);
   const p = plan(saved, voice, model, dict, opts);
   const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: line.direction.speed, instructions: p.instructions, quality, model: p.modelId });
   const id = "t-" + uid();
@@ -71,6 +74,7 @@ export async function makeTake(projectId: string, saved: Line, voice: VoiceEntry
       speed: voice.provider === "chatterbox" || voice.provider === "wazobia" ? 1 : line.direction.speed,
       instructions: p.instructions,
       modelId: p.modelId,
+      variation: opts.variation,
       steering: p.steering?.length ? p.steering : undefined,
       nonverbal: p.nonverbal?.length ? p.nonverbal : undefined,
       notSent: p.notSent?.length ? p.notSent : undefined,

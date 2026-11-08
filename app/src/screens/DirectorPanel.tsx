@@ -1,3 +1,4 @@
+import { ACTING_PRESETS, applyPreset } from "../acting";
 import { EMOTIONS } from "../direct";
 import { ACTIVITIES, compilePerformance, DEFAULT_PERFORMANCE, isDefaultPerformance, migratePerformance, type PerformancePlan, type PerformancePoint } from "../performance";
 import type { Line } from "../types";
@@ -39,6 +40,21 @@ export function DirectorPanel({ line, patch, actsOnWords, engineLabel }: { line:
       <summary>Director{names ? ` · ${names}` : ""}</summary>
       <div className="stack">
         <p className="muted small">Plan what the character wants and what their body is doing. Greenroom turns it into plain words added after your own direction when a take is made. Your script and direction box are not changed.</p>
+        <select
+          aria-label="Start from an acting preset"
+          value=""
+          onChange={(e) => {
+            const pr = ACTING_PRESETS.find((x) => x.id === e.target.value);
+            if (pr) set((p) => applyPreset(p, pr));
+          }}
+        >
+          <option value="">Start from an acting preset…</option>
+          {ACTING_PRESETS.map((pr) => (
+            <option key={pr.id} value={pr.id}>
+              {pr.label} — {pr.blurb}
+            </option>
+          ))}
+        </select>
         <label className="field">
           Objective: what is the character trying to do?
           <input type="text" maxLength={160} value={plan.objective} placeholder="intimidate while appearing polite" onChange={(e) => set((p) => ({ ...p, objective: e.target.value }))} />

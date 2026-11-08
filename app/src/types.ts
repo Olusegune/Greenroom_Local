@@ -19,6 +19,8 @@ export interface Provenance {
   instructions?: string;
   /** Cloud model that spoke the line, such as inworld-tts-2, when the engine has more than one. */
   modelId?: string;
+  /** The interpretation this take was made as (restrained, expressive, intense), when it was one of a set. */
+  variation?: string;
   /** Inworld: the steering sentences and non-verbal tags that were sent, and what could not be. */
   steering?: string[];
   nonverbal?: string[];
