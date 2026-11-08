@@ -1,6 +1,7 @@
 import { useRef, useState, useSyncExternalStore } from "react";
 import { useApp } from "../ctx";
 import { PlanReview } from "./PlanReview";
+import { ScriptDoctor } from "./ScriptDoctor";
 import { applySuggestion, cleanWritten, describe, parsePlans, parseSceneDirections, planSystem, type PlanSuggestion, sceneBatches, sceneDirectionSystem, type SceneDirection, isDirected, parseDirector, systemPrompt, userPrompt, writeDirectionSystem, writeDirectionUser, type DirectorResult } from "../director";
 import { DirectorPanel } from "./DirectorPanel";
 import { effectiveLine } from "../performance";
@@ -42,6 +43,7 @@ export default function Perform() {
   const [sceneThinking, setSceneThinking] = useState(false);
   const [planReview, setPlanReview] = useState<PlanSuggestion[] | null>(null);
   const [planThinking, setPlanThinking] = useState(false);
+  const [doctor, setDoctor] = useState(false);
   const stop = useRef(false);
   if (!project) return <section><h1>Perform</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then direct lines and generate takes here.</Empty></section>;
 
@@ -252,6 +254,9 @@ export default function Perform() {
           <button onClick={() => void askPlans()} disabled={planThinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "Plans what each character wants, hides and does with their body, line by line" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
             <Sparkle size={16} /> {planThinking ? "Planning the performance…" : "Plan the performance"}
           </button>
+          <button onClick={() => setDoctor(true)} title="Suggests breath, pronunciation, emphasis and rhythm fixes. Nothing changes until you press Apply.">
+            Script Doctor
+          </button>
         </div>
       </div>
       {noVoice > 0 && (
@@ -314,6 +319,7 @@ export default function Perform() {
       {review && <DirectorReview result={review} onClose={() => setReview(null)} />}
       {sceneReview && <SceneReview items={sceneReview} onClose={() => setSceneReview(null)} />}
       {planReview && <PlanReview items={planReview} onClose={() => setPlanReview(null)} />}
+      {doctor && <ScriptDoctor onClose={() => setDoctor(false)} inworld={(id) => { const l = project.lines.find((x) => x.id === id); return !!l && voiceOf(l)?.provider === "inworld"; }} />}
     </section>
   );
 }
