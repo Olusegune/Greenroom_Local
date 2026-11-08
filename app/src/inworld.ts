@@ -4,7 +4,7 @@
 // Only what is documented is sent. Everything else is listed in `notSent` so the owner is told before paying, never silently dropped.
 // The wording of the emotion phrases below is Greenroom's own and has not been judged by ear yet.
 
-import { noteTags } from "./direct";
+import { fitCues, noteTags, spokenWords, tagBudget } from "./direct";
 import type { InworldModel } from "./engines";
 import type { Line } from "./types";
 
@@ -71,7 +71,10 @@ export function inworldPlan(line: Pick<Line, "text" | "direction">, model: Inwor
   const sentences = noteTags(d.note);
   if (steerable) {
     const parts = [emotion && (EMOTION_STEER[emotion] ?? `say it ${emotion.replace(/[^\p{L} -]/gu, "").slice(0, 30)}`), ...sentences].filter(Boolean) as string[];
-    if (parts.length) steering.push(parts.join(". ").slice(0, 400));
+    // A long instruction before a few words can be read aloud or make the voice repeat the line, so it is shortened to what the line can carry.
+    const fitted = fitCues(parts, Math.round(tagBudget(line.text) * 1.5));
+    if (fitted.length) steering.push(fitted.join(". "));
+    if (fitted.length < parts.length) notSent.push(`part of the direction was shortened to fit a ${spokenWords(line.text)}-word line`);
   } else {
     if (emotion) notSent.push(`the ${emotion} delivery (this model does not follow written instructions)`);
     if (sentences.length) notSent.push("the written direction (this model does not follow written instructions)");

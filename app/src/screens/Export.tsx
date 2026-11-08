@@ -264,7 +264,7 @@ export default function Export() {
   const np = stat ? planNormalization(stat.m, target.lufs, cfg.ceiling) : null;
   const check = (k: keyof ExportCfg, label: string, hint?: string) => (
     <label key={k}>
-      <input type="checkbox" checked={cfg[k] as boolean} onChange={(e) => set({ [k]: e.target.checked } as Partial<ExportCfg>)} />
+      <input type="checkbox" checked={!!cfg[k]} onChange={(e) => set({ [k]: e.target.checked } as Partial<ExportCfg>)} />
       <span className="check-text">
         <span>{label}</span>
         {hint && <small>{hint}</small>}

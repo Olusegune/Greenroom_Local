@@ -8,6 +8,7 @@ import { effectiveLine } from "../performance";
 import { steers } from "../inworld";
 import { actsOnWords } from "../engineCaps";
 import { dictFor } from "../voiceDna";
+import { noteFit } from "../direct";
 import { VARIATIONS, type VariationId } from "../acting";
 import { applyPreset, chosenTake, cleanNote, ALL_SOUND_TAGS, EMOTIONS, hasStyle, MORE_SOUNDS, NOTE_MAX, PRESETS, pushHistory, SOUNDS, STYLES, toggleIn, toggleStyle, vkUnsupported } from "../direct";
 import { VisualLine } from "../VisualLine";
@@ -566,6 +567,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
       toast((e as Error).message || "Could not measure that take.", true);
     }
   };
+  const fitCut = noteFit(effectiveLine(line));
   const capable = library.filter((v) => actsOnWords(v.provider, engines.inworldModel));
   const reach = !voice || !note.trim() ? null : ENGINES[voice.provider].tags ? "ok" : voice.provider === "voicekiller" ? "ok" : voice.provider === "inworld" ? ((planned?.steering?.length ?? 0) > 0 ? "ok" : "inworld-flash") : "none";
 
@@ -718,6 +720,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
             {ENGINES[voice!.provider].label} cannot act on written direction. {capable.length > 0 ? `Voices in your library that can: ${capable.slice(0, 4).map((v) => v.name).join(", ")}.` : "None of your library voices can: add an ElevenLabs, Inworld or VoiceKiller voice in Voices."} Or use Re-voice a recording to perform it yourself.
           </p>
         )}
+        {voice && ENGINES[voice.provider].tags && fitCut.sent < fitCut.total && <p className="dir-reach warn small">This line is short, so {ENGINES[voice.provider].label} gets {fitCut.sent === 0 ? "none" : `only ${fitCut.sent} of ${fitCut.total}`} of your direction's sentences. A long direction in front of a few words can make a voice read it aloud or repeat the line. Write a shorter direction, or see exactly what is sent under Advanced.</p>}
         {reach === "inworld-flash" && <p className="dir-reach warn small">{engines.inworldModel === "inworld-tts-2-flash" ? "Inworld TTS 2 Flash does not follow written direction. Switch to Inworld TTS 2 in Voices, or choose another voice." : "Inworld could not use that direction."}</p>}
         {voice?.provider === "inworld" && (planned?.notSent?.length ?? 0) > 0 && <p className="dir-reach warn small">Inworld will not get: {planned!.notSent!.join("; ")}.</p>}
         {noTags && vkUnsupported(line).length > 0 && <p className="dir-reach warn small">{ENGINES[voice!.provider].label} cannot make {vkUnsupported(line).join(", ")}. Add a sound clip instead.</p>}
@@ -898,6 +901,7 @@ function TakeRow({ t, n, lineId, projectId, chosen, choose, reference }: { t: Ta
         <PlayButton label={`Take ${n}`} get={() => takeUrl(projectId, t.id)} />
         <span className="muted small num">{t.seconds.toFixed(1)}s</span>
         <span className="badge">{modelLabel(t.model)}</span>
+        {(t.provenance?.check?.length ?? 0) > 0 && <span className="badge warn" title={t.provenance!.check!.join(" ")}>check by ear</span>}
         <button className="sm ghost" aria-expanded={info} onClick={() => setInfo(!info)} title="Where this take came from">
           Details
         </button>
@@ -929,6 +933,7 @@ function TakeFacts({ t }: { t: Take }) {
         Made {t.at.slice(0, 19).replace("T", " ")} with {p ? ENGINES[p.engine].label : "an engine"} ({modelLabel(t.model)}) using the voice {p?.voiceName ?? t.voiceId}.
       </span>
       {(p?.note || p?.emotion || (p?.sounds?.length ?? 0) > 0) && <span>Direction: {[p?.emotion, ...(p?.sounds ?? []), p?.note ? `“${p.note}”` : ""].filter(Boolean).join(" · ")}</span>}
+      {(p?.check?.length ?? 0) > 0 && <span className="warn">Worth a second listen: {p!.check!.join(" ")}</span>}
       {p?.variation && <span>Made as the {p.variation} interpretation.</span>}
       {p?.quality && <span>Audio quality asked for: {p.quality}.</span>}
       <span>

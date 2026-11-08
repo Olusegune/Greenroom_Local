@@ -95,16 +95,21 @@ describe("effectiveLine", () => {
   });
 
   it("reaches the voice: ElevenLabs gets tags, Inworld TTS 2 gets one instruction, Piper gets only the plain words", () => {
-    const l = line("Lift this.", { ...DEFAULT_PERFORMANCE, objective: "stay calm", physical: lifting.physical });
+    const words = "Lift this crate and carry it over to the far wall right now because the others are waiting for us and we are already very late for the next scene today.";
+    const l = line(words, { ...DEFAULT_PERFORMANCE, objective: "stay calm", physical: lifting.physical });
     const el = plan(l, voice("elevenlabs"), "eleven_v4");
     expect(el.text).toMatch(/\[the character is trying to stay calm\]/i);
     expect(el.text).toMatch(/\[speaking while lifting/i);
-    expect(el.text.endsWith("Lift this.")).toBe(true);
+    expect(el.text.endsWith(words)).toBe(true);
     const iw = plan(l, voice("inworld"), "eleven_v4", [], { inworldModel: "inworld-tts-2" });
     expect(iw.steering?.[0]).toMatch(/Speaking while lifting/);
     expect(iw.nonverbal).toEqual(["breathe"]);
+    // A short line carries only the first cue: the plan never outweighs the words.
+    const short = plan(line("Lift this.", { ...DEFAULT_PERFORMANCE, objective: "stay calm", physical: lifting.physical }), voice("elevenlabs"), "eleven_v4");
+    expect(short.text.match(/\[/g)!.length).toBeLessThanOrEqual(2);
+    expect(short.text.endsWith("Lift this.")).toBe(true);
     const pp = plan(l, voice("piper"), "eleven_v4");
-    expect(pp.text).toBe("Lift this.");
+    expect(pp.text).toBe(words);
   });
 });
 

@@ -148,3 +148,15 @@ export function referenceHint(s: TakeStats): ReferencePlanHint {
     pauseAfter: r2(clamp(s.trailSilence, 0, 3)),
   };
 }
+
+/**
+ * Things worth a second listen in a new take, judged only from its length and shape. They catch a short line that came
+ * back far too long, such as when a voice repeats it or reads the direction aloud. They are hints, not proof.
+ */
+export function takeFlags(s: TakeStats, words: number): string[] {
+  if (words < 1 || s.speechSeconds <= 0) return [];
+  const out: string[] = [];
+  if (s.wordsPerSecond > 0 && s.wordsPerSecond < 0.9) out.push(`Much slower than speech usually is (${s.wordsPerSecond} words a second). The voice may have repeated the line or read the direction aloud.`);
+  if (words <= 4 && s.pausesMs.length >= 2) out.push(`A ${words}-word line came back in ${s.pausesMs.length + 1} separate phrases. It may have been repeated.`);
+  return out;
+}

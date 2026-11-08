@@ -22,6 +22,8 @@ export interface Provenance {
   instructions?: string;
   /** Cloud model that spoke the line, such as inworld-tts-2, when the engine has more than one. */
   modelId?: string;
+  /** Things worth a second listen, found by measuring the take (for example a short line that came back far too long). Hints, not proof. */
+  check?: string[];
   /** The interpretation this take was made as (restrained, expressive, intense), when it was one of a set. */
   variation?: string;
   /** Inworld: the steering sentences and non-verbal tags that were sent, and what could not be. */
@@ -132,7 +134,7 @@ export interface ExportCfg {
   manifest: boolean;
 }
 
-export const DEFAULT_EXPORT: ExportCfg = { rate: 48000, bits: 24, target: "off", ceiling: -1, fps: 24, whole: true, scenes: false, lines: true, stems: false, markersInWav: true, labels: false, cueSheet: true, performance: false, otio: false, matchPicture: true, report: true, manifest: true };
+export const DEFAULT_EXPORT: ExportCfg = { rate: 48000, bits: 24, target: "off", ceiling: -1, fps: 24, whole: true, scenes: false, lines: true, stems: false, markersInWav: true, labels: false, cueSheet: true, performance: false, qa: false, otio: false, matchPicture: true, report: true, manifest: true };
 
 /** How music and atmosphere dip under dialogue. */
 export interface MixCfg {

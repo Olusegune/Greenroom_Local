@@ -49,10 +49,11 @@ describe("direction notes", () => {
     expect(cleanNote("  a   b ")).toBe("a b");
     expect(cleanNote("x".repeat(500))).toHaveLength(400);
   });
-  it("keeps a long written direction whole, as one tag per sentence", () => {
+  it("splits a long written direction into one cue per sentence, and sends as many whole cues as the line can carry", () => {
     const note = "Quietly furious, barely holding it together. A long beat before the last word! Then a shaky breath";
     expect(noteTags(note)).toEqual(["Quietly furious, barely holding it together", "A long beat before the last word", "Then a shaky breath"]);
-    expect(composeText(line("Fine.", { note }))).toBe("[quietly furious, barely holding it together] [a long beat before the last word] [then a shaky breath] Fine.");
+    expect(composeText(line("Fine.", { note }))).toBe("[quietly furious, barely holding it together] Fine.");
+    expect(composeText(line("I did not expect to see you here after all this time.", { note }))).toBe("[quietly furious, barely holding it together] [a long beat before the last word] [then a shaky breath] I did not expect to see you here after all this time.");
     expect(noteTags("a. b. c. d. e. f.")).toHaveLength(4);
     expect(noteTags("  ")).toEqual([]);
   });

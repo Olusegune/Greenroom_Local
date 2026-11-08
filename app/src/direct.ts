@@ -80,12 +80,71 @@ export function noteTags(n: string | undefined): string[] {
     .slice(0, 4);
 }
 
-/** What is sent to the voice model: chosen emotion and sounds first, then the written direction, then the line, skipping tags already written inline. */
-export function composeText(line: Pick<Line, "text" | "direction">): string {
+/** Words the voice will actually say: tags and punctuation do not count. */
+export const spokenWords = (text: string): number => text.replace(/\[[^\]]*\]/g, " ").split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+
+/**
+ * How much direction a line can carry. A long direction in front of a few words makes tag-reading voices read the
+ * direction aloud or repeat the line (seen on a three-word line with a 280 character direction), so the allowance
+ * grows with the line. This counts the characters inside the brackets.
+ */
+export function tagBudget(text: string): number {
+  const w = spokenWords(text);
+  return w <= 4 ? 60 : w <= 10 ? 100 : w <= 25 ? 150 : 240;
+}
+
+const MAX_CUE = 160;
+
+/** One sentence cut back to at most `max` characters, at a comma or a space, without a dangling connector. */
+export function shorten(s: string, max: number): string {
+  const t = s.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const comma = Math.max(cut.lastIndexOf(","), cut.lastIndexOf(";"), cut.lastIndexOf(":"));
+  let out = comma >= 12 ? cut.slice(0, comma) : cut.slice(0, Math.max(cut.lastIndexOf(" "), 12));
+  out = out.replace(/[\s,;:.-]+$/, "").replace(/\s+(and|but|with|the|a|an|of|to|as|in|on|while|that)$/i, "");
+  return out.trim();
+}
+
+/**
+ * Fits sentences into a character budget. The first is shortened if it must be; the others are kept only if they fit
+ * whole, because a cut-off fragment is just noise to a voice.
+ */
+export function fitCues(sentences: string[], budget: number): string[] {
+  const out: string[] = [];
+  let left = budget;
+  for (const s of sentences) {
+    const t = s.trim();
+    if (left < 15 || !t) break;
+    const cue = out.length === 0 ? shorten(t, Math.min(left, MAX_CUE)) : t.length <= Math.min(left, MAX_CUE) ? t : "";
+    if (!cue) break;
+    out.push(cue);
+    left -= cue.length + 1;
+  }
+  return out;
+}
+
+function compose(line: Pick<Line, "text" | "direction">): { text: string; notes: string[]; wanted: number; lead: string[] } {
   const d: Direction = line.direction;
-  const have = (t: string) => line.text.toLowerCase().includes(tag(t));
-  const lead = [d.emotion, ...d.sounds, ...noteTags(d.note)].map((t) => (t ?? "").trim().toLowerCase()).filter((t) => t && !have(t)).map(tag);
-  return [...lead, line.text.trim()].join(" ").trim();
+  const text = line.text.replace(/\s+/g, " ").trim();
+  const have = (t: string) => text.toLowerCase().includes(tag(t));
+  const short = [d.emotion, ...d.sounds].map((t) => (t ?? "").trim().toLowerCase()).filter((t) => t && !have(t));
+  const left = tagBudget(text) - short.reduce((n, t) => n + t.length + 1, 0);
+  const all = noteTags(d.note);
+  const notes = fitCues(all, left).map((t) => t.toLowerCase()).filter((t) => !have(t));
+  return { text, notes, wanted: all.length, lead: short };
+}
+
+/** What is sent to the voice model: chosen emotion and sounds first, then the written direction (shortened to what the line can carry), then the line, skipping tags already written inline. */
+export function composeText(line: Pick<Line, "text" | "direction">): string {
+  const c = compose(line);
+  return [...[...c.lead, ...c.notes].map(tag), c.text].join(" ").trim();
+}
+
+/** How many of the direction's sentences a line can carry, so the owner is told when a short line gets only part of a long direction. */
+export function noteFit(line: Pick<Line, "text" | "direction">): { sent: number; total: number } {
+  const c = compose(line);
+  return { sent: c.notes.length, total: c.wanted };
 }
 
 export function countChars(lines: Pick<Line, "text" | "direction">[]): number {

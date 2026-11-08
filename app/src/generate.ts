@@ -1,13 +1,14 @@
 // Making one take: pick the engine from the voice, shape the text for it, save the audio, remember its length.
 
 import { api, type Provider } from "./api";
-import { applyPronunciations, composeText, stripTags, vkInstructions } from "./direct";
+import { applyPronunciations, composeText, spokenWords, stripTags, vkInstructions } from "./direct";
 import { ENGINES, providerFor, type ElevenModel, type InworldModel } from "./engines";
 import { DEFAULT_INWORLD_MODEL, inworldPlan } from "./inworld";
 import { applyVariation, type VariationId } from "./acting";
 import { effectiveLine } from "./performance";
 import { fromBase64 } from "./audio";
-import { remember } from "./media";
+import { remember, takeBuffer } from "./media";
+import { analyzeSamples, takeFlags } from "./analysis";
 import { uid } from "./script";
 import { sha256Hex } from "./trust";
 import { APP_VERSION } from "./version";
@@ -59,6 +60,16 @@ export async function makeTake(projectId: string, saved: Line, voice: VoiceEntry
   await api.takeWrite(projectId, id, ext, out.audioB64);
   const seconds = await remember(id, out);
   const sha256 = await sha256Hex(fromBase64(out.audioB64));
+  // Measure the take once so a short line that came back far too long is flagged for a second listen.
+  let check: string[] | undefined;
+  try {
+    const b = await takeBuffer(projectId, id);
+    const words = spokenWords(line.text);
+    const f = takeFlags(analyzeSamples(b.getChannelData(0), b.sampleRate, words), words);
+    if (f.length) check = f;
+  } catch {
+    /* the check is a bonus; the take is kept either way */
+  }
   return {
     id,
     at: new Date().toISOString(),
@@ -74,6 +85,7 @@ export async function makeTake(projectId: string, saved: Line, voice: VoiceEntry
       speed: voice.provider === "chatterbox" || voice.provider === "wazobia" ? 1 : line.direction.speed,
       instructions: p.instructions,
       modelId: p.modelId,
+      check,
       variation: opts.variation,
       steering: p.steering?.length ? p.steering : undefined,
       nonverbal: p.nonverbal?.length ? p.nonverbal : undefined,
