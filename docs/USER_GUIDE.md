@@ -106,6 +106,16 @@ There are two ways a beat reaches a voice:
 - **One request with written cues** (default): the feeling is written in front of the phrase as a cue, and emphasis capitalises the key word for **Inworld** voices (Inworld documents capitals as emphasis). Pace and pause **cannot** be sent this way; the cost sheet lists them as not sent.
 - **Make each phrase separately and join them**: every phrase is its own request with its own feeling and pace, and your pauses are real silence between them. It works with any voice, but it costs one request per phrase (the cost sheet shows the number), and the joins can sound different from one continuous read, so listen to them. The take's Details say it was made phrase by phrase.
 
+**Remake one phrase.** On a take made phrase by phrase, open **Details**: each phrase is listed with its timing and a **Remake this phrase** button. It makes one request (confirmed first), joins the new phrase back between the untouched rest with your pauses, and adds the result as a **new take**; the old take is kept.
+
+### Sound ideas from your stage directions
+
+**Script Doctor** also lists sound ideas read from the lines of your script that are not spoken (for example "(The door slams.)" on its own line after a blank line): a door, footsteps, rain, a phone, glass and similar. Each shows the sound it would make, the stage direction it came from and the line it would sit beside. **Make this sound** is an ordinary sound clip: it confirms the cost first and is kept as a take on that line. A row straight under a spoken line is read as part of that line, as the script parser does.
+
+### Position and distance
+
+In **Advanced**, Fine-tune has **Position** (left to right) and **Distance** (close to far). Distance makes the voice up to 12 dB quieter and closes a low-pass from 20 kHz to 2.5 kHz, as air softens far sounds. They apply to the mix and the stems (and to that line's sound clips), not to the untouched line files. Atmosphere and music are not moved. This is a simple perspective, not a room simulation.
+
 ### Reactions for a character
 
 On a line's sound clip, **Save to reactions** keeps it with the character. On any other line of that character, the sound box offers **Reuse a saved reaction (free)**: it uses the same clip file, makes no request and spends nothing, and the clip's provenance and rights go with it.
