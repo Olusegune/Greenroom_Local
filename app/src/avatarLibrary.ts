@@ -34,12 +34,15 @@ export interface AvatarLicense {
   note?: string;
 }
 
+/** A "master" portrait has all four; a "preview" portrait (cut from a contact sheet) has only the 256 card and the thumbnail, because it is never upscaled. */
 export interface AvatarAssets {
-  master: string;
-  card: string;
+  master?: string;
+  card?: string;
   card_small: string;
   thumbnail: string;
 }
+
+export type Tier = "master" | "preview";
 
 export interface AvatarEntry {
   id: string;
@@ -52,6 +55,8 @@ export interface AvatarEntry {
   archetype: string;
   clothing: string;
   tags: string[];
+  /** Only "master" portraits count toward the 100. A "preview" is a smaller picture and is always labelled as one. */
+  tier: Tier;
   assets: AvatarAssets;
   license: AvatarLicense;
 }
@@ -123,9 +128,15 @@ export function validateManifest(raw: unknown, exists?: (assetPath: string) => b
     }
     seen.add(id);
     const a = (item.assets ?? {}) as Record<string, unknown>;
-    const paths = ["master", "card", "card_small", "thumbnail"].map((k) => a[k]);
+    const tier: Tier = item.tier === "preview" ? "preview" : "master";
+    const need = tier === "preview" ? ["card_small", "thumbnail"] : ["master", "card", "card_small", "thumbnail"];
+    const paths = need.map((k) => a[k]);
     if (!paths.every((p) => typeof p === "string" && SAFE_PATH.test(p))) {
       bad("an asset path is missing or unsafe");
+      continue;
+    }
+    if (tier === "preview" && (a.master || a.card)) {
+      bad("a preview portrait must not claim a master or a 512 card");
       continue;
     }
     if (!(COLLECTIONS as readonly string[]).includes(item.collection as string)) {
@@ -149,9 +160,9 @@ export function validateManifest(raw: unknown, exists?: (assetPath: string) => b
       bad("a listed file does not exist");
       continue;
     }
-    good.push({ id, name: item.name, collection: item.collection as Collection, period: item.period, genre: (item.genre as unknown[]).filter((g): g is string => typeof g === "string"), style: item.style, age_category: item.age_category as Age, archetype: item.archetype, clothing: item.clothing, tags: (item.tags as unknown[]).filter((t): t is string => typeof t === "string"), assets: a as unknown as AvatarAssets, license: lic });
+    good.push({ id, name: item.name, collection: item.collection as Collection, period: item.period, genre: (item.genre as unknown[]).filter((g): g is string => typeof g === "string"), style: item.style, age_category: item.age_category as Age, archetype: item.archetype, clothing: item.clothing, tags: (item.tags as unknown[]).filter((t): t is string => typeof t === "string"), tier, assets: a as unknown as AvatarAssets, license: lic });
   }
-  const files = good.flatMap((g) => [g.assets.master, g.assets.card, g.assets.card_small, g.assets.thumbnail]);
+  const files = good.flatMap((g) => Object.values(g.assets));
   if (new Set(files).size !== files.length) problems.push("two avatars share an asset file");
   return { ok: problems.length === 0, problems, manifest: { version: 1, target: typeof r.target === "number" ? r.target : 100, count: good.length, collections: [...COLLECTIONS], avatars: good } };
 }
@@ -323,7 +334,7 @@ export function faceFor(id: string | undefined, manifest: AvatarManifest | null,
     return { card: v ?? c.image, small: v ?? c.image, thumb: v ?? c.thumb };
   }
   const a = manifest?.avatars.find((x) => x.id === id);
-  return a ? { card: base(a.assets.card), small: base(a.assets.card_small), thumb: base(a.assets.thumbnail) } : null;
+  return a ? { card: base(a.assets.card ?? a.assets.card_small), small: base(a.assets.card_small), thumb: base(a.assets.thumbnail) } : null;
 }
 
 /** Which expression a line's emotion calls for. Only used when the avatar has that variant; otherwise the main picture is kept. */
@@ -347,9 +358,10 @@ export function assignAvatar<T extends { id: string; avatarId?: string }>(charac
 export const BUILTIN_TARGET = 100;
 
 /** Honest progress against the 100-portrait goal: only entries with real files are in the manifest, so only they count. */
-export function progress(manifest: AvatarManifest | null): { have: number; target: number; missing: number; perCollection: Record<string, number> } {
-  const have = manifest?.avatars.length ?? 0;
+export function progress(manifest: AvatarManifest | null): { have: number; previews: number; target: number; missing: number; perCollection: Record<string, number> } {
+  const masters = manifest?.avatars.filter((a) => a.tier === "master") ?? [];
   const per: Record<string, number> = {};
-  for (const c of COLLECTIONS) per[c] = manifest?.avatars.filter((a) => a.collection === c).length ?? 0;
-  return { have, target: manifest?.target ?? BUILTIN_TARGET, missing: Math.max(0, (manifest?.target ?? BUILTIN_TARGET) - have), perCollection: per };
+  for (const c of COLLECTIONS) per[c] = masters.filter((a) => a.collection === c).length;
+  const target = manifest?.target ?? BUILTIN_TARGET;
+  return { have: masters.length, previews: (manifest?.avatars.length ?? 0) - masters.length, target, missing: Math.max(0, target - masters.length), perCollection: per };
 }

@@ -90,7 +90,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
     const filtersOn = !!(f.collection || f.period || f.genre || f.age || f.style);
     const only = mode === "favorites" ? new Set(store.favorites) : mode === "recent" ? new Set(store.recent) : undefined;
     const b = mode === "mine" ? [] : filterAvatars(builtin, { text, ...f, only });
-    const toItem = (a: AvatarEntry): Item => ({ id: a.id, name: a.name, thumb: `./avatars/${a.assets.thumbnail}`, card: `./avatars/${a.assets.card}`, meta: `${COLLECTION_LABEL[a.collection]} · ${AGE_LABEL[a.age_category]}`, builtin: a });
+    const toItem = (a: AvatarEntry): Item => ({ id: a.id, name: a.name, thumb: `./avatars/${a.assets.thumbnail}`, card: `./avatars/${a.assets.card ?? a.assets.card_small}`, meta: `${COLLECTION_LABEL[a.collection]} · ${AGE_LABEL[a.age_category]}${a.tier === "preview" ? " · preview" : ""}`, builtin: a });
     const terms = text.toLowerCase().split(/\s+/).filter(Boolean);
     const c = (filtersOn || mode === "recent" && !only ? [] : store.custom)
       .filter((x) => (mode !== "favorites" || store.favorites.includes(x.id)) && (mode !== "recent" || store.recent.includes(x.id)))
@@ -100,7 +100,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
     return [...c, ...b.map(toItem)].sort((a, z) => order(a) - order(z));
   }, [builtin, store, text, f, mode]);
 
-  const picked = items.find((i) => i.id === sel) ?? [...builtin.map((a): Item => ({ id: a.id, name: a.name, thumb: "", card: `./avatars/${a.assets.card}`, meta: "", builtin: a })), ...store.custom.map((x): Item => ({ id: x.id, name: x.name, thumb: x.thumb, card: x.image, meta: "", custom: x }))].find((i) => i.id === sel);
+  const picked = items.find((i) => i.id === sel) ?? [...builtin.map((a): Item => ({ id: a.id, name: a.name, thumb: "", card: `./avatars/${a.assets.card ?? a.assets.card_small}`, meta: "", builtin: a })), ...store.custom.map((x): Item => ({ id: x.id, name: x.name, thumb: x.thumb, card: x.image, meta: "", custom: x }))].find((i) => i.id === sel);
   const fav = (id: string) => store.favorites.includes(id);
 
   const assign = (id: string | undefined) => {
@@ -132,6 +132,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
       <img src={i.thumb} alt="" loading="lazy" decoding="async" width={view === "grid" ? 112 : 44} height={view === "grid" ? 112 : 44} />
       <span className="av-name">{i.name}</span>
       {character.avatarId === i.id && <span className="av-badge">In use</span>}
+      {i.builtin?.tier === "preview" && <span className="av-preview-tag" title="Preview resolution (256 px)">Preview</span>}
       {fav(i.id) && <span className="av-star" aria-label="Favourite">★</span>}
     </button>
   );
@@ -215,7 +216,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
             ) : (
               <VirtualGrid items={items} itemW={view === "grid" ? 124 : 320} itemH={view === "grid" ? 150 : 56} height={360} label="Avatars" render={cell} />
             )}
-            <p className="muted small">{items.length} shown · {p.have} of {p.target} built-in portraits made{p.missing > 0 ? ` (${p.missing} still to make)` : ""}. Double-press a face to use it.</p>
+            <p className="muted small">{items.length} shown · {p.have} of {p.target} full-resolution portraits made{p.missing > 0 ? ` (${p.missing} still to make)` : ""}, plus {p.previews} at preview resolution. Double-press a face to use it.</p>
           </div>
           <div className="av-preview">
             {picked ? (
@@ -227,6 +228,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
                     <span className="muted small">{COLLECTION_LABEL[picked.builtin.collection]} · {picked.builtin.period.replace(/_/g, " ")} · {AGE_LABEL[picked.builtin.age_category]} · {STYLE_LABEL[picked.builtin.style] ?? picked.builtin.style}</span>
                     <span className="small">{picked.builtin.clothing}</span>
                     <span className="chips">{picked.builtin.tags.slice(0, 8).map((t) => <span key={t} className="chip static">{t}</span>)}</span>
+                    {picked.builtin.tier === "preview" && <span className="warn small">Preview resolution: 256 px, cut from a contact sheet, with no 1024 master. Fine for cards and thumbnails; not for large prints.</span>}
                     <span className={picked.builtin.license.commercial_use === "confirmed" ? "muted small" : "warn small"}>Rights: commercial use {picked.builtin.license.commercial_use}. {picked.builtin.license.source}</span>
                   </>
                 ) : (

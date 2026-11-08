@@ -24,6 +24,9 @@ function webpSize(file: string): [number, number] {
   return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
 }
 
+const masters = list.filter((a) => a.tier === "master");
+const previews = list.filter((a) => a.tier === "preview");
+
 describe("the built-in library on disk", () => {
   it("has a valid manifest whose every listed file exists", () => {
     expect(check.problems).toEqual([]);
@@ -37,46 +40,63 @@ describe("the built-in library on disk", () => {
     expect(new Set(files).size).toBe(files.length);
   });
 
-  it("has distinct portraits: no two master files are the same picture", () => {
-    const sums = list.map((a) => createHash("sha256").update(readFileSync(join(MASTERS, a.assets.master.slice(8)))).digest("hex"));
-    expect(new Set(sums).size).toBe(list.length);
+  it("has distinct portraits: no two picture files are the same", () => {
+    const sums = masters.map((a) => createHash("sha256").update(readFileSync(join(MASTERS, a.assets.master!.slice(8)))).digest("hex"));
+    const small = previews.map((a) => createHash("sha256").update(readFileSync(join(PUB, a.assets.card_small))).digest("hex"));
+    expect(new Set([...sums, ...small]).size).toBe(list.length);
   });
 
-  it("has every derivative at its exact size, and masters at 1024 x 1024 PNG", () => {
-    for (const a of list) {
-      expect(webpSize(join(PUB, a.assets.card)), a.id).toEqual([512, 512]);
-      expect(webpSize(join(PUB, a.assets.card_small)), a.id).toEqual([256, 256]);
-      expect(webpSize(join(PUB, a.assets.thumbnail)), a.id).toEqual([128, 128]);
-      const m = readFileSync(join(MASTERS, a.assets.master.slice(8)));
+  it("has every master at 1024 x 1024 PNG and every derivative at its exact size", () => {
+    for (const a of masters) {
+      expect(webpSize(join(PUB, a.assets.card!)), a.id).toEqual([512, 512]);
+      const m = readFileSync(join(MASTERS, a.assets.master!.slice(8)));
       expect(m.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
       expect([m.readUInt32BE(16), m.readUInt32BE(20)]).toEqual([1024, 1024]);
     }
-  });
-
-  it("keeps the bundled pictures small: thumbnails under 15 KB and cards under 120 KB", () => {
     for (const a of list) {
-      expect(statSync(join(PUB, a.assets.thumbnail)).size, a.id).toBeLessThan(15_000);
-      expect(statSync(join(PUB, a.assets.card)).size, a.id).toBeLessThan(120_000);
+      expect(webpSize(join(PUB, a.assets.card_small)), a.id).toEqual([256, 256]);
+      expect(webpSize(join(PUB, a.assets.thumbnail)), a.id).toEqual([128, 128]);
     }
   });
 
-  it("records rights for every portrait and does not claim commercial use that nobody confirmed", () => {
+  it("never gives a preview portrait a master or a 512 card, and never counts it toward the 100", () => {
+    expect(previews.length).toBeGreaterThan(0);
+    for (const a of previews) {
+      expect(a.assets.master, a.id).toBeUndefined();
+      expect(a.assets.card, a.id).toBeUndefined();
+      expect(existsSync(join(MASTERS, `${a.id}.png`)), a.id).toBe(false);
+    }
+    const p = progress(check.manifest);
+    expect(p.have).toBe(masters.length);
+    expect(p.previews).toBe(previews.length);
+  });
+
+  it("keeps the bundled pictures small: thumbnails under 15 KB, cards under 120 KB", () => {
+    for (const a of list) {
+      expect(statSync(join(PUB, a.assets.thumbnail)).size, a.id).toBeLessThan(15_000);
+      expect(statSync(join(PUB, a.assets.card ?? a.assets.card_small)).size, a.id).toBeLessThan(120_000);
+    }
+  });
+
+  it("records rights for every portrait, with a source and a stated commercial status", () => {
     for (const a of list) {
       expect(a.license.source.length, a.id).toBeGreaterThan(5);
       expect(["confirmed", "unconfirmed", "not_allowed"]).toContain(a.license.commercial_use);
     }
   });
 
-  it("does not claim the 100-portrait target before 100 exist", () => {
+  it("does not claim the 100-portrait target before 100 full-resolution portraits exist", () => {
     const p = progress(check.manifest);
-    expect(p.have).toBe(list.length);
     expect(p.have + p.missing).toBe(p.target);
     expect(p.target).toBe(100);
     if (p.have < 100) expect(p.missing).toBeGreaterThan(0);
   });
 
-  it("gives no portrait a voice, accent or personality", () => {
-    for (const a of list) expect(Object.keys(a).some((k) => /voice|accent|personality/i.test(k)), a.id).toBe(false);
+  it("gives no portrait a voice, accent or personality, and no recognisable franchise or celebrity names", () => {
+    for (const a of list) {
+      expect(Object.keys(a).some((k) => /voice|accent|personality/i.test(k)), a.id).toBe(false);
+      expect(/joker|einstein|wednesday|gandalf|kung fu|queen elizabeth/i.test(`${a.name} ${a.tags.join(" ")}`), a.id).toBe(false);
+    }
   });
 });
 
@@ -99,6 +119,13 @@ describe("validateManifest", () => {
     const r = validateManifest(m(good(), good({ id: "y_two_001", assets: { master: "masters/y.png", card: "cards/y.webp", card_small: "cards256/y.webp", thumbnail: "thumbs/y.webp" } })), (p) => p.includes("x."));
     expect(r.manifest!.avatars.map((a) => a.id)).toEqual(["x_one_001"]);
     expect(r.problems.join()).toMatch(/does not exist/);
+  });
+
+  it("accepts a preview with only a 256 card and a thumbnail, and rejects one that claims a master", () => {
+    const pre = (assets: Record<string, string>) => good({ tier: "preview", assets });
+    expect(validateManifest(m(pre({ card_small: "cards256/x.webp", thumbnail: "thumbs/x.webp" }))).ok).toBe(true);
+    expect(validateManifest(m(pre({ master: "masters/x.png", card_small: "cards256/x.webp", thumbnail: "thumbs/x.webp" }))).problems.join()).toMatch(/must not claim a master/);
+    expect(validateManifest(m(good({ assets: { card_small: "cards256/x.webp", thumbnail: "thumbs/x.webp" } }))).ok).toBe(false);
   });
 
   it("rejects junk", () => {
@@ -126,7 +153,7 @@ describe("searching and filtering", () => {
   it("lists only the choices that exist", () => {
     const f = facets(list);
     expect(f.collections).toContain("contemporary_everyday");
-    expect(f.collections).not.toContain("horror_supernatural");
+    expect(f.collections).not.toContain("ancient_civilizations");
     expect(f.ages.length).toBeGreaterThan(2);
   });
 });
@@ -191,8 +218,15 @@ describe("favourites, recent and custom avatars", () => {
     expect(expressionFor("")).toBe("neutral");
   });
 
+  it("shows a preview at its own 256 size, never a larger one", () => {
+    const pv = previews[0]!;
+    const f = faceFor(pv.id, check.manifest, emptyStore())!;
+    expect(f.card).toBe(f.small);
+    expect(f.card.startsWith("./avatars/cards256/")).toBe(true);
+  });
+
   it("finds a built-in face by id, with relative paths", () => {
-    const f = faceFor(list[0]!.id, check.manifest, emptyStore())!;
+    const f = faceFor(masters[0]!.id, check.manifest, emptyStore())!;
     expect(f.card.startsWith("./avatars/cards/")).toBe(true);
     expect(f.thumb.startsWith("./avatars/thumbs/")).toBe(true);
   });

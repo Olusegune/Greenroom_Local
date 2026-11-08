@@ -1,6 +1,6 @@
 """Builds the Character Avatar Library from source portraits.
 
-    python scripts/build_avatars.py --source "C:\\path\\to\\source pngs"      build derivatives and the runtime manifest
+    python scripts/build_avatars.py --source "C:\\path\\to\\source pngs" [--preview-source "C:\\path\\to\\sheets"]
     python scripts/build_avatars.py --check                                   only validate what is already built
 
 Inputs
@@ -13,6 +13,11 @@ Outputs (nothing is ever upscaled; a source under 1024 px is refused)
   app/public/avatars/cards256/<id>.webp          256 x 256 WebP
   app/public/avatars/thumbs/<id>.webp            128 x 128 WebP
   app/public/avatars/manifest.json               the versioned runtime manifest (only entries whose files exist)
+
+Two tiers
+  master   a 1024 x 1024 PNG master plus 512 and 256 WebP cards and a 128 thumbnail. Only these count toward the 100.
+  preview  cut from a contact sheet with the entry's "crop" box (source pixels). It never gets a master or a 512 card:
+           only a 256 WebP and a 128 thumbnail, and only when the crop is at least 256 px each way (no upscaling).
 
 Validation (exit code 1 on any problem)
   unique ids, every listed file exists, sizes are exact, no two portraits are the same picture (exact hash and
@@ -58,12 +63,36 @@ def load_library():
         return json.load(f)
 
 
-def build(source):
+def build_preview(e, source):
+    src = os.path.join(source, e["source"])
+    if not os.path.isfile(src):
+        print(f"  skip  {e['id']}: sheet not found ({e['source']})")
+        return False
+    im = Image.open(src).convert("RGB").crop(tuple(e["crop"]))
+    side = min(im.size)
+    if side < 256:
+        print(f"  REFUSED {e['id']}: the cut is {im.size}; previews are never upscaled")
+        return False
+    l, t = (im.size[0] - side) // 2, 0
+    sq = im.crop((l, t, l + side, t + side))
+    sq.resize((256, 256), Image.LANCZOS).save(os.path.join(PUB, "cards256", e["id"] + ".webp"), "WEBP", quality=84, method=6)
+    sq.resize((128, 128), Image.LANCZOS).save(os.path.join(PUB, "thumbs", e["id"] + ".webp"), "WEBP", quality=80, method=6)
+    print(f"  built {e['id']} (preview, cut {im.size[0]}x{im.size[1]})")
+    return True
+
+
+def build(source, preview_source=None):
     lib = load_library()
     for d in [MASTERS] + [os.path.join(PUB, k) for k in SIZES]:
         os.makedirs(d, exist_ok=True)
     built = 0
     for e in lib["avatars"]:
+        if e.get("tier") == "preview":
+            if preview_source and build_preview(e, preview_source):
+                built += 1
+            continue
+        if not source:
+            continue
         src = os.path.join(source, e["source"])
         if not os.path.isfile(src):
             print(f"  skip  {e['id']}: source file not found ({e['source']})")
@@ -87,12 +116,16 @@ def build(source):
 
 def assets_for(e):
     i = e["id"]
+    if e.get("tier") == "preview":
+        return {"card_small": f"cards256/{i}.webp", "thumbnail": f"thumbs/{i}.webp"}
     return {"master": f"masters/{i}.png", "card": f"cards/{i}.webp", "card_small": f"cards256/{i}.webp", "thumbnail": f"thumbs/{i}.webp"}
 
 
 def present(e):
     a = assets_for(e)
-    return os.path.isfile(os.path.join(ROOT, "avatars", a["master"])) and all(os.path.isfile(os.path.join(PUB, a[k].split("/", 1)[0], a[k].split("/", 1)[1])) for k in ("card", "card_small", "thumbnail"))
+    keys = ("card_small", "thumbnail") if e.get("tier") == "preview" else ("card", "card_small", "thumbnail")
+    master_ok = e.get("tier") == "preview" or os.path.isfile(os.path.join(ROOT, "avatars", a["master"]))
+    return master_ok and all(os.path.isfile(os.path.join(PUB, a[k].split("/", 1)[0], a[k].split("/", 1)[1])) for k in keys)
 
 
 def write_manifest():
@@ -101,10 +134,11 @@ def write_manifest():
     for e in lib["avatars"]:
         if not present(e):
             continue
-        item = {k: v for k, v in e.items() if k != "source"}
+        item = {k: v for k, v in e.items() if k not in ("source", "crop")}
+        item["tier"] = e.get("tier", "master")
         item["assets"] = assets_for(e)
         out.append(item)
-    manifest = {"version": 1, "target": TARGET, "count": len(out), "collections": COLLECTIONS, "avatars": out}
+    manifest = {"version": 1, "target": TARGET, "count": len(out), "masters": sum(1 for x in out if x["tier"] == "master"), "previews": sum(1 for x in out if x["tier"] == "preview"), "collections": COLLECTIONS, "avatars": out}
     with open(os.path.join(PUB, "manifest.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
     print(f"wrote manifest with {len(out)} avatar(s)")
@@ -121,6 +155,7 @@ def check():
         problems.append(f"ids both built and still in the plan: {sorted(set(ids) & set(plan_ids))}")
     hashes, dh = {}, {}
     ok = 0
+    masters = 0
     for e in lib["avatars"]:
         for k in REQUIRED:
             if k not in e or e[k] in ("", [], None):
@@ -133,10 +168,16 @@ def check():
             problems.append(f"{e['id']}: files missing")
             continue
         a = assets_for(e)
-        m = Image.open(os.path.join(ROOT, "avatars", a["master"]))
-        if m.size != (1024, 1024):
-            problems.append(f"{e['id']}: master is {m.size}, not 1024x1024")
-        for k, px in (("card", 512), ("card_small", 256), ("thumbnail", 128)):
+        preview = e.get("tier") == "preview"
+        if preview:
+            m = Image.open(os.path.join(PUB, a["card_small"]))
+            sizes = (("card_small", 256), ("thumbnail", 128))
+        else:
+            m = Image.open(os.path.join(ROOT, "avatars", a["master"]))
+            if m.size != (1024, 1024):
+                problems.append(f"{e['id']}: master is {m.size}, not 1024x1024")
+            sizes = (("card", 512), ("card_small", 256), ("thumbnail", 128))
+        for k, px in sizes:
             im = Image.open(os.path.join(PUB, a[k].split("/", 1)[0], a[k].split("/", 1)[1]))
             if im.size != (px, px) or im.format != "WEBP":
                 problems.append(f"{e['id']}: {k} is {im.size} {im.format}")
@@ -150,12 +191,15 @@ def check():
             if hamming(d, od) < 24:
                 problems.append(f"{e['id']} looks like {other} (difference hash distance {hamming(d, od)})")
         dh[e["id"]] = d
+        if not preview:
+            masters += 1
         lic = e["license"]
         if not isinstance(lic, dict) or "commercial_use" not in lic or "source" not in lic:
             problems.append(f"{e['id']}: rights not recorded")
         ok += 1
     unconfirmed = [e["id"] for e in lib["avatars"] if isinstance(e.get("license"), dict) and e["license"].get("commercial_use") != "confirmed"]
-    print(f"{ok} of {TARGET} portraits exist and passed file checks; {TARGET - ok} still to make (see avatars/plan.json)")
+    print(f"{masters} of {TARGET} full-resolution portraits (1024 master) exist and passed file checks; {TARGET - masters} still to make (see avatars/plan.json)")
+    print(f"{ok - masters} preview-resolution portraits (256 px, no master) also exist; they do not count toward the {TARGET}")
     if unconfirmed:
         print(f"rights NOT yet confirmed for commercial use on {len(unconfirmed)} portrait(s): the supplier must confirm before release")
     per = {c: sum(1 for e in lib["avatars"] if e["collection"] == c) for c in COLLECTIONS}
@@ -168,10 +212,14 @@ def check():
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--source")
+    ap.add_argument("--preview-source")
     ap.add_argument("--check", action="store_true")
     a = ap.parse_args()
     if a.source:
-        build(a.source)
+        build(a.source, a.preview_source)
+        write_manifest()
+    elif a.preview_source:
+        build(None, a.preview_source)
         write_manifest()
     elif not a.check:
         write_manifest()

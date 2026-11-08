@@ -1,7 +1,9 @@
 {
   "version": 1,
   "target": 100,
-  "count": 12,
+  "count": 34,
+  "masters": 12,
+  "previews": 22,
   "collections": [
     "contemporary_everyday",
     "ancient_civilizations",
@@ -39,11 +41,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/fantasy_adventurer_001.png",
         "card": "cards/fantasy_adventurer_001.webp",
@@ -74,11 +77,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_silver_fox_001.png",
         "card": "cards/contemporary_silver_fox_001.webp",
@@ -108,11 +112,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/scifi_runner_001.png",
         "card": "cards/scifi_runner_001.webp",
@@ -141,11 +146,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_editor_001.png",
         "card": "cards/contemporary_editor_001.webp",
@@ -176,11 +182,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_entrepreneur_001.png",
         "card": "cards/contemporary_entrepreneur_001.webp",
@@ -211,11 +218,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_mentor_001.png",
         "card": "cards/contemporary_mentor_001.webp",
@@ -244,11 +252,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_executive_001.png",
         "card": "cards/contemporary_executive_001.webp",
@@ -278,11 +287,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/scifi_guardian_001.png",
         "card": "cards/scifi_guardian_001.webp",
@@ -313,11 +323,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_veteran_001.png",
         "card": "cards/contemporary_veteran_001.webp",
@@ -347,11 +358,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_analyst_001.png",
         "card": "cards/contemporary_analyst_001.webp",
@@ -381,11 +393,12 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_professor_001.png",
         "card": "cards/contemporary_professor_001.webp",
@@ -415,16 +428,724 @@
       ],
       "license": {
         "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
-        "generator": "not stated by the supplier",
-        "commercial_use": "unconfirmed",
-        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       },
+      "tier": "master",
       "assets": {
         "master": "masters/contemporary_elder_001.png",
         "card": "cards/contemporary_elder_001.webp",
         "card_small": "cards256/contemporary_elder_001.webp",
         "thumbnail": "thumbs/contemporary_elder_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_teen_headphones_001",
+      "name": "The Teenager",
+      "tier": "preview",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "teen",
+      "archetype": "youth",
+      "clothing": "red hoodie with headphones around the neck",
+      "tags": [
+        "smiling",
+        "short curly hair",
+        "headphones",
+        "hoodie",
+        "cheerful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/contemporary_teen_headphones_001.webp",
+        "thumbnail": "thumbs/contemporary_teen_headphones_001.webp"
+      }
+    },
+    {
+      "id": "global_elder_embroidered_001",
+      "name": "The Elder in Embroidery",
+      "tier": "preview",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "sage",
+      "clothing": "embroidered robe and cap with an orange bead necklace",
+      "tags": [
+        "grey beard",
+        "embroidered cap",
+        "beads",
+        "dignified",
+        "elder"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/global_elder_embroidered_001.webp",
+        "thumbnail": "thumbs/global_elder_embroidered_001.webp"
+      }
+    },
+    {
+      "id": "scifi_alien_envoy_001",
+      "name": "The Alien Envoy",
+      "tier": "preview",
+      "collection": "science_fiction_cyberpunk",
+      "period": "far_future",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "outsider",
+      "clothing": "silver suit collar with a blue light",
+      "tags": [
+        "green skin",
+        "antennae",
+        "large black eyes",
+        "alien",
+        "envoy"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/scifi_alien_envoy_001.webp",
+        "thumbnail": "thumbs/scifi_alien_envoy_001.webp"
+      }
+    },
+    {
+      "id": "medieval_hooded_knight_001",
+      "name": "The Hooded Knight",
+      "tier": "preview",
+      "collection": "medieval_renaissance",
+      "period": "medieval",
+      "genre": [
+        "fantasy",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "warrior",
+      "clothing": "steel pauldron armour with a red hood",
+      "tags": [
+        "beard",
+        "wavy hair",
+        "armour",
+        "red hood",
+        "weathered"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/medieval_hooded_knight_001.webp",
+        "thumbnail": "thumbs/medieval_hooded_knight_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_courier_001",
+      "name": "The Courier",
+      "tier": "preview",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "professional",
+      "clothing": "yellow hoodie under a dark vest",
+      "tags": [
+        "long braids",
+        "hoop earrings",
+        "hoodie",
+        "calm",
+        "street"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/contemporary_courier_001.webp",
+        "thumbnail": "thumbs/contemporary_courier_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_elf_lady_001",
+      "name": "The Elf Lady",
+      "tier": "preview",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "scout",
+      "clothing": "green scaled bodice with a jewelled circlet",
+      "tags": [
+        "pointed ears",
+        "circlet",
+        "wavy hair",
+        "elf",
+        "jewelled"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/fantasy_elf_lady_001.webp",
+        "thumbnail": "thumbs/fantasy_elf_lady_001.webp"
+      }
+    },
+    {
+      "id": "horror_vampire_001",
+      "name": "The Vampire",
+      "tier": "preview",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "aristocrat",
+      "clothing": "high-collared black coat with a grey cravat",
+      "tags": [
+        "pale",
+        "red eyes",
+        "slicked hair",
+        "cravat",
+        "predatory"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/horror_vampire_001.webp",
+        "thumbnail": "thumbs/horror_vampire_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_boy_stripes_001",
+      "name": "The Boy",
+      "tier": "preview",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama",
+        "comedy"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "youth",
+      "clothing": "striped shirt with backpack straps",
+      "tags": [
+        "curly hair",
+        "big smile",
+        "backpack",
+        "cheerful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/contemporary_boy_stripes_001.webp",
+        "thumbnail": "thumbs/contemporary_boy_stripes_001.webp"
+      }
+    },
+    {
+      "id": "global_straw_hat_sage_001",
+      "name": "The Straw Hat Sage",
+      "tier": "preview",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "sage",
+      "clothing": "woven conical hat and a blue robe",
+      "tags": [
+        "white beard",
+        "conical hat",
+        "long hair",
+        "calm",
+        "wise"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/global_straw_hat_sage_001.webp",
+        "thumbnail": "thumbs/global_straw_hat_sage_001.webp"
+      }
+    },
+    {
+      "id": "scifi_cyber_operator_001",
+      "name": "The Cyber Operator",
+      "tier": "preview",
+      "collection": "science_fiction_cyberpunk",
+      "period": "far_future",
+      "genre": [
+        "cyberpunk",
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "rebel",
+      "clothing": "white and black armoured suit with a glowing headset",
+      "tags": [
+        "headset",
+        "cyborg",
+        "blue glow",
+        "futuristic"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/scifi_cyber_operator_001.webp",
+        "thumbnail": "thumbs/scifi_cyber_operator_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_orc_warrior_001",
+      "name": "The Orc Warrior",
+      "tier": "preview",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "action"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "warrior",
+      "clothing": "fur-trimmed leather armour",
+      "tags": [
+        "green skin",
+        "tusks",
+        "braids",
+        "scarred",
+        "orc"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/fantasy_orc_warrior_001.webp",
+        "thumbnail": "thumbs/fantasy_orc_warrior_001.webp"
+      }
+    },
+    {
+      "id": "global_red_veil_001",
+      "name": "The Woman in a Red Veil",
+      "tier": "preview",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "ceremonial",
+      "clothing": "red embroidered veil with gold jewellery",
+      "tags": [
+        "bindi",
+        "jewellery",
+        "veil",
+        "ceremonial",
+        "elegant"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/global_red_veil_001.webp",
+        "thumbnail": "thumbs/global_red_veil_001.webp"
+      }
+    },
+    {
+      "id": "global_grandmother_001",
+      "name": "The Grandmother",
+      "tier": "preview",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "sage",
+      "clothing": "patterned headwrap and shawl",
+      "tags": [
+        "white hair",
+        "kind smile",
+        "headwrap",
+        "grandmother",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/global_grandmother_001.webp",
+        "thumbnail": "thumbs/global_grandmother_001.webp"
+      }
+    },
+    {
+      "id": "western_cowboy_001",
+      "name": "The Cowboy",
+      "tier": "preview",
+      "collection": "western_historical",
+      "period": "wild_west",
+      "genre": [
+        "western"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "drifter",
+      "clothing": "brown hat, leather jacket and a red bandana",
+      "tags": [
+        "hat",
+        "stubble",
+        "bandana",
+        "rugged",
+        "cowboy"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/western_cowboy_001.webp",
+        "thumbnail": "thumbs/western_cowboy_001.webp"
+      }
+    },
+    {
+      "id": "scifi_pilot_001",
+      "name": "The Pilot",
+      "tier": "preview",
+      "collection": "science_fiction_cyberpunk",
+      "period": "far_future",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "adventurer",
+      "clothing": "white flight suit with a blue light and a headset",
+      "tags": [
+        "hair buns",
+        "headset",
+        "futuristic",
+        "determined"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/scifi_pilot_001.webp",
+        "thumbnail": "thumbs/scifi_pilot_001.webp"
+      }
+    },
+    {
+      "id": "global_headwrap_woman_001",
+      "name": "The Woman in the Headwrap",
+      "tier": "preview",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "elegant",
+      "clothing": "bright patterned headwrap and gold earrings",
+      "tags": [
+        "headwrap",
+        "gold earrings",
+        "necklace",
+        "elegant",
+        "colourful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/global_headwrap_woman_001.webp",
+        "thumbnail": "thumbs/global_headwrap_woman_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_curly_girl_001",
+      "name": "The Girl with Curls",
+      "tier": "preview",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama",
+        "comedy"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "youth",
+      "clothing": "denim overalls over a cream top",
+      "tags": [
+        "red curls",
+        "freckles",
+        "big smile",
+        "overalls"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/contemporary_curly_girl_001.webp",
+        "thumbnail": "thumbs/contemporary_curly_girl_001.webp"
+      }
+    },
+    {
+      "id": "scifi_robot_001",
+      "name": "The Robot",
+      "tier": "preview",
+      "collection": "science_fiction_cyberpunk",
+      "period": "far_future",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "guardian",
+      "clothing": "silver armoured chassis with glowing blue eyes",
+      "tags": [
+        "robot",
+        "glowing blue eyes",
+        "headset",
+        "metal",
+        "futuristic"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/scifi_robot_001.webp",
+        "thumbnail": "thumbs/scifi_robot_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_old_gentleman_001",
+      "name": "The Old Gentleman",
+      "tier": "preview",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "sage",
+      "clothing": "flat cap and a shearling-collared coat",
+      "tags": [
+        "flat cap",
+        "grey beard",
+        "kind",
+        "weathered",
+        "grandfather"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/contemporary_old_gentleman_001.webp",
+        "thumbnail": "thumbs/contemporary_old_gentleman_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_grinning_boy_001",
+      "name": "The Grinning Boy",
+      "tier": "preview",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "comedy",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "youth",
+      "clothing": "yellow hoodie",
+      "tags": [
+        "black hair",
+        "big smile",
+        "hoodie",
+        "cheerful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/contemporary_grinning_boy_001.webp",
+        "thumbnail": "thumbs/contemporary_grinning_boy_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_gorgon_001",
+      "name": "The Gorgon",
+      "tier": "preview",
+      "collection": "fantasy_mythology",
+      "period": "myth",
+      "genre": [
+        "fantasy",
+        "horror"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "ominous",
+      "clothing": "gold collar jewellery",
+      "tags": [
+        "snake hair",
+        "green skin",
+        "gold",
+        "myth",
+        "gorgon"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/fantasy_gorgon_001.webp",
+        "thumbnail": "thumbs/fantasy_gorgon_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_doctor_001",
+      "name": "The Doctor",
+      "tier": "preview",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "healer",
+      "clothing": "white coat over a navy turtleneck",
+      "tags": [
+        "silver curls",
+        "glasses",
+        "warm smile",
+        "doctor",
+        "kind"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
+      },
+      "assets": {
+        "card_small": "cards256/contemporary_doctor_001.webp",
+        "thumbnail": "thumbs/contemporary_doctor_001.webp"
       }
     }
   ]
