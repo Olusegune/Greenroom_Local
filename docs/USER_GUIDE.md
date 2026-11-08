@@ -95,6 +95,21 @@ At the top of Perform, **Show** chooses how much each line card displays. **Simp
 
 The preset and interpretation wording has not been judged by ear. A voice that cannot act on written words can only follow the pace, and Greenroom says so.
 
+### Beats inside a line
+
+![The Beats inside the line editor: a feeling, an intention, emphasis, pace and a pause for each phrase](img/beats.jpg)
+
+A line is split at its commas and full stops into **phrases**, and each phrase can have its own feeling, intention, emphasis, pace and pause after it. Your script text is never changed: the phrase texts are only used to find the beats again, and a beat is dropped if you edit its phrase away.
+
+There are two ways a beat reaches a voice:
+
+- **One request with written cues** (default): the feeling is written in front of the phrase as a cue, and emphasis capitalises the key word for **Inworld** voices (Inworld documents capitals as emphasis). Pace and pause **cannot** be sent this way; the cost sheet lists them as not sent.
+- **Make each phrase separately and join them**: every phrase is its own request with its own feeling and pace, and your pauses are real silence between them. It works with any voice, but it costs one request per phrase (the cost sheet shows the number), and the joins can sound different from one continuous read, so listen to them. The take's Details say it was made phrase by phrase.
+
+### Reactions for a character
+
+On a line's sound clip, **Save to reactions** keeps it with the character. On any other line of that character, the sound box offers **Reuse a saved reaction (free)**: it uses the same clip file, makes no request and spends nothing, and the clip's provenance and rights go with it.
+
 ### Character profile and acting references
 
 ![A character profile on the Cast screen](img/char-profile.jpg)

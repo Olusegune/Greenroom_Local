@@ -2,6 +2,8 @@ import type { Engine } from "./engines";
 import type { PerformancePlan } from "./performance";
 import type { VoiceDna } from "./voiceDna";
 import type { ConvertReport } from "./convertReport";
+import type { BeatMode, BeatSetting } from "./beats";
+import type { Reaction } from "./reactions";
 
 export interface Character {
   id: string;
@@ -11,6 +13,8 @@ export interface Character {
   language: string;
   /** The character's recurring profile: timbre, tendencies, preferred presets, pronunciations, approved reference takes. Absent until the owner fills it in. */
   dna?: VoiceDna;
+  /** Sound clips already made for this character (a laugh, a sigh) that can be reused on other lines at no cost. */
+  reactions?: Reaction[];
 }
 
 /** What produced a piece of audio, kept with it so a studio can answer "where did this come from?". */
@@ -23,6 +27,8 @@ export interface Provenance {
   instructions?: string;
   /** Cloud model that spoke the line, such as inworld-tts-2, when the engine has more than one. */
   modelId?: string;
+  /** A take made phrase by phrase and joined: how many requests it took. */
+  assembled?: number;
   /** For a take made by re-voicing a recording: how the result compares with the recording (timing, pauses, liveliness) and its phrase timings. */
   convert?: ConvertReport;
   /** Things worth a second listen, found by measuring the take (for example a short line that came back far too long). Hints, not proof. */
@@ -89,6 +95,10 @@ export interface Line {
   events: SoundEvent[];
   /** The director's performance plan for this line: objective, subtext, emotional arc, physical state and voice qualities. Absent on older projects and on lines nobody has planned. */
   performance?: PerformancePlan;
+  /** Acting inside the line: an emotion, intention, emphasis, pace or pause for individual phrases. Absent unless the owner sets one. */
+  beats?: BeatSetting[];
+  /** How beats reach a voice: written cues in one request (default), or each phrase made separately and joined. */
+  beatMode?: BeatMode;
   /** Seconds from the start of the picture at which this line starts speaking. Without one, the line follows the one before it. */
   cue?: number;
   /** Seconds the line fades in and out at its edges. Defaults are a few milliseconds, just enough to avoid clicks. */

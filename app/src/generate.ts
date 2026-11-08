@@ -5,9 +5,10 @@ import { applyPronunciations, composeText, spokenWords, stripTags, vkInstruction
 import { ENGINES, providerFor, type ElevenModel, type InworldModel } from "./engines";
 import { DEFAULT_INWORLD_MODEL, inworldPlan } from "./inworld";
 import { applyVariation, type VariationId } from "./acting";
+import { assemblePlan, cueText, emphasise, hasBeats, isAssembled } from "./beats";
 import { effectiveLine } from "./performance";
-import { fromBase64 } from "./audio";
-import { remember, takeBuffer } from "./media";
+import { encodeWav, fromBase64, toBase64 } from "./audio";
+import { decode, remember, takeBuffer } from "./media";
 import { analyzeSamples, takeFlags } from "./analysis";
 import { uid } from "./script";
 import { sha256Hex } from "./trust";
@@ -36,9 +37,9 @@ export interface Plan {
   notSent?: string[];
 }
 
-export function plan(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
+function planOne(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
   // The performance plan (if any) is compiled into the direction here; the saved line is never changed.
-  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved);
+  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
   const e = voice.provider;
   const provider = providerFor(e, model, voice.vkClone);
   if (e === "inworld") {
@@ -51,8 +52,25 @@ export function plan(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunc
   return { provider, text: applyPronunciations(stripTags(line.text), dict), instructions, model: e as Take["model"] };
 }
 
+/** What is sent for this line and voice. Beats in "cues" mode that cannot be sent (pace, pause, emphasis on other engines) are listed in `notSent`. */
+export function plan(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
+  const p = planOne(saved, voice, model, dict, opts);
+  if (hasBeats(saved) && !isAssembled(saved)) {
+    const extra = cueText(saved, voice.provider === "inworld").notSent;
+    if (extra.length) return { ...p, notSent: [...(p.notSent ?? []), ...extra] };
+  }
+  return p;
+}
+
+/** The requests that making this line will take: one, or one per phrase when the line is assembled from beats. */
+export function requestsFor(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[], opts: PlanOptions = {}): Plan[] {
+  if (!isAssembled(saved)) return [plan(saved, voice, model, dict, opts)];
+  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
+  return assemblePlan(line).map((st) => planOne({ ...line, text: voice.provider === "inworld" && st.emphasis ? emphasise(st.line.text) : st.line.text, direction: st.line.direction, beats: undefined, performance: undefined }, voice, model, dict, { ...opts, variation: undefined }));
+}
+
 export async function makeTake(projectId: string, saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
-  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved);
+  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
   const p = plan(saved, voice, model, dict, opts);
   const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: line.direction.speed, instructions: p.instructions, quality, model: p.modelId });
   const id = "t-" + uid();
@@ -110,6 +128,69 @@ export async function makeSound(projectId: string, prompt: string, seconds: numb
   const real = await remember(id, out);
   const sha256 = await sha256Hex(fromBase64(out.audioB64));
   return { id, ext, seconds: real, sha256, prompt, ...options } as const;
+}
+
+/**
+ * A line made phrase by phrase and joined with silence: each phrase is a separate request with its own emotion, intention
+ * and pace, and the owner's pause is left after it. It works with any voice but costs a request per phrase, and the joins
+ * can sound different from one continuous read.
+ */
+export async function makeBeatTake(projectId: string, saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
+  const steps = assemblePlan(line);
+  const pieces: Float32Array[] = [];
+  const sent: string[] = [];
+  let rate = 0;
+  let chars = 0;
+  let first: Plan | null = null;
+  for (const st of steps) {
+    const sub: Line = { ...line, text: voice.provider === "inworld" && st.emphasis ? emphasise(st.line.text) : st.line.text, direction: st.line.direction, beats: undefined, performance: undefined };
+    const p = planOne(sub, voice, model, dict, { ...opts, variation: undefined });
+    first ??= p;
+    const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: sub.direction.speed, instructions: p.instructions, quality, model: p.modelId });
+    const buf = await decode(out);
+    if (rate && buf.sampleRate !== rate) throw new Error("The phrases came back at different sample rates, so they cannot be joined. Make this line as one take.");
+    rate = buf.sampleRate;
+    pieces.push(Float32Array.from(buf.getChannelData(0)), new Float32Array(Math.round(st.pauseAfter * rate)));
+    sent.push(p.text);
+    chars += p.text.length;
+  }
+  const total = pieces.reduce((n, a) => n + a.length, 0);
+  const joined = new Float32Array(total);
+  let at = 0;
+  for (const a of pieces) {
+    joined.set(a, at);
+    at += a.length;
+  }
+  const b64 = toBase64(encodeWav([joined], rate));
+  const id = "t-" + uid();
+  await api.takeWrite(projectId, id, "wav", b64);
+  const seconds = await remember(id, { audioB64: b64, mime: "audio/wav" });
+  const sha256 = await sha256Hex(fromBase64(b64));
+  return {
+    id,
+    at: new Date().toISOString(),
+    model: first!.model,
+    ext: "wav",
+    voiceId: voice.id,
+    sent: sent.map((t, i) => `(${i + 1}) ${t}`).join("  "),
+    seconds,
+    provenance: {
+      engine: voice.provider,
+      voiceName: voice.name,
+      speed: line.direction.speed,
+      modelId: first!.modelId,
+      assembled: steps.length,
+      chars,
+      sha256,
+      appVersion: APP_VERSION,
+      emotion: line.direction.emotion,
+      sounds: line.direction.sounds,
+      note: line.direction.note ?? "",
+      pronunciations: dict.length,
+      variation: opts.variation,
+    },
+  };
 }
 
 export function modelLabel(m: Take["model"]): string {

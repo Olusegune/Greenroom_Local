@@ -17,7 +17,9 @@ import { api } from "../api";
 import { Avatar } from "../avatar";
 import { ENGINES, ENGINE_ORDER, directorReady, qualityFormat, soundEngineOf } from "../engines";
 import { useLocalDirectorReady } from "../localDirector";
-import { makeSound, makeTake, modelLabel, plan, type Model } from "../generate";
+import { makeBeatTake, makeSound, makeTake, modelLabel, plan, requestsFor, type Model } from "../generate";
+import { isAssembled } from "../beats";
+import { migrateReactions, reuse, saveReaction } from "../reactions";
 import ReVoiceDialog from "./ReVoiceDialog";
 import { Pause, Play, Sparkle, Stop, Trash } from "../icons";
 import { parsePlayback, pausePlayback, playbackSnapshot, resumePlayback, stopPlayback, subscribePlayback, takeBuffer, takeUrl } from "../media";
@@ -74,7 +76,7 @@ export default function Perform() {
   const patchLine = (id: string, fn: (l: Line) => Line, key?: string) => edit((p) => ({ ...p, lines: p.lines.map((l) => (l.id === id ? fn(l) : l)) }), key);
 
   const spend = (lines: Line[]) => {
-    const chars = lines.reduce((n, l) => n + (voiceOf(l) ? plan(l, voiceOf(l)!, model, dictOf(l), { inworldModel: engines.inworldModel }).text.length : 0), 0);
+    const chars = lines.reduce((n, l) => n + (voiceOf(l) ? requestsFor(l, voiceOf(l)!, model, dictOf(l), { inworldModel: engines.inworldModel }).reduce((m, r) => m + r.text.length, 0) : 0), 0);
     return { chars, voices: [...new Set(lines.map((l) => voiceOf(l)?.name).filter(Boolean))].join(", ") };
   };
 
@@ -85,18 +87,20 @@ export default function Perform() {
       return false;
     }
     const runs: (VariationId | undefined)[] = variations ?? Array.from({ length: count }, () => undefined);
-    const chars = runs.reduce((n, v) => n + plan(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel, variation: v }).text.length, 0);
+    const requests = runs.reduce((n, v) => n + requestsFor(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel, variation: v }).length, 0);
+    const chars = runs.reduce((n, v) => n + requestsFor(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel, variation: v }).reduce((m, r) => m + r.text.length, 0), 0);
     const e = ENGINES[voice.provider];
     const pl = plan(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel });
+    const beatNotSent = voice.provider !== "inworld" ? (pl.notSent ?? []).map((n) => `Not sent: ${n}`) : [];
     const extra: string[] = voice.provider === "inworld" ? [`Character: ${charOf(line)?.name ?? "?"}`, `Model: ${pl.modelId}`, ...(pl.notSent ?? []).map((n) => `Not sent: ${n}`)] : !e.tags && vkUnsupported(effectiveLine(line)).length ? [`${e.label} cannot make: ${vkUnsupported(effectiveLine(line)).join(", ")}. Those will be left out.`] : [];
     if (!e.local) {
       const price = priceLines([{ kind: "speech", engine: voice.provider, chars }]);
-      const ok = await confirmSpend({ title: runs.length > 1 ? (variations ? `Make ${runs.length} interpretations?` : `Make ${runs.length} takes?`) : "Make a take?", lines: [`${chars} characters (${runs.length} take${runs.length > 1 ? "s" : ""}${variations ? `: ${variations.join(", ")}` : ""})`, `Voice: ${voice.name}`, ...extra, ...price.lines], warn: price.warn, skipKey: runs.length > 1 ? undefined : "take" });
+      const ok = await confirmSpend({ title: runs.length > 1 ? (variations ? `Make ${runs.length} interpretations?` : `Make ${runs.length} takes?`) : "Make a take?", lines: [`${chars} characters (${runs.length} take${runs.length > 1 ? "s" : ""}${variations ? `: ${variations.join(", ")}` : ""})`, ...(requests > runs.length ? [`${requests} requests: each phrase is made separately and joined`] : []), `Voice: ${voice.name}`, ...extra, ...beatNotSent, ...price.lines], warn: price.warn, skipKey: runs.length > 1 ? undefined : "take" });
       if (!ok) return false;
     }
     try {
       for (let i = 0; i < runs.length; i++) {
-        const t = await makeTake(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i] });
+        const t = await (isAssembled(line) ? makeBeatTake : makeTake)(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i] });
         // A set of interpretations never replaces a take you already chose.
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: variations ? l.chosen ?? t.id : t.id }), "~take");
         const sent = t.provenance?.chars ?? chars;
@@ -115,7 +119,7 @@ export default function Perform() {
     const paid = todo.filter((l) => !ENGINES[voiceOf(l)!.provider].local);
     if (paid.length > 0) {
       const s = spend(paid);
-      const price = priceLines(paid.map((l) => ({ kind: "speech" as const, engine: voiceOf(l)!.provider, chars: plan(l, voiceOf(l)!, model, dictOf(l), { inworldModel: engines.inworldModel }).text.length })));
+      const price = priceLines(paid.map((l) => ({ kind: "speech" as const, engine: voiceOf(l)!.provider, chars: requestsFor(l, voiceOf(l)!, model, dictOf(l), { inworldModel: engines.inworldModel }).reduce((m, r) => m + r.text.length, 0) })));
       const ok = await confirmSpend({ title: "Make all the missing takes?", lines: [`${paid.length} lines, ${s.chars} characters${paid.length < todo.length ? ` (${todo.length - paid.length} more run offline, free)` : ""}`, `Voices: ${s.voices}`, "One take per line. You can make more later.", ...price.lines], warn: price.warn });
       if (!ok) return;
     }
@@ -126,7 +130,7 @@ export default function Perform() {
       const line = todo[i]!;
       try {
         const v = voiceOf(line)!;
-        const t = await makeTake(project.id, line, v, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
+        const t = await (isAssembled(line) ? makeBeatTake : makeTake)(project.id, line, v, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }), "~take");
         const sent = t.provenance?.chars ?? 0;
         addLedger({ kind: "speech", engine: ENGINES[v.provider].label, chars: sent, items: [{ kind: "speech", engine: v.provider, chars: sent }] });
@@ -793,6 +797,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
           line={line}
           patch={patch}
           engineLabel={ENGINES[voice.provider].label}
+          isInworld={voice.provider === "inworld"}
           references={migrateDna(character?.dna)?.references ?? []}
           preferred={migrateDna(character?.dna)?.presets ?? []}
           actsOnWords={ENGINES[voice.provider].tags || voice.provider === "voicekiller" || (voice.provider === "inworld" && steers(engines.inworldModel))}
@@ -815,6 +820,19 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
           <PlayButton label={e.prompt.slice(0, 22)} get={() => takeUrl(project!.id, e.take!.id)} disabled={!e.take} />
           <span className="badge">sound {e.placement === "before" ? "before" : "after"}</span>
           {(e.take?.qa?.issues.length ?? 0) > 0 && <span className="badge warn" title={e.take!.qa!.issues.join(" ")}>⚠ {e.take!.qa!.issues.length} to check</span>}
+          {character && e.take && (
+            <button
+              className="sm ghost"
+              title={`Keep this clip in ${character.name}'s reactions so other lines can use it for free`}
+              disabled={migrateReactions(character.reactions).some((r) => r.take.id === e.take!.id)}
+              onClick={() => {
+                edit((pr) => ({ ...pr, characters: pr.characters.map((c) => (c.id === character.id ? { ...c, reactions: saveReaction(c.reactions, e) } : c)) }));
+                toast(`Saved to ${character.name}'s reactions.`);
+              }}
+            >
+              {migrateReactions(character.reactions).some((r) => r.take.id === e.take!.id) ? "In reactions" : "Save to reactions"}
+            </button>
+          )}
           <span className="spacer" />
           <button className="sm icon ghost" aria-label={`Remove sound ${e.prompt}`} onClick={() => patch((l) => ({ ...l, events: l.events.filter((x) => x.id !== e.id) }))}>
             <Trash size={14} />
@@ -890,6 +908,26 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
               <input type="checkbox" checked={snd.loop} onChange={(e) => setSnd({ ...snd, loop: e.target.checked })} /> Loop
             </label>
           )}
+          {migrateReactions(character?.reactions).length > 0 && (
+            <select
+              aria-label="Reuse a saved reaction"
+              value=""
+              onChange={(e) => {
+                const r = migrateReactions(character?.reactions).find((x) => x.id === e.target.value);
+                if (r) {
+                  patch((l) => ({ ...l, events: [...l.events, reuse(r, "e-" + uid(), snd.placement)] }));
+                  toast(`Added ${r.prompt || "the saved clip"} from ${character?.name}'s reactions. Nothing was spent.`);
+                }
+              }}
+            >
+              <option value="">Reuse a saved reaction (free)…</option>
+              {migrateReactions(character?.reactions).map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.prompt.slice(0, 50) || r.id} · {r.take.seconds.toFixed(1)}s
+                </option>
+              ))}
+            </select>
+          )}
           <button className="sm primary" disabled={!snd.prompt.trim() || busy} onClick={() => void addSound()}>
             Make sound
           </button>
@@ -945,6 +983,7 @@ function TakeFacts({ t }: { t: Take }) {
       {(p?.note || p?.emotion || (p?.sounds?.length ?? 0) > 0) && <span>Direction: {[p?.emotion, ...(p?.sounds ?? []), p?.note ? `“${p.note}”` : ""].filter(Boolean).join(" · ")}</span>}
       {p?.convert && <span>Compared with the recording: length {p.convert.driftPercent > 0 ? "+" : ""}{p.convert.driftPercent}%, pauses {p.convert.pausesSource} to {p.convert.pausesResult}{p.convert.flags.length ? `. ${p.convert.flags.join(" ")}` : "."}</span>}
       {(p?.check?.length ?? 0) > 0 && <span className="warn">Worth a second listen: {p!.check!.join(" ")}</span>}
+      {p?.assembled && <span>Made phrase by phrase: {p.assembled} requests, joined with the pauses you set. Listen to the joins.</span>}
       {p?.variation && <span>Made as the {p.variation} interpretation.</span>}
       {p?.quality && <span>Audio quality asked for: {p.quality}.</span>}
       <span>

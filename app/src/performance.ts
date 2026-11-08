@@ -1,3 +1,4 @@
+import { cueText, hasBeats, isAssembled } from "./beats";
 import { cleanNote, EMOTIONS } from "./direct";
 import type { Direction, Line } from "./types";
 
@@ -171,9 +172,12 @@ const endSentence = (s: string) => (/[.!?;]$/.test(s.trim()) ? s.trim() : `${s.t
  * The line as it should be sent: the director's own chips and note first, then what the performance plan adds.
  * A line with no plan (or an untouched one) is returned as it is, and the saved line is never changed.
  */
-export function effectiveLine<T extends Pick<Line, "text" | "direction"> & { performance?: unknown }>(line: T): T {
+export function effectiveLine<T extends Pick<Line, "text" | "direction"> & { performance?: unknown; beats?: unknown; beatMode?: unknown }>(line: T, opts: { emphasis?: boolean } = {}): T {
+  // Beats in "cues" mode are written into the text as tags in front of each phrase. In "assemble" mode the text is left alone: each phrase is spoken separately.
+  const withBeats: T = hasBeats(line) && !isAssembled(line) ? { ...line, text: cueText(line, !!opts.emphasis).text } : line;
   const plan = migratePerformance(line.performance);
-  if (!plan || isDefaultPerformance(plan)) return line;
+  if (!plan || isDefaultPerformance(plan)) return withBeats;
+  line = withBeats;
   const c = compilePerformance(plan);
   const d: Direction = line.direction;
   const note = [d.note?.trim() ? endSentence(d.note) : "", ...c.sentences].filter(Boolean).join(" ");
