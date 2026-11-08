@@ -173,7 +173,8 @@ impl Client {
             if !valid_lang(l) {
                 return Err("That language code is not valid.".into());
             }
-            parts.push(format!("lang_code = \"{}\"", l.replace('-', "_").to_uppercase()));
+            // The documented example is `lang_code = "en"`; only the base language is used, and the app filters locales itself.
+            parts.push(format!("lang_code = \"{}\"", l.split(['-', '_']).next().unwrap_or(l).to_lowercase()));
         }
         if let Some(s) = source.filter(|s| !s.is_empty()) {
             if !["SYSTEM", "IVC", "TVD", "PVC"].contains(&s) {
@@ -394,7 +395,7 @@ mod tests {
         assert_eq!(p.total, 3);
         assert!(!p.truncated);
         let first = f.hits.lock().unwrap()[0].path.clone();
-        assert!(first.contains("filter=") && first.contains("EN_US") && first.contains("SYSTEM"), "{first}");
+        assert!(first.contains("filter=") && first.contains("lang_code") && first.contains("%22en%22") && first.contains("SYSTEM"), "{first}");
         assert_eq!(p.voices[0].language, "en-US");
     }
 

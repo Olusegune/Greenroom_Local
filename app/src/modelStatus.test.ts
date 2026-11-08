@@ -14,6 +14,11 @@ describe("model status", () => {
     }
     expect(modelStatus(m("chatterbox-multilingual-v3"), "installed", true, hw).status).toBe("ready");
     expect(modelStatus(m("director-qwen3-4b"), "installed", false, hw).status).toBe("ready");
+    for (const k of ["stable-audio-open-small", "ace-step-v1"]) {
+      const s = modelStatus(m(k), "installed", false, hw);
+      expect(s.status, k).toBe("installed");
+      expect(s.detail).toMatch(/not marked Ready/);
+    }
     expect(Object.keys(CONNECTED).every((id) => MODEL_CATALOG.some((x) => x.id === id))).toBe(true);
   });
 

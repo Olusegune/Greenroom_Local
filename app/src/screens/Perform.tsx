@@ -5,7 +5,7 @@ import { ScriptDoctor } from "./ScriptDoctor";
 import { TakeCompare } from "./TakeCompare";
 import { applySuggestion, cleanWritten, describe, parsePlans, parseSceneDirections, planSystem, type PlanSuggestion, sceneBatches, sceneDirectionSystem, type SceneDirection, isDirected, parseDirector, systemPrompt, userPrompt, writeDirectionSystem, writeDirectionUser, type DirectorResult } from "../director";
 import { DirectorPanel } from "./DirectorPanel";
-import { effectiveLine } from "../performance";
+import { effectiveLine, isDefaultPerformance, migratePerformance } from "../performance";
 import { steers } from "../inworld";
 import { actsOnWords } from "../engineCaps";
 import { dictFor } from "../voiceDna";
@@ -18,7 +18,7 @@ import { Avatar } from "../avatar";
 import { ENGINES, ENGINE_ORDER, directorReady, qualityFormat, soundEngineOf } from "../engines";
 import { useLocalDirectorReady } from "../localDirector";
 import { makeBeatTake, makeSound, makeTake, modelLabel, plan, requestsFor, type Model } from "../generate";
-import { isAssembled } from "../beats";
+import { beatsFor, hasBeats, isAssembled } from "../beats";
 import { migrateReactions, reuse, saveReaction } from "../reactions";
 import ReVoiceDialog from "./ReVoiceDialog";
 import { Pause, Play, Sparkle, Stop, Trash } from "../icons";
@@ -87,8 +87,9 @@ export default function Perform() {
       return false;
     }
     const runs: (VariationId | undefined)[] = variations ?? Array.from({ length: count }, () => undefined);
-    const requests = runs.reduce((n, v) => n + requestsFor(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel, variation: v }).length, 0);
-    const chars = runs.reduce((n, v) => n + requestsFor(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel, variation: v }).reduce((m, r) => m + r.text.length, 0), 0);
+    const planned = runs.flatMap((v) => requestsFor(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel, variation: v }));
+    const requests = planned.length;
+    const chars = planned.reduce((n, r) => n + r.text.length, 0);
     const e = ENGINES[voice.provider];
     const pl = plan(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel });
     const beatNotSent = voice.provider !== "inworld" ? (pl.notSent ?? []).map((n) => `Not sent: ${n}`) : [];
@@ -356,6 +357,8 @@ export default function Perform() {
     </section>
   );
 }
+
+const phrasesCount = (l: Line): number => beatsFor(l).length;
 
 type PerformView = "simple" | "director" | "advanced";
 
@@ -792,6 +795,9 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
         </div>
       </details>}
 
+      {view === "simple" && ((): boolean => { const pl = migratePerformance(line.performance); return (!!pl && !isDefaultPerformance(pl)) || hasBeats(line); })() && (
+        <p className="dir-reach small">A performance plan or beats are set on this line and are used when you make a take{isAssembled(line) ? ` (as ${phrasesCount(line)} separate requests)` : ""}. Choose Director to see or change them.</p>
+      )}
       {voice && view !== "simple" && (
         <DirectorPanel
           line={line}

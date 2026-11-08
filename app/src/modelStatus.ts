@@ -24,6 +24,9 @@ export const CONNECTED: Record<string, string> = {
   "stable-audio-open-small": "Makes sound clips when chosen as the sound engine.",
 };
 
+/** Routes that exist but have not been run on a real model since their runtime script was rebuilt (see CINEMATIC_ENGINE_AUDIT.md). They are Installed, not Ready. */
+export const UNVERIFIED = new Set(["stable-audio-open-small", "ace-step-v1"]);
+
 export const LABEL: Record<ModelStatus, string> = { "download-required": "Download required", installed: "Installed", ready: "Ready", "requires-setup": "Requires setup", unsupported: "Unsupported on this hardware" };
 
 export function modelStatus(m: LocalModel, state: InstallState, runtimeInstalled: boolean, hw: Pick<HardwareProfile, "memoryGb" | "accelerator" | "vramGb">): StatusInfo {
@@ -38,6 +41,7 @@ export function modelStatus(m: LocalModel, state: InstallState, runtimeInstalled
   }
   if (needsRuntime && !runtimeInstalled) return { ...base, status: "requires-setup", label: LABEL["requires-setup"], detail: "The model files are here but its runtime is not installed." };
   const route = CONNECTED[m.id];
+  if (route && UNVERIFIED.has(m.id)) return { ...base, status: "installed", label: LABEL.installed, detail: `${route} Its runtime script has not been verified on a real run yet, so it is not marked Ready.` };
   if (route) return { ...base, status: "ready", label: LABEL.ready, detail: route };
   return { ...base, status: "installed", label: LABEL.installed, detail: "Installed, but Greenroom has no route to use it yet, so it cannot make anything." };
 }

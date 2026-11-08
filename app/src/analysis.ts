@@ -59,8 +59,19 @@ function framePitch(x: Float32Array, start: number, len: number, rate: number): 
   return best > 0.6 && bestLag > 0 ? rate / bestLag : null;
 }
 
-export function analyzeSamples(x: Float32Array, rate: number, words: number): TakeStats {
-  const seconds = x.length / rate;
+/** Every `k` samples averaged into one, a cheap low-pass and reduction of the sample rate. */
+function decimate(x: Float32Array, k: number): Float32Array {
+  const out = new Float32Array(Math.floor(x.length / k));
+  for (let i = 0; i < out.length; i++) {
+    let s = 0;
+    for (let j = 0; j < k; j++) s += x[i * k + j]!;
+    out[i] = s / k;
+  }
+  return out;
+}
+
+/** The level of each 20 ms frame and whether it holds speech (within 35 dB of the loudest frame and above a floor). One definition of speech and silence for every measurement. */
+export function frameActivity(x: Float32Array, rate: number): { rms: number[]; voiced: boolean[]; n: number } {
   const n = Math.max(1, Math.floor(rate * WIN));
   const frames = Math.floor(x.length / n);
   const rms: number[] = [];
@@ -71,7 +82,13 @@ export function analyzeSamples(x: Float32Array, rate: number, words: number): Ta
   }
   const peak = Math.max(0, ...rms);
   const floor = peak * Math.pow(10, -35 / 20);
-  const voiced = rms.map((r) => r > floor && r > 1e-4);
+  return { rms, voiced: rms.map((r) => r > floor && r > 1e-4), n };
+}
+
+export function analyzeSamples(x: Float32Array, rate: number, words: number): TakeStats {
+  const seconds = x.length / rate;
+  const { rms, voiced, n } = frameActivity(x, rate);
+  const frames = rms.length;
   const first = voiced.indexOf(true);
   const last = voiced.lastIndexOf(true);
   if (first < 0) {
@@ -93,14 +110,19 @@ export function analyzeSamples(x: Float32Array, rate: number, words: number): Ta
   const mean = levels.reduce((a, b) => a + b, 0) / Math.max(1, levels.length);
   const sd = Math.sqrt(levels.reduce((a, b) => a + (b - mean) * (b - mean), 0) / Math.max(1, levels.length));
 
-  const pitchLen = Math.floor(rate * 0.04);
+  // Pitch is measured on a copy reduced to about 8 kHz: the pitch of a voice lives far below that, and the
+  // autocorrelation cost grows with the square of the sample rate.
+  const dec = Math.max(1, Math.floor(rate / 8000));
+  const px = dec === 1 ? x : decimate(x, dec);
+  const prate = rate / dec;
+  const pitchLen = Math.floor(prate * 0.04);
   const perSlice: number[][] = Array.from({ length: 8 }, () => []);
   const all: number[] = [];
   for (let f = first; f <= last; f++) {
     if (!voiced[f]) continue;
-    const start = f * n;
-    if (start + pitchLen > x.length) break;
-    const p = framePitch(x, start, pitchLen, rate);
+    const start = Math.floor((f * n) / dec);
+    if (start + pitchLen > px.length) break;
+    const p = framePitch(px, start, pitchLen, prate);
     if (p) {
       all.push(p);
       perSlice[Math.min(7, Math.floor(((f - first) / speechFrames) * 8))]!.push(p);

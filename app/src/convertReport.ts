@@ -3,38 +3,31 @@
 // clean enough, did the timing survive, did the pauses survive, and did the liveliness of the performance survive.
 // Everything here is measured from the audio. None of it says how the result sounds: that needs listening.
 
-import { analyzeSamples, type TakeStats } from "./analysis";
+import { frameActivity, type TakeStats } from "./analysis";
 
 const WIN = 0.02;
 const db = (x: number) => 20 * Math.log10(Math.max(x, 1e-9));
 
 /** Stretches of speech as [start, end] seconds, split wherever there is at least `gapMs` of silence. These are phrase timings, not word timings. */
 export function speechSegments(x: Float32Array, rate: number, gapMs = 150): [number, number][] {
-  const n = Math.max(1, Math.floor(rate * WIN));
-  const frames = Math.floor(x.length / n);
-  const rms: number[] = [];
-  for (let f = 0; f < frames; f++) {
-    let s = 0;
-    for (let i = 0; i < n; i++) s += x[f * n + i]! * x[f * n + i]!;
-    rms.push(Math.sqrt(s / n));
-  }
-  const peak = Math.max(0, ...rms);
-  const floor = Math.max(peak * Math.pow(10, -35 / 20), 1e-4);
+  const { voiced, n } = frameActivity(x, rate);
+  const frames = voiced.length;
   const out: [number, number][] = [];
+  const t = (f: number) => Number(((f * n) / rate).toFixed(2));
   let start = -1;
   let silent = 0;
-  const gap = Math.ceil(gapMs / (WIN * 1000));
+  const gap = Math.ceil(gapMs / ((n / rate) * 1000));
   for (let f = 0; f < frames; f++) {
-    if (rms[f]! > floor) {
+    if (voiced[f]) {
       if (start < 0) start = f;
       silent = 0;
     } else if (start >= 0 && ++silent >= gap) {
-      out.push([Number((start * WIN).toFixed(2)), Number(((f - silent + 1) * WIN).toFixed(2))]);
+      out.push([t(start), t(f - silent + 1)]);
       start = -1;
       silent = 0;
     }
   }
-  if (start >= 0) out.push([Number((start * WIN).toFixed(2)), Number(((frames - silent) * WIN).toFixed(2))]);
+  if (start >= 0) out.push([t(start), t(frames - silent)]);
   return out;
 }
 
@@ -121,5 +114,3 @@ export function compareConversion(source: TakeStats, result: TakeStats, resultSa
     flags,
   };
 }
-
-export const statsOf = (x: Float32Array, rate: number, words: number): TakeStats => analyzeSamples(x, rate, words);

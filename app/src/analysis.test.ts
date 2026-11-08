@@ -89,3 +89,15 @@ describe("waveformPeaks", () => {
     expect(waveformPeaks(Float32Array.from([3, -3]), 2)).toEqual([1, 1]);
   });
 });
+
+describe("analysis cost", () => {
+  it("measures ten seconds of 48 kHz speech without blocking for long, and still finds the pitch", () => {
+    const rate = 48000;
+    const x = Float32Array.from({ length: rate * 10 }, (_, i) => Math.sin((2 * Math.PI * 180 * i) / rate) * 0.3);
+    const t = Date.now();
+    const s = analyzeSamples(x, rate, 20);
+    expect(Date.now() - t).toBeLessThan(2500);
+    expect(s.pitchHz!).toBeGreaterThan(170);
+    expect(s.pitchHz!).toBeLessThan(190);
+  });
+});

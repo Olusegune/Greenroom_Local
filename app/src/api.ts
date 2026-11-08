@@ -227,6 +227,7 @@ const real = {
   chatterboxReady: () => call<boolean>("chatterbox_ready"),
   chatterboxRuntimeStatus: () => call<ChatterboxRuntimeStatus>("chatterbox_runtime_status"),
   chatterboxRuntimeInstall: () => call<ChatterboxRuntimeStatus>("chatterbox_runtime_install"),
+  // The Kokoro and Qwen installers are kept for when their speech routes exist; Model Center hides their buttons until then.
   kokoroRuntimeStatus: () => call<LocalRuntimeStatus>("kokoro_runtime_status"),
   kokoroRuntimeInstall: () => call<LocalRuntimeStatus>("kokoro_runtime_install"),
   qwenRuntimeStatus: () => call<LocalRuntimeStatus>("qwen_runtime_status"),
