@@ -284,3 +284,29 @@ describe("music, ducking and crossfades in the plan", () => {
     expect(custom.items[0]).toMatchObject({ fadeIn: 0.2, fadeOut: 0.4 });
   });
 });
+
+import { perspective } from "./audio";
+import { newProject } from "./types";
+describe("spatial perspective", () => {
+  it("leaves a close voice alone and makes a far one quieter and duller", () => {
+    expect(perspective(undefined)).toEqual({ gainDb: 0, cutoffHz: null });
+    expect(perspective(0)).toEqual({ gainDb: 0, cutoffHz: null });
+    expect(perspective(1)).toEqual({ gainDb: -12, cutoffHz: 2500 });
+    const mid = perspective(0.5);
+    expect(mid.gainDb).toBe(-6);
+    expect(mid.cutoffHz!).toBeGreaterThan(2500);
+    expect(mid.cutoffHz!).toBeLessThan(20000);
+    expect(perspective(9).gainDb).toBe(-12);
+    expect(perspective(-3)).toEqual({ gainDb: 0, cutoffHz: null });
+  });
+  it("carries a line's position and distance onto its speech and its sound clips", () => {
+    const p = newProject("p", "T", "now");
+    p.characters = [{ id: "c", name: "A", language: "en" }];
+    p.lines = [{ id: "l1", characterId: "c", scene: 0, text: "Hi", direction: { ...DEFAULT_DIRECTION, pan: -0.6, distance: 0.4 }, takes: [{ id: "t1", at: "", model: "piper", ext: "wav", voiceId: "v", sent: "Hi", seconds: 1 }], chosen: "t1", events: [{ id: "e1", prompt: "sigh", placement: "after", seconds: 1, take: { id: "s1", ext: "wav", seconds: 1 } }] }];
+    const plan = planTimeline(p);
+    const speech = plan.items.find((i) => i.kind === "speech")!;
+    const event = plan.items.find((i) => i.kind === "event")!;
+    expect([speech.pan, speech.distance]).toEqual([-0.6, 0.4]);
+    expect([event.pan, event.distance]).toEqual([-0.6, 0.4]);
+  });
+});

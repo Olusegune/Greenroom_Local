@@ -17,7 +17,7 @@ import { api } from "../api";
 import { Avatar } from "../avatar";
 import { ENGINES, ENGINE_ORDER, directorReady, qualityFormat, soundEngineOf } from "../engines";
 import { useLocalDirectorReady } from "../localDirector";
-import { makeBeatTake, makeSound, makeTake, modelLabel, plan, requestsFor, type Model } from "../generate";
+import { makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type Model } from "../generate";
 import { beatsFor, hasBeats, isAssembled } from "../beats";
 import { migrateReactions, reuse, saveReaction } from "../reactions";
 import ReVoiceDialog from "./ReVoiceDialog";
@@ -565,6 +565,25 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
   const fineNames = [d.emotion ? label(EMOTIONS, d.emotion) : "", ...d.sounds.filter((t) => !QUICK_SOUNDS.includes(t)).map((t) => label(ALL_SOUND_TAGS, t)), Math.abs(d.speed - 1) > 0.001 ? `${d.speed.toFixed(2)}×` : "", (d.gain ?? 0) !== 0 ? `${(d.gain ?? 0) > 0 ? "+" : ""}${(d.gain ?? 0).toFixed(1)} dB` : ""].filter(Boolean).slice(0, 3);
 
   // Written direction reaches every engine that can act on words; the line below says honestly which this voice is.
+  // Remake one phrase of a take that was made phrase by phrase. One request, confirmed first; the old take stays.
+  const remake = async (t: Take, index: number) => {
+    if (!voice) return;
+    const ph = t.provenance?.parts?.[index];
+    if (!ph) return;
+    if (!ENGINES[voice.provider].local) {
+      const price = priceLines([{ kind: "speech", engine: voice.provider, chars: ph.text.length }]);
+      const ok = await confirmSpend({ title: `Remake phrase ${index + 1}?`, lines: [`“${ph.text}”`, `About ${ph.text.length} characters, one request`, `Voice: ${voice.name}`, "The other phrases and your pauses are kept. The old take stays.", ...price.lines], warn: price.warn });
+      if (!ok) return;
+    }
+    try {
+      const nt = await remakeBeat(project!.id, line, t, index, voice, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
+      patch((l) => ({ ...l, takes: [...l.takes, nt] }));
+      addLedger({ kind: "speech", engine: ENGINES[voice.provider].label, chars: ph.text.length, items: [{ kind: "speech", engine: voice.provider, chars: ph.text.length }] });
+      toast(`Remade phrase ${index + 1} as a new take. The old one is kept.`);
+    } catch (e) {
+      toast((e as Error).message, true);
+    }
+  };
   const makeRef = async (t: Take) => {
     if (!voice || !character) return;
     try {
@@ -783,6 +802,16 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
               <input type="range" min={-18} max={9} step={0.5} value={d.gain ?? 0} aria-label="Level in dB" onChange={(e) => setDir((x) => ({ ...x, gain: Number(e.target.value) }))} onDoubleClick={() => setDir((x) => ({ ...x, gain: 0 }))} title="Double-click to reset" />
               <span className="num">{(d.gain ?? 0) > 0 ? "+" : ""}{(d.gain ?? 0).toFixed(1)} dB</span>
             </label>
+            <label className="row small muted" title="Where the voice sits in the stereo mix. Applies to the mix and stems, not to the untouched line files.">
+              Position
+              <input type="range" min={-1} max={1} step={0.1} value={d.pan ?? 0} aria-label="Stereo position" onChange={(e) => setDir((x) => ({ ...x, pan: Number(e.target.value) || undefined }))} onDoubleClick={() => setDir((x) => ({ ...x, pan: undefined }))} />
+              <span className="num">{(d.pan ?? 0) === 0 ? "centre" : (d.pan ?? 0) < 0 ? `${Math.round(-(d.pan ?? 0) * 100)}% left` : `${Math.round((d.pan ?? 0) * 100)}% right`}</span>
+            </label>
+            <label className="row small muted" title="How far away the voice sounds: quieter and duller. Applies to the mix and stems.">
+              Distance
+              <input type="range" min={0} max={1} step={0.1} value={d.distance ?? 0} aria-label="Distance" onChange={(e) => setDir((x) => ({ ...x, distance: Number(e.target.value) || undefined }))} />
+              <span className="num">{(d.distance ?? 0) === 0 ? "close" : `${Math.round((d.distance ?? 0) * 100)}% far`}</span>
+            </label>
             <label className="row small muted">
               Pause after
               <input type="range" min={0} max={3} step={0.1} value={d.pauseAfter} aria-label="Pause after" onChange={(e) => setDir((x) => ({ ...x, pauseAfter: Number(e.target.value) }))} />
@@ -819,7 +848,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
       )}
       {compare && <TakeCompare projectId={project!.id} line={line} onClose={() => setCompare(false)} />}
       {line.takes.map((t, i) => (
-        <TakeRow key={t.id} t={t} n={i + 1} lineId={line.id} projectId={project!.id} chosen={t.id === chosen?.id} choose={() => patch((l) => ({ ...l, chosen: t.id }))} reference={voice && character ? () => makeRef(t) : undefined} />
+        <TakeRow key={t.id} t={t} n={i + 1} lineId={line.id} projectId={project!.id} chosen={t.id === chosen?.id} choose={() => patch((l) => ({ ...l, chosen: t.id }))} reference={voice && character ? () => makeRef(t) : undefined} remake={voice ? (i) => remake(t, i) : undefined} />
       ))}
       {line.events.map((e) => (
         <div key={e.id} className="take">
@@ -946,7 +975,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
   );
 }
 
-function TakeRow({ t, n, lineId, projectId, chosen, choose, reference }: { t: Take; n: number; lineId: string; projectId: string; chosen: boolean; choose: () => void; reference?: () => Promise<void> }) {
+function TakeRow({ t, n, lineId, projectId, chosen, choose, reference, remake }: { t: Take; n: number; lineId: string; projectId: string; chosen: boolean; choose: () => void; reference?: () => Promise<void>; remake?: (i: number) => Promise<void> }) {
   const [info, setInfo] = useState(false);
   const [refBusy, setRefBusy] = useState(false);
   return (
@@ -972,6 +1001,17 @@ function TakeRow({ t, n, lineId, projectId, chosen, choose, reference }: { t: Ta
       {info && (
         <div className="small muted" style={{ paddingLeft: 12 }}>
           <TakeFacts t={t} />
+          {remake && (t.provenance?.parts?.length ?? 0) > 0 && (
+            <div className="stack" style={{ gap: 4, marginTop: 6 }}>
+              <span className="eyebrow">Phrases in this take</span>
+              {t.provenance!.parts!.map((ph, i) => (
+                <div key={i} className="row between wrap small">
+                  <span>{i + 1}. “{ph.text}” <span className="muted">({ph.start.toFixed(2)}–{ph.end.toFixed(2)} s)</span></span>
+                  <button className="sm ghost" onClick={() => void remake(i)}>Remake this phrase</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

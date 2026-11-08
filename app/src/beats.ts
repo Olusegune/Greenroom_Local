@@ -109,3 +109,30 @@ export function assemblePlan(line: Pick<Line, "text" | "direction"> & { beats?: 
     return { emphasis: !!s?.emphasis, line: { text: p.text, direction: { ...d, emotion: s?.emotion ?? d.emotion, note, speed, sounds: i === 0 ? d.sounds : [] } }, pauseAfter: i === all.length - 1 ? 0 : s?.pauseAfter ?? 0.12 };
   });
 }
+
+export interface BeatPart {
+  text: string;
+  /** Seconds in the joined take where this phrase's speech starts and ends. */
+  start: number;
+  end: number;
+  /** Silence left after it. */
+  pause: number;
+}
+
+/**
+ * The joined audio with one phrase replaced, keeping every other phrase and every pause exactly as it was. The old take
+ * is never changed: the result is new audio for a new take.
+ */
+export function spliceBeat(joined: Float32Array, rate: number, parts: BeatPart[], index: number, replacement: Float32Array): { samples: Float32Array; parts: BeatPart[] } {
+  const p = parts[index];
+  if (!p) throw new Error("That phrase does not exist in this take.");
+  const a = Math.min(joined.length, Math.max(0, Math.round(p.start * rate)));
+  const b = Math.min(joined.length, Math.max(a, Math.round(p.end * rate)));
+  const samples = new Float32Array(a + replacement.length + (joined.length - b));
+  samples.set(joined.subarray(0, a), 0);
+  samples.set(replacement, a);
+  samples.set(joined.subarray(b), a + replacement.length);
+  const delta = replacement.length / rate - (b - a) / rate;
+  const out = parts.map((q, i) => (i < index ? q : i === index ? { ...q, end: Number((q.start + replacement.length / rate).toFixed(3)) } : { ...q, start: Number((q.start + delta).toFixed(3)), end: Number((q.end + delta).toFixed(3)) }));
+  return { samples, parts: out };
+}

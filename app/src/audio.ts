@@ -22,6 +22,16 @@ export interface Placed {
   trimIn?: number;
   /** Dips under dialogue. */
   duck?: boolean;
+  /** Stereo position, -1 to 1, and distance, 0 to 1. See `perspective`. */
+  pan?: number;
+  distance?: number;
+}
+
+/** What a distance does to a voice: up to 12 dB quieter and a low-pass that closes from 20 kHz to 2.5 kHz, as air and room soften far sounds. */
+export function perspective(distance: number | undefined): { gainDb: number; cutoffHz: number | null } {
+  const d = Math.min(1, Math.max(0, Number.isFinite(distance) ? distance! : 0));
+  if (d === 0) return { gainDb: 0, cutoffHz: null };
+  return { gainDb: Number((-12 * d).toFixed(2)), cutoffHz: Math.round(20000 * Math.pow(2500 / 20000, d)) };
 }
 
 export interface Span {
@@ -73,14 +83,14 @@ export function planTimeline(p: Pick<Project, "lines" | "gap" | "bed"> & { music
       t = Math.max(0, line.cue - lead);
     }
     for (const e of line.events.filter((x) => x.placement === "before" && x.take)) {
-      items.push({ kind: "event", lineId: line.id, characterId: line.characterId, ref: e.take!, start: t, seconds: e.take!.seconds, gainDb: 0, fadeIn: EDGE_FADE_IN, fadeOut: EDGE_FADE_OUT });
+      items.push({ kind: "event", lineId: line.id, characterId: line.characterId, ref: e.take!, start: t, seconds: e.take!.seconds, gainDb: 0, fadeIn: EDGE_FADE_IN, fadeOut: EDGE_FADE_OUT, pan: line.direction.pan, distance: line.direction.distance });
       t += e.take!.seconds;
     }
-    items.push({ kind: "speech", lineId: line.id, characterId: line.characterId, ref: { id: take.id, ext: take.ext }, start: t, seconds: take.seconds, gainDb: Number.isFinite(line.direction.gain) ? line.direction.gain! : 0, fadeIn: line.fadeIn ?? EDGE_FADE_IN, fadeOut: line.fadeOut ?? EDGE_FADE_OUT });
+    items.push({ kind: "speech", lineId: line.id, characterId: line.characterId, ref: { id: take.id, ext: take.ext }, start: t, seconds: take.seconds, gainDb: Number.isFinite(line.direction.gain) ? line.direction.gain! : 0, fadeIn: line.fadeIn ?? EDGE_FADE_IN, fadeOut: line.fadeOut ?? EDGE_FADE_OUT, pan: line.direction.pan, distance: line.direction.distance });
     spans.push({ lineId: line.id, start: t, end: t + take.seconds });
     t += take.seconds;
     for (const e of line.events.filter((x) => x.placement === "after" && x.take)) {
-      items.push({ kind: "event", lineId: line.id, characterId: line.characterId, ref: e.take!, start: t, seconds: e.take!.seconds, gainDb: 0, fadeIn: EDGE_FADE_IN, fadeOut: EDGE_FADE_OUT });
+      items.push({ kind: "event", lineId: line.id, characterId: line.characterId, ref: e.take!, start: t, seconds: e.take!.seconds, gainDb: 0, fadeIn: EDGE_FADE_IN, fadeOut: EDGE_FADE_OUT, pan: line.direction.pan, distance: line.direction.distance });
       t += e.take!.seconds;
     }
     t += Number.isFinite(line.direction.pauseAfter) ? Math.max(0, line.direction.pauseAfter) : p.gap;
@@ -305,13 +315,25 @@ export async function renderPlan(plan: Plan, bedVolume: number, load: Loader, sa
       level.gain.setValueAtTime(bedVolume, Math.max(0, it.seconds - 1.2));
       level.gain.linearRampToValueAtTime(0, it.seconds);
     } else {
-      level.gain.value = dbToGain(it.gainDb);
+      level.gain.value = dbToGain(it.gainDb + perspective(it.distance).gainDb);
       // Fade in and out with equal-power curves, kept from overlapping inside a short clip.
       const { fi, fo } = fitFades(it.seconds, it.fadeIn, it.fadeOut);
       if (fi > 0.0005) fades.gain.setValueCurveAtTime(fadeCurve("in"), it.start, fi);
       if (fo > 0.0005) fades.gain.setValueCurveAtTime(fadeCurve("out"), it.start + it.seconds - fo, fo);
     }
     let tail: AudioNode = src.connect(fades).connect(level);
+    const cutoff = it.kind === "bed" || it.kind === "music" ? null : perspective(it.distance).cutoffHz;
+    if (cutoff) {
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = cutoff;
+      tail = tail.connect(lp);
+    }
+    if (it.pan && it.kind !== "bed" && it.kind !== "music") {
+      const pan = ctx.createStereoPanner();
+      pan.pan.value = Math.min(1, Math.max(-1, it.pan));
+      tail = tail.connect(pan);
+    }
     if (it.duck && duck) {
       const d = ctx.createGain();
       d.gain.setValueCurveAtTime(duck, 0, plan.total);

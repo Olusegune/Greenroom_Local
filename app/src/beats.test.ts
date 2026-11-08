@@ -100,3 +100,36 @@ describe("assemble mode", () => {
     expect(requestsFor(line({ beats }), voice("elevenlabs"), "eleven_v4", [])).toHaveLength(1);
   });
 });
+
+import { spliceBeat, type BeatPart } from "./beats";
+describe("remaking one phrase", () => {
+  const RATE = 10;
+  // Three phrases of 1 s, 2 s and 1 s speech, with pauses of 0.5 s and 0.2 s after the first two.
+  const parts: BeatPart[] = [{ text: "a", start: 0, end: 1, pause: 0.5 }, { text: "b", start: 1.5, end: 3.5, pause: 0.2 }, { text: "c", start: 3.7, end: 4.7, pause: 0 }];
+  const joined = Float32Array.from({ length: 47 }, (_, i) => (i < 10 ? 1 : i < 15 ? 0 : i < 35 ? 2 : i < 37 ? 0 : 3));
+
+  it("replaces only that phrase, keeps the pauses and shifts the later timings", () => {
+    const r = spliceBeat(joined, RATE, parts, 1, new Float32Array(30).fill(9));
+    expect(r.samples.length).toBe(47 + 10);
+    expect([...r.samples.subarray(0, 10)].every((v) => v === 1)).toBe(true);
+    expect([...r.samples.subarray(10, 15)].every((v) => v === 0)).toBe(true);
+    expect([...r.samples.subarray(15, 45)].every((v) => v === 9)).toBe(true);
+    expect([...r.samples.subarray(45, 47)].every((v) => v === 0)).toBe(true);
+    expect([...r.samples.subarray(47)].every((v) => v === 3)).toBe(true);
+    expect(r.parts[0]).toEqual(parts[0]);
+    expect(r.parts[1]!.end).toBeCloseTo(4.5, 3);
+    expect(r.parts[2]!.start).toBeCloseTo(4.7, 3);
+    expect(r.parts[2]!.end).toBeCloseTo(5.7, 3);
+  });
+  it("never changes the original audio and rejects a phrase that is not there", () => {
+    const copy = Float32Array.from(joined);
+    spliceBeat(joined, RATE, parts, 0, new Float32Array(3));
+    expect(joined).toEqual(copy);
+    expect(() => spliceBeat(joined, RATE, parts, 7, new Float32Array(1))).toThrow(/does not exist/);
+  });
+  it("can shorten a phrase too", () => {
+    const r = spliceBeat(joined, RATE, parts, 2, new Float32Array(4));
+    expect(r.samples.length).toBe(37 + 4);
+    expect(r.parts[2]!.end).toBeCloseTo(4.1, 3);
+  });
+});

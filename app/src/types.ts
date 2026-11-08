@@ -29,6 +29,10 @@ export interface Provenance {
   modelId?: string;
   /** A take made phrase by phrase and joined: how many requests it took. */
   assembled?: number;
+  /** Where each phrase sits in the joined take, in seconds, so one phrase can be remade without touching the rest. */
+  parts?: { text: string; start: number; end: number; pause: number }[];
+  /** The phrase (counting from 1) that was remade to produce this take, and the take it was made from. */
+  remade?: { phrase: number; from: string };
   /** For a take made by re-voicing a recording: how the result compares with the recording (timing, pauses, liveliness) and its phrase timings. */
   convert?: ConvertReport;
   /** Things worth a second listen, found by measuring the take (for example a short line that came back far too long). Hints, not proof. */
@@ -82,6 +86,10 @@ export interface Direction {
   pauseAfter: number;
   /** Level of this line in the mix, in dB. Older projects have none, which means 0. */
   gain?: number;
+  /** Where the voice sits in the stereo mix, -1 (left) to 1 (right). Absent or 0 is the centre. Applies to the mix and stems, not to the untouched line files. */
+  pan?: number;
+  /** How far away the voice sounds, 0 (close) to 1 (far): quieter and duller. Absent or 0 is as recorded. */
+  distance?: number;
 }
 
 export interface Line {

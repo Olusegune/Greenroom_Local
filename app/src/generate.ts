@@ -5,7 +5,7 @@ import { applyPronunciations, composeText, spokenWords, stripTags, vkInstruction
 import { ENGINES, providerFor, type ElevenModel, type InworldModel } from "./engines";
 import { DEFAULT_INWORLD_MODEL, inworldPlan } from "./inworld";
 import { applyVariation, type VariationId } from "./acting";
-import { assemblePlan, cueText, emphasise, hasBeats, isAssembled } from "./beats";
+import { assemblePlan, cueText, emphasise, hasBeats, isAssembled, spliceBeat, type BeatPart } from "./beats";
 import { effectiveLine } from "./performance";
 import { encodeWav, fromBase64, toBase64 } from "./audio";
 import { decode, remember, takeBuffer } from "./media";
@@ -140,6 +140,8 @@ export async function makeBeatTake(projectId: string, saved: Line, voice: VoiceE
   const steps = assemblePlan(line);
   const pieces: Float32Array[] = [];
   const sent: string[] = [];
+  const parts: BeatPart[] = [];
+  let at0 = 0;
   let rate = 0;
   let chars = 0;
   let first: Plan | null = null;
@@ -151,7 +153,10 @@ export async function makeBeatTake(projectId: string, saved: Line, voice: VoiceE
     const buf = await decode(out);
     if (rate && buf.sampleRate !== rate) throw new Error("The phrases came back at different sample rates, so they cannot be joined. Make this line as one take.");
     rate = buf.sampleRate;
-    pieces.push(Float32Array.from(buf.getChannelData(0)), new Float32Array(Math.round(st.pauseAfter * rate)));
+    const speech = Float32Array.from(buf.getChannelData(0));
+    pieces.push(speech, new Float32Array(Math.round(st.pauseAfter * rate)));
+    parts.push({ text: st.line.text, start: Number((at0 / rate).toFixed(3)), end: Number(((at0 + speech.length) / rate).toFixed(3)), pause: st.pauseAfter });
+    at0 += speech.length + Math.round(st.pauseAfter * rate);
     sent.push(p.text);
     chars += p.text.length;
   }
@@ -181,6 +186,7 @@ export async function makeBeatTake(projectId: string, saved: Line, voice: VoiceE
       speed: line.direction.speed,
       modelId: first!.modelId,
       assembled: steps.length,
+      parts,
       chars,
       sha256,
       appVersion: APP_VERSION,
@@ -191,6 +197,31 @@ export async function makeBeatTake(projectId: string, saved: Line, voice: VoiceE
       variation: opts.variation,
     },
   };
+}
+
+/**
+ * Remakes one phrase of a take that was made phrase by phrase, and joins it back between the untouched rest. One request.
+ * The original take is never changed: this returns a new take that says which phrase was remade and from which take.
+ */
+export async function remakeBeat(projectId: string, saved: Line, from: Take, index: number, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const parts = from.provenance?.parts;
+  if (!parts?.[index]) throw new Error("This take has no phrase timings, so one phrase cannot be remade. Make the line again.");
+  const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
+  const st = assemblePlan(line)[index];
+  if (!st || st.line.text !== parts[index]!.text) throw new Error("The line has been edited since this take was made, so its phrases no longer match. Make the line again.");
+  const sub: Line = { ...line, text: voice.provider === "inworld" && st.emphasis ? emphasise(st.line.text) : st.line.text, direction: st.line.direction, beats: undefined, performance: undefined };
+  const p = planOne(sub, voice, model, dict, { ...opts, variation: undefined });
+  const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: sub.direction.speed, instructions: p.instructions, quality, model: p.modelId });
+  const [old, fresh] = [await takeBuffer(projectId, from.id), await decode(out)];
+  if (old.sampleRate !== fresh.sampleRate) throw new Error("The new phrase came back at a different sample rate, so it cannot be joined. Make the line again.");
+  const joined = spliceBeat(Float32Array.from(old.getChannelData(0)), old.sampleRate, parts, index, Float32Array.from(fresh.getChannelData(0)));
+  const b64 = toBase64(encodeWav([joined.samples], old.sampleRate));
+  const id = "t-" + uid();
+  await api.takeWrite(projectId, id, "wav", b64);
+  const seconds = await remember(id, { audioB64: b64, mime: "audio/wav" });
+  const sha256 = await sha256Hex(fromBase64(b64));
+  const sent = from.sent.split(/ {2}(?=\(\d+\) )/).map((x, i) => (i === index ? `(${i + 1}) ${p.text}` : x)).join("  ");
+  return { ...from, id, at: new Date().toISOString(), sent, seconds, provenance: { ...from.provenance!, sha256, parts: joined.parts, remade: { phrase: index + 1, from: from.id }, chars: (from.provenance!.chars ?? 0) + p.text.length, check: undefined } };
 }
 
 export function modelLabel(m: Take["model"]): string {
