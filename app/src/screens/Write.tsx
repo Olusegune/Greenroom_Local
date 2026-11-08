@@ -1,5 +1,5 @@
+import { CharacterFace } from "./AvatarBrowser";
 import { useState } from "react";
-import { Avatar } from "../avatar";
 import { useApp } from "../ctx";
 import { ENGINES } from "../engines";
 import { ChevronRight } from "../icons";
@@ -67,7 +67,7 @@ export default function Write() {
                 <div key={c.id} className="field">
                   <span className="row between">
                     <span className="row">
-                      <Avatar seed={(library.find((v) => v.id === c.voiceId)?.id ?? c.id) + (library.find((v) => v.id === c.voiceId)?.name ?? c.name)} gender={library.find((v) => v.id === c.voiceId)?.gender} size={34} />
+                      <CharacterFace character={c} voice={library.find((v) => v.id === c.voiceId)} size={34} editable={false} />
                       <span className="speaker">{c.name}</span>
                     </span>
                     <span className="muted small">{counts.get(c.id)} line{counts.get(c.id) === 1 ? "" : "s"}</span>

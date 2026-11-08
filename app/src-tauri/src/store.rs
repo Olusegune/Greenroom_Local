@@ -216,6 +216,18 @@ pub fn casts_save(root: &Path, json: &str) -> Result<(), String> {
     atomic_write(&root.join("casts.json"), json.as_bytes())
 }
 
+/// The owner's own avatars, favourites and recently used list: one JSON object kept beside the voice library.
+pub fn avatars_load(root: &Path) -> String {
+    fs::read_to_string(root.join("avatars.json")).unwrap_or_else(|_| "{}".into())
+}
+
+pub fn avatars_save(root: &Path, json: &str) -> Result<(), String> {
+    if json.len() > 48 << 20 || !serde_json::from_str::<Value>(json).map(|v| v.is_object()).unwrap_or(false) {
+        return Err("The avatar library data was not valid.".into());
+    }
+    atomic_write(&root.join("avatars.json"), json.as_bytes())
+}
+
 pub fn library_save(root: &Path, json: &str) -> Result<(), String> {
     if json.len() > 2 << 20 || !serde_json::from_str::<Value>(json).map(|v| v.is_array()).unwrap_or(false) {
         return Err("The voice library data was not valid.".into());
@@ -251,6 +263,19 @@ mod tests {
         assert_eq!(fs::read_to_string(p).unwrap(), "a,b");
         assert!(sheet_export(&r, "evil.exe", "x").is_err());
         assert!(sheet_export(&r, "../evil.md", "x").is_err());
+        let _ = fs::remove_dir_all(&r);
+    }
+
+    #[test]
+    fn the_avatar_library_round_trips_and_refuses_anything_but_an_object() {
+        let r = std::env::temp_dir().join(format!("greenroom-avatars-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&r);
+        assert_eq!(avatars_load(&r), "{}");
+        avatars_save(&r, r#"{"custom":[],"favorites":["a"]}"#).unwrap();
+        assert_eq!(avatars_load(&r), r#"{"custom":[],"favorites":["a"]}"#);
+        assert!(avatars_save(&r, "[1]").is_err());
+        assert!(avatars_save(&r, "not json").is_err());
+        assert_eq!(avatars_load(&r), r#"{"custom":[],"favorites":["a"]}"#);
         let _ = fs::remove_dir_all(&r);
     }
 

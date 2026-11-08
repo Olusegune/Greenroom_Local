@@ -1,4 +1,5 @@
 import { syncPortraits } from "./portrait";
+import { loadAvatars } from "./avatarState";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, type KeyStatus } from "./api";
 import { History, keepWork } from "./history";
@@ -86,6 +87,7 @@ export function Provider({ children }: { children: ReactNode }) {
 
   const refreshKeys = useCallback(() => void api.keyStatus().then(setKeys).catch(() => undefined), []);
   useEffect(refreshKeys, [refreshKeys]);
+  useEffect(() => void loadAvatars(), []);
   useEffect(() => void api.libraryLoad().then((l) => ((libRef.current = l), setLibrary(l))).catch(() => undefined), []);
 
   useEffect(() => void api.enginesLoad().then((c) => setEngines({ ...DEFAULT_ENGINES_CFG, ...c, localServer: { ...DEFAULT_ENGINES_CFG.localServer, ...(c.localServer ?? {}) } })).catch(() => undefined), []);

@@ -2,7 +2,7 @@ import { mergePronunciations, parsePronunciationCsv, pronunciationsToCsv } from 
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import { CharacterProfile } from "./CharacterProfile";
-import { AvatarButton } from "./AvatarButton";
+import { CharacterFace } from "./AvatarBrowser";
 import { appliedSummary, applyCast, castFrom, type SavedCast } from "../cast";
 import { useApp } from "../ctx";
 import { ENGINES, ENGINE_ORDER, type Engine } from "../engines";
@@ -85,7 +85,7 @@ export default function Cast() {
             <div key={c.id} className={voice ? "card voice-card lit" : "card voice-card"}>
               <div className="row between">
                 <span className="row">
-                  <AvatarButton voice={voice} seed={(voice?.id ?? c.id) + (voice?.name ?? c.name)} gender={voice?.gender} size={44} role={c.name} />
+                  <CharacterFace character={c} voice={voice} size={44} />
                   <h2 className="speaker">{c.name}</h2>
                 </span>
                 <span className={voice ? "badge ok" : "badge warn"}>{voice ? ENGINES[voice.provider].label : "No voice yet"}</span>

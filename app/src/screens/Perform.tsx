@@ -2,7 +2,7 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import { useApp } from "../ctx";
 import { PlanReview } from "./PlanReview";
 import { ScriptDoctor } from "./ScriptDoctor";
-import { AvatarButton } from "./AvatarButton";
+import { CharacterFace } from "./AvatarBrowser";
 import { TakeCompare } from "./TakeCompare";
 import { applySuggestion, cleanWritten, describe, parsePlans, parseSceneDirections, planSystem, type PlanSuggestion, sceneBatches, sceneDirectionSystem, type SceneDirection, isDirected, parseDirector, systemPrompt, userPrompt, writeDirectionSystem, writeDirectionUser, type DirectorResult } from "../director";
 import { DirectorPanel } from "./DirectorPanel";
@@ -397,7 +397,7 @@ function CharacterRail() {
         const done = mine.filter((l) => l.takes.length > 0).length;
         return (
           <div key={c.id} className="rail-char">
-            <AvatarButton voice={v} seed={(v?.id ?? c.id) + (v?.name ?? c.name)} gender={v?.gender} size={44} role={c.name} />
+            <CharacterFace character={c} voice={v} size={44} />
             <button className="rc-text" onClick={() => document.getElementById(`line-${mine[0]!.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })} title={`Jump to ${c.name}'s first line`}>
               <strong>{c.name}</strong>
               <span className="muted small">{v ? `${v.name} · ${ENGINES[v.provider].label}` : "No voice yet"}</span>
@@ -427,7 +427,7 @@ function ReactionLibrary() {
         return (
           <div key={c.id} className="card stack">
             <div className="row">
-              <AvatarButton voice={v} seed={(v?.id ?? c.id) + (v?.name ?? c.name)} gender={v?.gender} size={40} role={c.name} />
+              <CharacterFace character={c} voice={v} size={40} />
               <strong className="speaker">{c.name}</strong>
               <span className="muted small">{list.length} saved</span>
             </div>
@@ -754,7 +754,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
   return (
     <div className="linecard" id={`line-${line.id}`}>
       <div className="lc-portrait">
-        <AvatarButton voice={voice} seed={(voice?.id ?? character?.id ?? "x") + (voice?.name ?? character?.name ?? "")} gender={voice?.gender} size={96} role={character?.name} />
+        <CharacterFace character={character} voice={voice} size={96} emotion={line.direction.emotion} />
         <strong className="speaker">{character?.name ?? "?"}</strong>
         <span className="muted small">{voice ? ENGINES[voice.provider].label : "No voice"}</span>
       </div>

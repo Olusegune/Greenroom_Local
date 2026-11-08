@@ -23,6 +23,7 @@ const directorImpl = async (_s: string, user: string) => {
   };
 
 const demoSfx = { on: false };
+let avatarsJson = "{}";
 const keys = { elevenlabs: true, kie: true, voicekiller: true, inworld: true, huggingface: false } as Record<string, boolean>;
 const projects = new Map<string, Project>();
 const takes = new Map<string, { audioB64: string; mime: string }>();
@@ -72,6 +73,8 @@ export const mock: Api = {
     return { audioB64: tone(secs, 180 + (req.text.length % 7) * 40), mime: "audio/wav", ms: 400 };
   },
   voicesMine: async () => (await wait(), MINE),
+  avatarsLoad: async () => avatarsJson,
+  avatarsSave: async (json: string) => void (avatarsJson = json),
   avatarGenerate: async (prompt: string) => {
     await wait(900);
     const c = document.createElement("canvas");

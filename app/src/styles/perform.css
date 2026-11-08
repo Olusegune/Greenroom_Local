@@ -101,3 +101,19 @@
 div.rail-char { cursor: default; }
 button.rc-text { border: 0; background: transparent; text-align: left; padding: 0; height: auto; min-height: 0; justify-content: flex-start; flex: 1; }
 button.rc-text:hover strong { color: var(--accent); }
+
+/* ---- Avatar browser ---- */
+.av-body { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; align-items: start; }
+.av-list { min-width: 0; }
+.av-preview { display: grid; gap: 8px; justify-items: start; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-1); }
+.av-cell { position: relative; display: grid; justify-items: center; align-content: start; gap: 4px; padding: 6px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-1); height: auto; min-height: 0; text-align: center; }
+.av-cell:hover { border-color: var(--accent-line); }
+.av-cell[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-line); background: var(--accent-wash); }
+.av-cell img { border-radius: 10px; object-fit: cover; background: var(--surface-2); }
+.av-name { font-size: 12px; line-height: 1.2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+.av-badge { position: absolute; top: 8px; left: 8px; font-size: 10px; padding: 1px 6px; border-radius: 99px; background: var(--accent); color: #04140c; }
+.av-star { position: absolute; top: 6px; right: 8px; color: #f2c14e; }
+.av-suggest { display: grid; justify-items: center; gap: 2px; padding: 4px; border-radius: 10px; border: 1px solid var(--accent-line); background: var(--accent-wash); height: auto; min-height: 0; }
+.av-suggest img { border-radius: 8px; object-fit: cover; }
+.av-dialog { max-height: 94vh; overflow: auto; display: grid; gap: 12px; }
+@media (max-width: 860px) { .av-body { grid-template-columns: 1fr; } }

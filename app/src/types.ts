@@ -11,6 +11,8 @@ export interface Character {
   voiceId?: string;
   /** Free label such as "English", "Yoruba" or "Taglish": a reminder and a voice-search filter, not a switch sent to the model. */
   language: string;
+  /** Which avatar shows for this character: a built-in id or a custom one ("custom:..."). Separate from the voice: changing one never changes the other. Absent on older projects. */
+  avatarId?: string;
   /** The character's recurring profile: timbre, tendencies, preferred presets, pronunciations, approved reference takes. Absent until the owner fills it in. */
   dna?: VoiceDna;
   /** Sound clips already made for this character (a laugh, a sigh) that can be reused on other lines at no cost. */

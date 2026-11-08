@@ -86,6 +86,10 @@ This is wording sent to a model that may or may not obey it. Whether the result 
 
 Each line is a card led by its character's **portrait**. Along the top are the tabs **Quick Perform**, **Director**, **Advanced** and **Reaction Library**, then one row of AI tools (Direct with AI, Direct whole scene, Plan the performance, Script Doctor). On each card, four tiles (**Emotion**, **Delivery**, **Pace**, **Intensity**) show what is set and open the Director panel when pressed; the **Performance presets** box holds an acting preset, speed and level. On the right, **Characters** shows who speaks, with which voice, and how many of their lines have takes; press a name to jump to their first line.
 
+### Avatars for characters
+
+Press a character's face (on Perform, Cast or the Reaction Library) to open the **Avatar browser**: search and filter the built-in portraits, mark favourites, see recently used ones, import your own picture, get suggestions from a description, or create a custom avatar. A character's avatar and voice are separate: changing one never changes the other. Details, the rights status and what is still missing are in [Avatar library](AVATAR_LIBRARY.md). **The built-in library has 12 of its 100 planned portraits so far.**
+
 ### Pictures for voices
 
 ![Choosing or making a picture for a voice](img/portrait-dialog.jpg)

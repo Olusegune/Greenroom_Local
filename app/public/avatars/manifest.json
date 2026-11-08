@@ -1,0 +1,431 @@
+{
+  "version": 1,
+  "target": 100,
+  "count": 12,
+  "collections": [
+    "contemporary_everyday",
+    "ancient_civilizations",
+    "medieval_renaissance",
+    "victorian_edwardian",
+    "western_historical",
+    "fantasy_mythology",
+    "science_fiction_cyberpunk",
+    "horror_supernatural",
+    "stylized_3d_animation",
+    "global_cultural_archetypes"
+  ],
+  "avatars": [
+    {
+      "id": "fantasy_adventurer_001",
+      "name": "The Adventurer",
+      "collection": "fantasy_mythology",
+      "period": "fantasy",
+      "genre": [
+        "adventure",
+        "fantasy"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "hero",
+      "clothing": "weathered leather jacket with a red scarf and shoulder straps",
+      "tags": [
+        "rugged",
+        "scarf",
+        "leather",
+        "explorer",
+        "hero",
+        "dark curly hair",
+        "stubble"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/fantasy_adventurer_001.png",
+        "card": "cards/fantasy_adventurer_001.webp",
+        "card_small": "cards256/fantasy_adventurer_001.webp",
+        "thumbnail": "thumbs/fantasy_adventurer_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_silver_fox_001",
+      "name": "The Silver Fox",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "authority",
+      "clothing": "dark blazer over a black shirt",
+      "tags": [
+        "salt-and-pepper",
+        "stubble",
+        "confident",
+        "businessman",
+        "teal-lit",
+        "blue eyes"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_silver_fox_001.png",
+        "card": "cards/contemporary_silver_fox_001.webp",
+        "card_small": "cards256/contemporary_silver_fox_001.webp",
+        "thumbnail": "thumbs/contemporary_silver_fox_001.webp"
+      }
+    },
+    {
+      "id": "scifi_runner_001",
+      "name": "The Runner",
+      "collection": "science_fiction_cyberpunk",
+      "period": "near_future",
+      "genre": [
+        "cyberpunk",
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "rebel",
+      "clothing": "black technical jacket with green piping",
+      "tags": [
+        "curly hair",
+        "hoop earrings",
+        "futuristic",
+        "confident",
+        "street"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/scifi_runner_001.png",
+        "card": "cards/scifi_runner_001.webp",
+        "card_small": "cards256/scifi_runner_001.webp",
+        "thumbnail": "thumbs/scifi_runner_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_editor_001",
+      "name": "The Editor",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "professional",
+      "clothing": "teal blazer",
+      "tags": [
+        "editorial",
+        "hoop earrings",
+        "curly hair",
+        "confident",
+        "teal-lit"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_editor_001.png",
+        "card": "cards/contemporary_editor_001.webp",
+        "card_small": "cards256/contemporary_editor_001.webp",
+        "thumbnail": "thumbs/contemporary_editor_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_entrepreneur_001",
+      "name": "The Entrepreneur",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama",
+        "comedy"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "professional",
+      "clothing": "mustard yellow blazer",
+      "tags": [
+        "bold",
+        "curly hair",
+        "hoop earrings",
+        "warm",
+        "bright",
+        "entrepreneur"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_entrepreneur_001.png",
+        "card": "cards/contemporary_entrepreneur_001.webp",
+        "card_small": "cards256/contemporary_entrepreneur_001.webp",
+        "thumbnail": "thumbs/contemporary_entrepreneur_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_mentor_001",
+      "name": "The Mentor",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "mentor",
+      "clothing": "dark overcoat over a black shirt",
+      "tags": [
+        "grey beard",
+        "distinguished",
+        "weathered",
+        "stern",
+        "wise",
+        "elder"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_mentor_001.png",
+        "card": "cards/contemporary_mentor_001.webp",
+        "card_small": "cards256/contemporary_mentor_001.webp",
+        "thumbnail": "thumbs/contemporary_mentor_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_executive_001",
+      "name": "The Executive",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "professional",
+      "clothing": "black blazer with green trim",
+      "tags": [
+        "long dark hair",
+        "elegant",
+        "studio",
+        "green accent",
+        "composed"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_executive_001.png",
+        "card": "cards/contemporary_executive_001.webp",
+        "card_small": "cards256/contemporary_executive_001.webp",
+        "thumbnail": "thumbs/contemporary_executive_001.webp"
+      }
+    },
+    {
+      "id": "scifi_guardian_001",
+      "name": "The Guardian",
+      "collection": "science_fiction_cyberpunk",
+      "period": "near_future",
+      "genre": [
+        "science_fiction",
+        "action"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "guardian",
+      "clothing": "armoured black jacket with teal piping",
+      "tags": [
+        "ponytail",
+        "futuristic",
+        "armour",
+        "determined",
+        "teal-lit"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/scifi_guardian_001.png",
+        "card": "cards/scifi_guardian_001.webp",
+        "card_small": "cards256/scifi_guardian_001.webp",
+        "thumbnail": "thumbs/scifi_guardian_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_veteran_001",
+      "name": "The Veteran",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "action",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "warrior",
+      "clothing": "worn leather jacket with straps",
+      "tags": [
+        "rugged",
+        "stubble",
+        "grey streaks",
+        "stern",
+        "soldier",
+        "weathered"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_veteran_001.png",
+        "card": "cards/contemporary_veteran_001.webp",
+        "card_small": "cards256/contemporary_veteran_001.webp",
+        "thumbnail": "thumbs/contemporary_veteran_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_analyst_001",
+      "name": "The Analyst",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "professional",
+      "clothing": "black blazer",
+      "tags": [
+        "long dark hair",
+        "teal-lit",
+        "calm",
+        "earrings",
+        "composed"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_analyst_001.png",
+        "card": "cards/contemporary_analyst_001.webp",
+        "card_small": "cards256/contemporary_analyst_001.webp",
+        "thumbnail": "thumbs/contemporary_analyst_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_professor_001",
+      "name": "The Professor",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "scholar",
+      "clothing": "grey blazer over a blue shirt and sweater",
+      "tags": [
+        "glasses",
+        "silver hair",
+        "kind",
+        "scholar",
+        "wise",
+        "gentle"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_professor_001.png",
+        "card": "cards/contemporary_professor_001.webp",
+        "card_small": "cards256/contemporary_professor_001.webp",
+        "thumbnail": "thumbs/contemporary_professor_001.webp"
+      }
+    },
+    {
+      "id": "contemporary_elder_001",
+      "name": "The Elder",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "sage",
+      "clothing": "tweed jacket over a blue shirt",
+      "tags": [
+        "white hair",
+        "moustache",
+        "weathered",
+        "kind",
+        "grandfather",
+        "wise"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner in the folder 'Green Local avatars' on 2026-11-08",
+        "generator": "not stated by the supplier",
+        "commercial_use": "unconfirmed",
+        "note": "The supplier has not yet recorded the tool or licence terms these portraits came from. They are fictional-looking portraits, but commercial use must be confirmed by the supplier before release."
+      },
+      "assets": {
+        "master": "masters/contemporary_elder_001.png",
+        "card": "cards/contemporary_elder_001.webp",
+        "card_small": "cards256/contemporary_elder_001.webp",
+        "thumbnail": "thumbs/contemporary_elder_001.webp"
+      }
+    }
+  ]
+}

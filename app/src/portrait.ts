@@ -48,6 +48,44 @@ export async function toPortrait(blob: Blob): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.5);
 }
 
+/** Cuts a picture to a centred square at `px` pixels and encodes it as a JPEG data address, in the browser. */
+export async function squareJpeg(blob: Blob, px: number, quality: number): Promise<string> {
+  const bmp = await createImageBitmap(blob);
+  const c = squareCrop(bmp.width, bmp.height);
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = px;
+  const g = canvas.getContext("2d");
+  if (!g) throw new Error("Greenroom could not prepare that picture.");
+  g.drawImage(bmp, c.x, c.y, c.size, c.size, 0, 0, px, px);
+  bmp.close();
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+export interface AvatarBrief {
+  description: string;
+  period: string;
+  genre: string;
+  style: string;
+  clothing: string;
+  expression: string;
+  background: string;
+}
+
+/** A written brief for a new avatar from the owner's choices. It always asks for a fictional person and clean framing, and contains only what the owner typed. */
+export function avatarPrompt(b: AvatarBrief): string {
+  const clean = (s: string) => s.replace(/[\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
+  const parts = [
+    `A head-and-shoulders portrait of ${clean(b.description) || "a fictional character"}`,
+    clean(b.period) && `${clean(b.period)} setting`,
+    clean(b.genre) && `${clean(b.genre)} genre`,
+    clean(b.clothing) && `wearing ${clean(b.clothing)}`,
+    clean(b.expression) && `expression: ${clean(b.expression)}`,
+    clean(b.background) ? `a clean ${clean(b.background)} background` : "a clean plain background",
+    clean(b.style) && `${clean(b.style)} style`,
+  ].filter(Boolean);
+  return `${parts.join(", ")}. Square 1:1, the face centred with a generous safe margin, natural skin tones. A fictional character: not a real person, no celebrity likeness, no franchise character. No text, no logo, no watermark.`;
+}
+
 const AGE: [RegExp, string][] = [
   [/\b(child|kid|little|boy|girl)\b/i, "child"],
   [/\b(teen|young|youthful|bright)\b/i, "in their twenties"],
