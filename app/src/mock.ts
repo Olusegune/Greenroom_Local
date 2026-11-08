@@ -72,6 +72,31 @@ export const mock: Api = {
     return { audioB64: tone(secs, 180 + (req.text.length % 7) * 40), mime: "audio/wav", ms: 400 };
   },
   voicesMine: async () => (await wait(), MINE),
+  avatarGenerate: async (prompt: string) => {
+    await wait(900);
+    const c = document.createElement("canvas");
+    c.width = c.height = 512;
+    const g = c.getContext("2d")!;
+    const h = [...prompt].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    const bg = g.createRadialGradient(256, 200, 20, 256, 256, 420);
+    bg.addColorStop(0, `hsl(${h % 360} 45% 38%)`);
+    bg.addColorStop(1, "#0b1a1c");
+    g.fillStyle = bg;
+    g.fillRect(0, 0, 512, 512);
+    g.fillStyle = `hsl(${20 + (h % 20)} 45% ${45 + (h % 25)}%)`;
+    g.beginPath();
+    g.ellipse(256, 230, 95, 120, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#1b1b22";
+    g.beginPath();
+    g.ellipse(256, 150, 105, 70, 0, Math.PI, 0);
+    g.fill();
+    g.fillStyle = `hsl(${h % 360} 30% 25%)`;
+    g.beginPath();
+    g.ellipse(256, 520, 190, 150, 0, Math.PI, 0);
+    g.fill();
+    return { imageB64: c.toDataURL("image/png").split(",")[1]!, mime: "image/png" };
+  },
   inworldCheck: async () => (await wait(), 3),
   voicesInworld: async () => (await wait(), { total: 3, truncated: false, voices: [
     { voiceId: "Alex", displayName: "Alex", language: "en-US", description: "Mature, calm narrator", tags: ["narrator", "calm"], source: "SYSTEM", gender: "MALE", ageGroup: "ADULT" },

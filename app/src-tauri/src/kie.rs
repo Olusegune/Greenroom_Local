@@ -107,6 +107,43 @@ impl Client {
     }
 }
 
+/// Text-to-image through the same jobs API, used for character portraits. The model id and its input fields (`prompt`,
+/// `aspect_ratio`, `resolution`, `output_format`) are from Kie's Nano Banana 2 page (kie.ai/nano-banana-2, read
+/// 2026-11-08), not from a docs.kie.ai reference page, and have only been run against a fake server. The page states
+/// about 8 Kie credits (USD 0.04) per 1K image; Greenroom shows that as the page's figure, not as a price it can see.
+pub const IMAGE_MODEL: &str = "nano-banana-2";
+const MAX_IMAGE_PROMPT: usize = 1500;
+
+pub fn image_input(prompt: &str) -> Result<Value, String> {
+    let p = prompt.split_whitespace().collect::<Vec<_>>().join(" ");
+    if p.chars().count() < 8 || p.chars().count() > MAX_IMAGE_PROMPT || p.chars().any(|c| c.is_control()) {
+        return Err("Describe the picture in 8 to 1,500 characters.".into());
+    }
+    Ok(json!({ "prompt": p, "aspect_ratio": "1:1", "resolution": "1K", "output_format": "PNG" }))
+}
+
+/// What kind of picture these bytes are, from the file's own first bytes, or None if it is not a picture Greenroom accepts.
+pub fn image_kind(b: &[u8]) -> Option<&'static str> {
+    if b.starts_with(&[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]) {
+        Some("image/png")
+    } else if b.starts_with(&[0xFF, 0xD8, 0xFF]) {
+        Some("image/jpeg")
+    } else if b.len() > 12 && &b[..4] == b"RIFF" && &b[8..12] == b"WEBP" {
+        Some("image/webp")
+    } else {
+        None
+    }
+}
+
+impl Client {
+    /// One portrait. Returns the picture and its type; anything that is not a PNG, JPEG or WebP is refused.
+    pub fn image(&self, prompt: &str, fetch: &dyn Fn(&str) -> Result<Vec<u8>, String>) -> Result<(Vec<u8>, &'static str), String> {
+        let bytes = self.run(IMAGE_MODEL, image_input(prompt)?, fetch)?;
+        let kind = image_kind(&bytes).ok_or("Kie did not return a picture Greenroom can read.")?;
+        Ok((bytes, kind))
+    }
+}
+
 pub const MUSIC_MODEL: &str = "ai-music-api/generate";
 pub const MUSIC_VERSIONS: [&str; 3] = ["V6", "V6_MINI", "V6_WILD"];
 
@@ -257,6 +294,29 @@ mod tests {
         let b: Value = serde_json::from_slice(&hits[0].body).unwrap();
         assert_eq!(b["model"], "elevenlabs/text-to-speech-turbo-2-5");
         assert_eq!(b["input"]["voice"], DEFAULT_VOICE);
+    }
+
+    #[test]
+    fn a_portrait_request_is_checked_and_the_result_must_be_a_real_picture() {
+        assert!(image_input("   ").is_err());
+        assert!(image_input(&"x".repeat(1501)).is_err());
+        assert!(image_input("a calm portrait\u{0}").is_err());
+        let i = image_input("A  studio   portrait of a fictional older man").unwrap();
+        assert_eq!(i["prompt"], "A studio portrait of a fictional older man");
+        assert_eq!(i["aspect_ratio"], "1:1");
+        let png = vec![0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3];
+        assert_eq!(image_kind(&png), Some("image/png"));
+        assert_eq!(image_kind(&[0xFF, 0xD8, 0xFF, 0xE0, 0]), Some("image/jpeg"));
+        assert_eq!(image_kind(b"RIFF\0\0\0\0WEBPVP8 "), Some("image/webp"));
+        assert_eq!(image_kind(b"<html>"), None);
+        assert_eq!(image_kind(b""), None);
+        let ok = png.clone();
+        let f = start(Box::new(|h| if h.method == "POST" { (200, json!({"code":200,"data":{"taskId":"t_1"}}).to_string().into_bytes()) } else { (200, json!({"code":200,"data":{"state":"success","resultJson":"{\"resultUrls\":[\"https://files.example.com/a.png\"]}"}}).to_string().into_bytes()) }));
+        let (bytes, kind) = Client::quick(&f.base).image("A studio portrait of a fictional woman", &|_| Ok(ok.clone())).unwrap();
+        assert_eq!((bytes.len(), kind), (11, "image/png"));
+        let b: Value = serde_json::from_slice(&f.hits.lock().unwrap()[0].body).unwrap();
+        assert_eq!(b["model"], IMAGE_MODEL);
+        assert!(Client::quick(&f.base).image("A studio portrait of a fictional woman", &|_| Ok(b"<html>".to_vec())).unwrap_err().contains("picture"));
     }
 
     fn req() -> MusicReq {

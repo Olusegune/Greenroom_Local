@@ -2,10 +2,12 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import { useApp } from "../ctx";
 import { PlanReview } from "./PlanReview";
 import { ScriptDoctor } from "./ScriptDoctor";
+import { AvatarButton } from "./AvatarButton";
 import { TakeCompare } from "./TakeCompare";
 import { applySuggestion, cleanWritten, describe, parsePlans, parseSceneDirections, planSystem, type PlanSuggestion, sceneBatches, sceneDirectionSystem, type SceneDirection, isDirected, parseDirector, systemPrompt, userPrompt, writeDirectionSystem, writeDirectionUser, type DirectorResult } from "../director";
 import { DirectorPanel } from "./DirectorPanel";
 import { effectiveLine, isDefaultPerformance, migratePerformance } from "../performance";
+import { ACTING_PRESETS, applyPreset as applyActingPreset } from "../acting";
 import { steers } from "../inworld";
 import { actsOnWords } from "../engineCaps";
 import { dictFor } from "../voiceDna";
@@ -14,7 +16,6 @@ import { VARIATIONS, type VariationId } from "../acting";
 import { applyPreset, chosenTake, cleanNote, ALL_SOUND_TAGS, EMOTIONS, hasStyle, MORE_SOUNDS, NOTE_MAX, PRESETS, pushHistory, SOUNDS, STYLES, toggleIn, toggleStyle, vkUnsupported } from "../direct";
 import { VisualLine } from "../VisualLine";
 import { api } from "../api";
-import { Avatar } from "../avatar";
 import { ENGINES, ENGINE_ORDER, directorReady, qualityFormat, soundEngineOf } from "../engines";
 import { useLocalDirectorReady } from "../localDirector";
 import { makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type Model } from "../generate";
@@ -49,6 +50,7 @@ export default function Perform() {
   const [planReview, setPlanReview] = useState<PlanSuggestion[] | null>(null);
   const [planThinking, setPlanThinking] = useState(false);
   const [doctor, setDoctor] = useState(false);
+  const [section, setSection] = useState<"lines" | "reactions">("lines");
   const [view, setViewState] = useState<PerformView>(() => {
     try {
       const v = localStorage.getItem("greenroom.performView");
@@ -256,42 +258,42 @@ export default function Perform() {
 
   return (
     <section>
-      <div className="row between top">
+      <div className="perform-hero">
         <div>
           <h1>Perform</h1>
-          <p className="lede">Write how each line should be played, in your own words, then make takes and keep the best. Nothing is generated until you confirm.</p>
+          <p className="lede">Direct expressive performances. Write how each line should be played, make takes and keep the best. Nothing is generated until you confirm.</p>
         </div>
-        <div className="stack" style={{ minWidth: 220 }}>
-          <label className="field">
-            ElevenLabs model
-            <select value={model} onChange={(e) => setModel(e.target.value as Model)}>
-              <option value="eleven_v4">Eleven v4 (newest, best)</option>
-              <option value="eleven_v3">Eleven v3</option>
-            </select>
-          </label>
-          <button onClick={() => void askDirector()} disabled={thinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
+        <label className="field hero-model">
+          ElevenLabs model
+          <select value={model} onChange={(e) => setModel(e.target.value as Model)}>
+            <option value="eleven_v4">Eleven v4 (newest, best)</option>
+            <option value="eleven_v3">Eleven v3</option>
+          </select>
+        </label>
+      </div>
+      <div className="perform-tabs" role="tablist" aria-label="How much to show">
+        {([["simple", "Quick Perform", "Voice, direction, make a take, play"], ["director", "Director", "Adds objective, subtext, feeling, body, beats and acting presets"], ["advanced", "Advanced", "Adds speed, level, position, pauses, every sound and the exact text sent"]] as const).map(([id, label, tip]) => (
+          <button key={id} role="tab" aria-selected={section === "lines" && view === id} className="ptab" title={tip} onClick={() => { setSection("lines"); setView(id); }}>
+            {label}
+          </button>
+        ))}
+        <button role="tab" aria-selected={section === "reactions"} className="ptab" title="Sound clips saved for each character, ready to reuse for free" onClick={() => setSection("reactions")}>
+          Reaction Library
+        </button>
+      </div>
+      <div className="perform-tools row wrap">
+          <button className="tool" onClick={() => void askDirector()} disabled={thinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
             <Sparkle size={16} /> {thinking ? "The director is reading…" : "Direct with AI"}
           </button>
-          <button onClick={() => void askScene()} disabled={sceneThinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "Writes a full direction for every line, following each character's feeling through the scene" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
+          <button className="tool" onClick={() => void askScene()} disabled={sceneThinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "Writes a full direction for every line, following each character's feeling through the scene" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
             <Sparkle size={16} /> {sceneThinking ? "Directing the scene…" : "Direct whole scene"}
           </button>
-          <button onClick={() => void askPlans()} disabled={planThinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "Plans what each character wants, hides and does with their body, line by line" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
+          <button className="tool" onClick={() => void askPlans()} disabled={planThinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "Plans what each character wants, hides and does with their body, line by line" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
             <Sparkle size={16} /> {planThinking ? "Planning the performance…" : "Plan the performance"}
           </button>
-          <button onClick={() => setDoctor(true)} title="Suggests breath, pronunciation, emphasis and rhythm fixes. Nothing changes until you press Apply.">
+          <button className="tool" onClick={() => setDoctor(true)} title="Suggests breath, pronunciation, emphasis and rhythm fixes. Nothing changes until you press Apply.">
             Script Doctor
           </button>
-        </div>
-      </div>
-      <div className="row wrap" role="group" aria-label="How much to show">
-        <span className="muted small">Show</span>
-        <span className="chips">
-          {([["simple", "Simple", "Voice, direction, make a take, play"], ["director", "Director", "Adds objective, subtext, feeling, body and acting presets"], ["advanced", "Advanced", "Adds speed, level, pauses, every sound and the exact text sent"]] as const).map(([id, label, tip]) => (
-            <button key={id} className="chip" aria-pressed={view === id} title={tip} onClick={() => setView(id)}>
-              {label}
-            </button>
-          ))}
-        </span>
       </div>
       {noVoice > 0 && (
         <Note kind="warn">
@@ -301,6 +303,11 @@ export default function Perform() {
           </button>
         </Note>
       )}
+      {section === "reactions" ? (
+        <ReactionLibrary />
+      ) : (
+      <div className="perform-layout">
+      <div className="perform-lines stack">
       {project.scenes.map((title, si) => {
         const lines = project.lines.filter((l) => l.scene === si);
         if (lines.length === 0) return null;
@@ -308,11 +315,15 @@ export default function Perform() {
           <div key={si} className="stack">
             <h3 className="scene-title">{title}</h3>
             {lines.map((line) => (
-              <LineCard key={line.id} line={line} index={project.lines.indexOf(line) + 1} character={charOf(line)} voice={voiceOf(line)} model={model} dict={dictOf(line)} patch={(fn) => patchLine(line.id, fn)} make={make} view={view} />
+              <LineCard key={line.id} line={line} index={project.lines.indexOf(line) + 1} character={charOf(line)} voice={voiceOf(line)} model={model} dict={dictOf(line)} patch={(fn) => patchLine(line.id, fn)} make={make} view={view} onDirector={() => setView(view === "simple" ? "director" : view)} />
             ))}
           </div>
         );
       })}
+      </div>
+      <CharacterRail />
+      </div>
+      )}
       <div className="bar">
         {running ? (
           <>
@@ -360,7 +371,84 @@ export default function Perform() {
 
 const phrasesCount = (l: Line): number => beatsFor(l).length;
 
+/** The four things a director checks at a glance. They show what is set and open the Director panel; they never change anything themselves. */
+function summaryTiles(line: Line, labelOf: (list: { tag: string; label: string }[], t: string) => string): { name: string; value: string }[] {
+  const plan = migratePerformance(line.performance);
+  const end = plan?.arc[plan.arc.length - 1];
+  const emotion = line.direction.emotion ? labelOf(EMOTIONS, line.direction.emotion) : end && end.emotion !== "neutral" ? end.emotion[0]!.toUpperCase() + end.emotion.slice(1) : "None set";
+  const delivery = plan?.direction ? plan.direction.slice(0, 28) : line.direction.note?.trim() ? line.direction.note.trim().split(/[.,;]/)[0]!.slice(0, 28) : "None set";
+  const pace = line.direction.speed * (plan?.pace ?? 1);
+  const strength = end ? (end.intensity >= 0.7 ? "High" : end.intensity >= 0.4 ? "Moderate" : "Low") : "None set";
+  return [{ name: "Emotion", value: emotion }, { name: "Delivery", value: delivery }, { name: "Pace", value: pace < 0.9 ? "Slow" : pace > 1.1 ? "Fast" : "Measured" }, { name: "Intensity", value: strength }];
+}
+
 type PerformView = "simple" | "director" | "advanced";
+
+/** The cast at a glance: who speaks, with which voice, and how many of their lines have takes. Press a name to jump to their first line. */
+function CharacterRail() {
+  const { project, library, go } = useApp();
+  const speaking = project!.characters.filter((c) => project!.lines.some((l) => l.characterId === c.id));
+  return (
+    <aside className="perform-rail" aria-label="Characters">
+      <h3>Characters</h3>
+      {speaking.map((c) => {
+        const v = library.find((x) => x.id === c.voiceId);
+        const mine = project!.lines.filter((l) => l.characterId === c.id);
+        const done = mine.filter((l) => l.takes.length > 0).length;
+        return (
+          <div key={c.id} className="rail-char">
+            <AvatarButton voice={v} seed={(v?.id ?? c.id) + (v?.name ?? c.name)} gender={v?.gender} size={44} role={c.name} />
+            <button className="rc-text" onClick={() => document.getElementById(`line-${mine[0]!.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })} title={`Jump to ${c.name}'s first line`}>
+              <strong>{c.name}</strong>
+              <span className="muted small">{v ? `${v.name} · ${ENGINES[v.provider].label}` : "No voice yet"}</span>
+              <span className="muted small">{done} of {mine.length} lines have takes</span>
+            </button>
+          </div>
+        );
+      })}
+      <button className="sm" onClick={() => go("cast")}>
+        Cast and profiles
+      </button>
+      <p className="muted small">Press a face to change a character's picture.</p>
+    </aside>
+  );
+}
+
+/** Every character's saved reactions in one place: play them, or remove them. Reusing one on a line is free. */
+function ReactionLibrary() {
+  const { project, edit, library } = useApp();
+  const who = project!.characters.filter((c) => project!.lines.some((l) => l.characterId === c.id));
+  return (
+    <div className="stack">
+      <p className="muted">Sound clips you saved with Save to reactions. On any line of that character, the sound box offers them to reuse for free.</p>
+      {who.map((c) => {
+        const v = library.find((x) => x.id === c.voiceId);
+        const list = migrateReactions(c.reactions);
+        return (
+          <div key={c.id} className="card stack">
+            <div className="row">
+              <AvatarButton voice={v} seed={(v?.id ?? c.id) + (v?.name ?? c.name)} gender={v?.gender} size={40} role={c.name} />
+              <strong className="speaker">{c.name}</strong>
+              <span className="muted small">{list.length} saved</span>
+            </div>
+            {list.length === 0 && <p className="muted small">None yet. Make a sound clip on one of their lines and press Save to reactions.</p>}
+            {list.map((r) => (
+              <div key={r.id} className="take">
+                <PlayButton label={r.prompt.slice(0, 26) || r.id} get={() => takeUrl(project!.id, r.take.id)} />
+                <span className="muted small num">{r.take.seconds.toFixed(1)}s</span>
+                <span className="small">{r.prompt}</span>
+                <span className="spacer" />
+                <button className="sm icon ghost" aria-label={`Remove ${r.prompt}`} onClick={() => edit((p) => ({ ...p, characters: p.characters.map((x) => (x.id === c.id ? { ...x, reactions: migrateReactions(x.reactions).filter((y) => y.id !== r.id) } : x)) }))}>
+                  <Trash size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function SceneReview({ items, onClose }: { items: SceneDirection[]; onClose: () => void }) {
   const { project, edit, toast } = useApp();
@@ -537,7 +625,7 @@ const saveHistory = (h: string[]) => {
   }
 };
 
-function LineCard({ line, index, character, voice, model, dict, patch, make, view }: { view: PerformView; line: Line; index: number; character?: Character; voice?: VoiceEntry; model: Model; dict: Pronunciation[]; patch: (fn: (l: Line) => Line) => void; make: (l: Line, n?: number, v?: VariationId[]) => Promise<boolean> }) {
+function LineCard({ line, index, character, voice, model, dict, patch, make, view, onDirector }: { view: PerformView; onDirector: () => void; line: Line; index: number; character?: Character; voice?: VoiceEntry; model: Model; dict: Pronunciation[]; patch: (fn: (l: Line) => Line) => void; make: (l: Line, n?: number, v?: VariationId[]) => Promise<boolean> }) {
   const { project, confirmSpend, toast, engines, priceLines, addLedger, library, edit, go: goTo, keys } = useApp();
   const localDirector = useLocalDirectorReady();
   const [writing, setWriting] = useState(false);
@@ -664,11 +752,14 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
   };
 
   return (
-    <div className="linecard">
+    <div className="linecard" id={`line-${line.id}`}>
+      <div className="lc-portrait">
+        <AvatarButton voice={voice} seed={(voice?.id ?? character?.id ?? "x") + (voice?.name ?? character?.name ?? "")} gender={voice?.gender} size={96} role={character?.name} />
+        <strong className="speaker">{character?.name ?? "?"}</strong>
+        <span className="muted small">{voice ? ENGINES[voice.provider].label : "No voice"}</span>
+      </div>
       <div className="lc-head">
         <span className="muted num small">{index}</span>
-        <Avatar seed={(voice?.id ?? character?.id ?? "x") + (voice?.name ?? character?.name ?? "")} gender={voice?.gender} size={30} />
-        <span className="speaker">{character?.name ?? "?"}</span>
         {character && library.length > 0 && (
           <select
             className="voice-switch"
@@ -752,6 +843,34 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
         {reach === "inworld-flash" && <p className="dir-reach warn small">{engines.inworldModel === "inworld-tts-2-flash" ? "Inworld TTS 2 Flash does not follow written direction. Switch to Inworld TTS 2 in Voices, or choose another voice." : "Inworld could not use that direction."}</p>}
         {voice?.provider === "inworld" && (planned?.notSent?.length ?? 0) > 0 && <p className="dir-reach warn small">Inworld will not get: {planned!.notSent!.join("; ")}.</p>}
         {noTags && vkUnsupported(line).length > 0 && <p className="dir-reach warn small">{ENGINES[voice!.provider].label} cannot make {vkUnsupported(line).join(", ")}. Add a sound clip instead.</p>}
+      </div>
+
+      <div className="lc-quick">
+        <div className="lc-tiles" role="group" aria-label="What is set for this line">
+          {summaryTiles(line, label).map((t) => (
+            <button key={t.name} className="lc-tile" onClick={() => onDirector()} title={`${t.name}: press to open the Director panel`}>
+              <span className="lt-name">{t.name}</span>
+              <span className="lt-val">{t.value}</span>
+            </button>
+          ))}
+        </div>
+        <div className="lc-presets" aria-label="Performance presets">
+          <span className="eyebrow">Performance presets</span>
+          <select aria-label="Acting preset" value="" onChange={(e) => { const pr = ACTING_PRESETS.find((x) => x.id === e.target.value); if (pr) patch((l) => ({ ...l, performance: applyActingPreset(l.performance, pr) })); }}>
+            <option value="">Choose an acting preset…</option>
+            {ACTING_PRESETS.map((pr) => (
+              <option key={pr.id} value={pr.id}>{pr.label}</option>
+            ))}
+          </select>
+          <label className="row small muted">Speed
+            <input type="range" min={0.7} max={1.2} step={0.05} value={d.speed} aria-label="Speed" onChange={(e) => setDir((x) => ({ ...x, speed: Number(e.target.value) }))} />
+            <span className="num">{d.speed.toFixed(2)}×</span>
+          </label>
+          <label className="row small muted">Level
+            <input type="range" min={-18} max={9} step={0.5} value={d.gain ?? 0} aria-label="Level in dB" onChange={(e) => setDir((x) => ({ ...x, gain: Number(e.target.value) }))} onDoubleClick={() => setDir((x) => ({ ...x, gain: 0 }))} title="Double-click to reset" />
+            <span className="num">{(d.gain ?? 0) > 0 ? "+" : ""}{(d.gain ?? 0).toFixed(1)} dB</span>
+          </label>
+        </div>
       </div>
 
       {view === "advanced" && <details className="finetune">

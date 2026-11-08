@@ -269,6 +269,8 @@ export interface VoiceEntry {
   gender: string;
   notes: string;
   previewUrl?: string;
+  /** A real picture for this voice (a small square JPEG as a data address), shown instead of the drawn face. */
+  portrait?: string;
   createdAt: string;
   consent?: Consent;
   licence?: LicenceUse;

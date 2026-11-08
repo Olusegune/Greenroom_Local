@@ -80,6 +80,20 @@ Edit the objective and subtext, tick the lines you want and press **Apply**. Lin
 
 This is wording sent to a model that may or may not obey it. Whether the result sounds strained or breathless is for you to judge by ear.
 
+### The Perform screen
+
+![The redesigned Perform screen: tabs, a portrait for each character, summary tiles, a presets box and a character rail](img/perform-redesign.jpg)
+
+Each line is a card led by its character's **portrait**. Along the top are the tabs **Quick Perform**, **Director**, **Advanced** and **Reaction Library**, then one row of AI tools (Direct with AI, Direct whole scene, Plan the performance, Script Doctor). On each card, four tiles (**Emotion**, **Delivery**, **Pace**, **Intensity**) show what is set and open the Director panel when pressed; the **Performance presets** box holds an acting preset, speed and level. On the right, **Characters** shows who speaks, with which voice, and how many of their lines have takes; press a name to jump to their first line.
+
+### Pictures for voices
+
+![Choosing or making a picture for a voice](img/portrait-dialog.jpg)
+
+Every voice has a drawn clay face. To give a voice a real picture, press its face (on Perform, Cast or Voices) and either **choose a picture** from your computer or **describe one and have it made**. The description is written for you from what the library knows (gender, and words like warm, stern or elderly in the voice's notes); it asks for a **fictional person, not a real one**, never guesses heritage from an accent or name, and you can edit it. **Make a picture** sends only that text to Kie's image model (the model page says about 8 Kie credits, about USD 0.04, per picture; Greenroom cannot see your price) after a cost sheet. The picture is cut to a square, kept small with the voice in your library, and shows on every screen that voice appears. **Go back to the drawn face** removes it. Use only pictures you have the right to use.
+
+Making pictures uses the model id and settings from Kie's Nano Banana 2 model page (read 2026-11-08), not a reference page, and has only been run against a fake server: if Kie has changed them, the cost sheet appears and the request fails with Kie's message.
+
 ### Show: Simple, Director or Advanced
 
 ![The Show control and the Perform header](img/perform-views.jpg)

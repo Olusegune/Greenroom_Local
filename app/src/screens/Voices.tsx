@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl, type DesignPreview, type PiperVoice } from "../api";
 import { useApp } from "../ctx";
 import { ENGINES, ENGINE_ORDER, type Engine } from "../engines";
+import { AvatarButton } from "./AvatarButton";
 import { inworldCache, inworldFor, kieFor, piperFor, voicekillerFor, type Found } from "../finder";
 import { Flag } from "../flags";
 import { Folder, Globe, Person, Pin, Plus, Star, Trash } from "../icons";
@@ -152,7 +153,7 @@ function Mine({ goFind }: { goFind: () => void }) {
               </button>
               <div className="vc-top">
                 <span className="vc-face">
-                  <Avatar seed={v.id + v.name} gender={v.gender} size={72} />
+                  <AvatarButton voice={v} seed={v.id + v.name} gender={v.gender} size={72} />
                   <PlayButton round label={`Hear ${shortName(v.name)}`} get={() => sample(v)} />
                 </span>
                 <div className="vc-id">

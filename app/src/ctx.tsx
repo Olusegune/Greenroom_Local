@@ -1,3 +1,4 @@
+import { syncPortraits } from "./portrait";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, type KeyStatus } from "./api";
 import { History, keepWork } from "./history";
@@ -102,6 +103,7 @@ export function Provider({ children }: { children: ReactNode }) {
     [toast],
   );
 
+  syncPortraits(library);
   const saveLibrary = useCallback(
     (next: VoiceEntry[] | ((current: VoiceEntry[]) => VoiceEntry[])) => {
       // Always work from the latest list, so two quick changes cannot overwrite each other.

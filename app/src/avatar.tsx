@@ -1,3 +1,5 @@
+import { portraitFor } from "./portrait";
+
 // Cute clay-style 3D portraits for voices and characters. They are drawn from a seed (the voice's id and name), so the same
 // voice always has the same face. They are original illustrations made of shaded shapes: not photographs, and not meant to
 // look like anyone real.
@@ -113,6 +115,8 @@ function HairFront({ style, f, band }: { style: string; f: string; band: string 
 
 /** A round, soft 3D-style portrait. `size` is in pixels. */
 export function Avatar({ seed, gender, size = 64, label }: { seed: string; gender?: string; size?: number; label?: string }) {
+  const photo = portraitFor(seed);
+  if (photo) return <img className="avatar" src={photo} alt={label ?? ""} width={size} height={size} style={{ objectFit: "cover", borderRadius: "50%" }} />;
   const t = traits(seed, lookFor(gender));
   const id = "av" + hash(seed).toString(36);
   const behind = t.style === "long" || t.style === "bob" || t.style === "bun";

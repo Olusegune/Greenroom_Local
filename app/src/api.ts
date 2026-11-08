@@ -174,6 +174,7 @@ const real = {
   voicesMine: () => call<VoiceInfo[]>("voices_mine"),
   voicesVoiceKiller: () => call<{ name: string; language: string }[]>("voices_voicekiller"),
   inworldCheck: () => call<number>("inworld_check"),
+  avatarGenerate: (prompt: string) => call<{ imageB64: string; mime: string }>("avatar_generate", { prompt }),
   voicesInworld: (language?: string, source?: string) => call<InworldVoicePage>("voices_inworld", { language, source }),
   inworldPreview: (text: string, voice: string, model: string) => call<Audio>("inworld_preview", { text, voice, model }),
   inworldClone: (a: { name: string; language?: string; description: string; audioB64: string; transcription?: string; removeNoise: boolean; permission: boolean; speaker: string }) => call<InworldCloned>("inworld_clone", { req: a }),

@@ -47,3 +47,57 @@
 /* A character profile is long: when it is open the card takes the whole row instead of stretching its neighbours. */
 .voice-card:has(details.char-profile[open]) { grid-column: 1 / -1; }
 .char-profile .field { max-width: 640px; }
+
+/* ---- Cinematic Perform: hero, tabs, portrait-led cards, character rail ---- */
+.perform-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.perform-hero h1 { margin-bottom: 4px; }
+.hero-model { min-width: 210px; }
+.perform-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface-1); width: fit-content; }
+.ptab { border: 0; background: transparent; min-height: 40px; padding: 0 18px; border-radius: 12px; color: var(--text-2); font-weight: 500; }
+.ptab:hover { color: var(--text); background: var(--accent-wash); }
+.ptab[aria-selected="true"] { background: var(--accent-wash); color: var(--text); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.perform-tools { gap: 8px; }
+.perform-tools .tool { min-height: 36px; }
+
+.perform-layout { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 20px; align-items: start; }
+.perform-rail { position: sticky; top: 12px; display: grid; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface-2); }
+.perform-rail h3 { margin: 0 0 2px; }
+.rail-char { display: flex; gap: 10px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--surface-1); border-radius: 14px; padding: 8px 10px; min-height: 0; width: 100%; }
+.rail-char:hover { border-color: var(--accent-line); background: var(--accent-wash); }
+.rc-text { display: grid; gap: 1px; min-width: 0; }
+.rc-text strong { font-size: 14px; }
+
+.linecard { position: relative; padding-left: 150px; }
+.lc-portrait { position: absolute; left: 20px; top: 18px; width: 112px; display: grid; justify-items: center; gap: 4px; text-align: center; }
+.lc-portrait .avatar { box-shadow: 0 0 0 2px var(--accent-line), 0 10px 30px rgba(0, 0, 0, 0.45); }
+.lc-head .speaker { display: none; }
+.lc-quick { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 12px; }
+.lc-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lc-tile { display: grid; gap: 2px; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-1); min-height: 0; justify-content: start; }
+.lc-tile:hover { border-color: var(--accent-line); }
+.lt-name { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); }
+.lt-val { font-size: 14px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lc-presets { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--accent-line); border-radius: 14px; background: var(--accent-wash); align-content: start; }
+
+@media (max-width: 1180px) {
+  .perform-layout { grid-template-columns: 1fr; }
+  .perform-rail { position: static; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .perform-rail h3, .perform-rail > button.sm, .perform-rail > p { grid-column: 1 / -1; }
+}
+@media (max-width: 860px) {
+  .linecard { padding-left: 20px; }
+  .lc-portrait { position: static; width: auto; grid-auto-flow: column; justify-content: start; justify-items: start; align-items: center; gap: 10px; }
+  .lc-quick { grid-template-columns: 1fr; }
+}
+.lc-portrait .avatar-btn { display: block; }
+.lc-portrait .avatar { display: block; width: 96px; height: 96px; }
+.lc-portrait strong.speaker { display: block; margin-top: 8px; font-size: 15px; line-height: 1.2; }
+.rail-char { height: auto; min-height: 64px; padding: 10px 12px; line-height: 1.3; }
+.rail-char .avatar-btn { flex: none; }
+.rc-text { gap: 3px; }
+.avatar-btn { height: auto !important; min-height: 0 !important; width: auto !important; padding: 0 !important; line-height: 0; }
+.lc-tile { height: auto; min-height: 58px; align-content: center; line-height: 1.25; }
+.lc-tile .lt-name, .lc-tile .lt-val { display: block; }
+div.rail-char { cursor: default; }
+button.rc-text { border: 0; background: transparent; text-align: left; padding: 0; height: auto; min-height: 0; justify-content: flex-start; flex: 1; }
+button.rc-text:hover strong { color: var(--accent); }
