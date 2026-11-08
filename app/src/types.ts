@@ -1,4 +1,5 @@
 import type { Engine } from "./engines";
+import type { PerformancePlan } from "./performance";
 
 export interface Character {
   id: string;
@@ -76,6 +77,8 @@ export interface Line {
   takes: Take[];
   chosen?: string;
   events: SoundEvent[];
+  /** The director's performance plan for this line: objective, subtext, emotional arc, physical state and voice qualities. Absent on older projects and on lines nobody has planned. */
+  performance?: PerformancePlan;
   /** Seconds from the start of the picture at which this line starts speaking. Without one, the line follows the one before it. */
   cue?: number;
   /** Seconds the line fades in and out at its edges. Defaults are a few milliseconds, just enough to avoid clicks. */

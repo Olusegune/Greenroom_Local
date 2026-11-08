@@ -25,7 +25,7 @@ Written 2026-11-08 on branch `feat/cinematic-engine-2`, from the code and the pr
 | Director review and apply | Working and tested | Unit tests; owner-directed lines left alone by default. |
 | Written direction per line, styles, AI write | Working and tested | Owner confirmed it works on ElevenLabs (2026-11-08). |
 | Direct whole scene | Implemented but incompletely verified | Unit tests and a demo run; not yet run against a real Kie or local model reply. |
-| **`PerformancePlan` (`performance.ts`)** | **Implemented but not connected** | The interface (objective, subtext, arc, physical state, events, pace, projection, tension, breathiness, accent strength) and `physicalDirection()` exist with a unit test, but **no screen, no saved project field and no generation path uses them**. Emotional arcs, physical state, breathlessness, fatigue and pain are therefore **not** acting features yet; the only physical controls a user can reach are the situation presets and the written direction. |
+| **`PerformancePlan` (`performance.ts`)** | **Connected on 2026-11-08 (later commit), not yet judged by ear** | Originally not connected: the interface (objective, subtext, arc, physical state, events, pace, projection, tension, breathiness, accent strength) and `physicalDirection()` exist with a unit test, but **no screen, no saved project field and no generation path uses them**. Emotional arcs, physical state, breathlessness, fatigue and pain are therefore **not** acting features yet; the only physical controls a user can reach are the situation presets and the written direction. |
 | Positioned vocal events | Working and tested (as inline tags) | `VisualLine` places tags between words. This is the ElevenLabs tag system, not a performance compiler. |
 | Beat-by-beat acting inside a line | Not implemented | |
 | Performance variations (natural, restrained, expressive, intense) | Not implemented | "Make 3 takes" exists but repeats the same direction. |
@@ -64,7 +64,7 @@ Written 2026-11-08 on branch `feat/cinematic-engine-2`, from the code and the pr
 | 1 Read the code | Done |
 | 2 Audit | This document |
 | 3 Expand local engines (Chatterbox Turbo and Multilingual, Qwen3-TTS VoiceDesign, VoxCPM2, Supertonic, Pocket TTS, VibeVoice, Kitten TTS) | **Not started.** No repository, weights, licence or hash for any of them was researched or verified in this session, and none was added. |
-| 4 Cinematic Acting Director 2.0 | **Not started** beyond this audit |
+| 4 Cinematic Acting Director 2.0 | **Started:** per-line performance plan (objective, subtext, arc start and end, physical state, voice qualities) saved on the line, compiled into direction and pace, with a Director panel. Not started: AI-written plans from the Qwen3 Director, beat-by-beat acting inside a line, variations, A/B, presets |
 | 5 Character Voice DNA | Not started |
 | 6 Director's Performance Memory | Not started |
 | 7 Smart engine router | Not started (Inworld is a selectable engine) |

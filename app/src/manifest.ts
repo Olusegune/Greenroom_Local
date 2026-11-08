@@ -4,6 +4,7 @@
 // Designed to be read by other tools later; nothing in this file is sent anywhere.
 
 import { chosenTake } from "./direct";
+import { migratePerformance, type PerformancePlan } from "./performance";
 import type { Consent, Project, Take, VoiceEntry } from "./types";
 
 export const MANIFEST_SCHEMA = "greenroom.cinematic-performance";
@@ -50,6 +51,8 @@ export interface ManifestLine {
   /** The line exactly as written in the script. */
   text: string;
   direction: { emotion: string; note: string; sounds: string[]; speed: number; pauseAfterSeconds: number; gainDb: number };
+  /** The director's performance plan for the line, as saved, or null. */
+  performance: PerformancePlan | null;
   cueSeconds: number | null;
   voice: ManifestVoice | null;
   take: ManifestTake | null;
@@ -111,6 +114,7 @@ export function buildManifest(project: Project, library: VoiceEntry[], appVersio
         characterName: c?.name ?? "",
         text: l.text,
         direction: { emotion: l.direction.emotion, note: l.direction.note ?? "", sounds: l.direction.sounds, speed: l.direction.speed, pauseAfterSeconds: l.direction.pauseAfter, gainDb: l.direction.gain ?? 0 },
+        performance: migratePerformance(l.performance) ?? null,
         cueSeconds: l.cue ?? null,
         voice: voiceOf(c?.voiceId ? lib.get(c.voiceId) : undefined),
         take: takeOf(chosenTake(l)),

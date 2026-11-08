@@ -1,6 +1,9 @@
 import { useRef, useState, useSyncExternalStore } from "react";
 import { useApp } from "../ctx";
 import { applySuggestion, cleanWritten, describe, parseSceneDirections, sceneBatches, sceneDirectionSystem, type SceneDirection, isDirected, parseDirector, systemPrompt, userPrompt, writeDirectionSystem, writeDirectionUser, type DirectorResult } from "../director";
+import { DirectorPanel } from "./DirectorPanel";
+import { effectiveLine } from "../performance";
+import { steers } from "../inworld";
 import { applyPreset, chosenTake, cleanNote, ALL_SOUND_TAGS, EMOTIONS, hasStyle, MORE_SOUNDS, NOTE_MAX, PRESETS, pushHistory, SOUNDS, STYLES, toggleIn, toggleStyle, vkUnsupported } from "../direct";
 import { VisualLine } from "../VisualLine";
 import { api } from "../api";
@@ -53,7 +56,7 @@ export default function Perform() {
     const { chars } = spend([line]);
     const e = ENGINES[voice.provider];
     const pl = plan(line, voice, model, dict, { inworldModel: engines.inworldModel });
-    const extra: string[] = voice.provider === "inworld" ? [`Character: ${charOf(line)?.name ?? "?"}`, `Model: ${pl.modelId}`, ...(pl.notSent ?? []).map((n) => `Not sent: ${n}`)] : !e.tags && vkUnsupported(line).length ? [`${e.label} cannot make: ${vkUnsupported(line).join(", ")}. Those will be left out.`] : [];
+    const extra: string[] = voice.provider === "inworld" ? [`Character: ${charOf(line)?.name ?? "?"}`, `Model: ${pl.modelId}`, ...(pl.notSent ?? []).map((n) => `Not sent: ${n}`)] : !e.tags && vkUnsupported(effectiveLine(line)).length ? [`${e.label} cannot make: ${vkUnsupported(effectiveLine(line)).join(", ")}. Those will be left out.`] : [];
     if (!e.local) {
       const price = priceLines([{ kind: "speech", engine: voice.provider, chars: chars * count }]);
       const ok = await confirmSpend({ title: count > 1 ? `Make ${count} takes?` : "Make a take?", lines: [`${chars * count} characters (${count} take${count > 1 ? "s" : ""})`, `Voice: ${voice.name}`, ...extra, ...price.lines], warn: price.warn, skipKey: count > 1 ? undefined : "take" });
@@ -681,6 +684,15 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
           </p>
         </div>
       </details>
+
+      {voice && (
+        <DirectorPanel
+          line={line}
+          patch={patch}
+          engineLabel={ENGINES[voice.provider].label}
+          actsOnWords={ENGINES[voice.provider].tags || voice.provider === "voicekiller" || (voice.provider === "inworld" && steers(engines.inworldModel))}
+        />
+      )}
 
       {line.takes.map((t, i) => (
         <TakeRow key={t.id} t={t} n={i + 1} lineId={line.id} projectId={project!.id} chosen={t.id === chosen?.id} choose={() => patch((l) => ({ ...l, chosen: t.id }))} />

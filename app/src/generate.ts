@@ -4,6 +4,7 @@ import { api, type Provider } from "./api";
 import { applyPronunciations, composeText, stripTags, vkInstructions } from "./direct";
 import { ENGINES, providerFor, type ElevenModel, type InworldModel } from "./engines";
 import { DEFAULT_INWORLD_MODEL, inworldPlan } from "./inworld";
+import { effectiveLine } from "./performance";
 import { fromBase64 } from "./audio";
 import { remember } from "./media";
 import { uid } from "./script";
@@ -31,7 +32,9 @@ export interface Plan {
   notSent?: string[];
 }
 
-export function plan(line: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
+export function plan(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
+  // The performance plan (if any) is compiled into the direction here; the saved line is never changed.
+  const line = effectiveLine(saved);
   const e = voice.provider;
   const provider = providerFor(e, model, voice.vkClone);
   if (e === "inworld") {
@@ -44,8 +47,9 @@ export function plan(line: Line, voice: VoiceEntry, model: Model, dict: Pronunci
   return { provider, text: applyPronunciations(stripTags(line.text), dict), instructions, model: e as Take["model"] };
 }
 
-export async function makeTake(projectId: string, line: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
-  const p = plan(line, voice, model, dict, opts);
+export async function makeTake(projectId: string, saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const line = effectiveLine(saved);
+  const p = plan(saved, voice, model, dict, opts);
   const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: line.direction.speed, instructions: p.instructions, quality, model: p.modelId });
   const id = "t-" + uid();
   const ext = out.mime === "audio/wav" ? "wav" : "mp3";

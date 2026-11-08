@@ -59,6 +59,21 @@ Greenroom tells you under the box what your voice can do with the direction:
 
 **Press Ctrl+Enter** inside the Direction box to make a take without reaching for the mouse.
 
+### Plan the performance (Director panel)
+
+Under **Fine-tune** each line with a voice has a **Director** panel for planning rather than tagging.
+
+![The Director panel: objective, subtext, how the feeling moves, what the body is doing, the voice itself](img/director-panel.jpg)
+
+- **Objective and subtext:** what the character is trying to do, and what is underneath.
+- **How the feeling moves:** a feeling and strength at the start of the line and at the end.
+- **What the body is doing:** standing, walking, running, lifting, pushing, fighting, hurt, cold or your own description, with effort, breathlessness, fatigue and pain.
+- **The voice itself:** pace, projection, tension and breathiness.
+
+Greenroom turns the plan into at most four short plain-English sentences and adds them **after your own direction** when a take is made, and the panel shows exactly what will be added. Very high breathlessness also adds the verified out-of-breath sound. Pace multiplies the line's speed. Your script text, the chips and the Direction box are never changed, and **Clear the plan** removes it. A voice that cannot act on written words (Piper, Chatterbox, Kie and others) can only follow the pace, and the panel says so. Plans are saved with the project; older projects simply have none. They are included in the performance manifest.
+
+This is wording sent to a model that may or may not obey it. Whether the result sounds strained or breathless is for you to judge by ear.
+
 ### Fine-tune and More
 
 ![The Fine-tune panel open and the More menu showing Make 3 takes, Re-voice a recording and Add a sound clip](img/guide-6-finetune-more.jpg)
