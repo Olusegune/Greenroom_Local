@@ -49,9 +49,9 @@ Sound without limits. Write a scene, give each character a voice, direct how the
 | Area | What it does |
 |---|---|
 | Script | Write `NAME: line` scenes, with `(directions)` and `# Scene titles`. Any language, mixed languages in a line. Editing never throws away voices or takes. |
-| Engines | ElevenLabs, VoiceKiller, Kie, Piper (offline, free) and your own local server. A voice belongs to an engine, so choosing a voice chooses the engine. |
+| Engines | ElevenLabs, Inworld, VoiceKiller, Kie, Piper (offline, free) and your own local server. A voice belongs to an engine, so choosing a voice chooses the engine. |
 | Find a voice | Pick a language by flag (84 languages and accents), see voices from every engine for it. No names needed. |
-| Voices | One library: find in ElevenLabs' shared library by language and accent, design a voice from a description, clone from a recording (with a permission tick), add VoiceKiller voices, import your ElevenLabs account voices. |
+| Voices | One library: find in ElevenLabs' shared library by language and accent, design a voice from a description, clone from a recording (with a permission tick), add VoiceKiller voices, browse and clone Inworld voices (see [Inworld](docs/INWORLD.md); tested against a fake server only), import your ElevenLabs account voices. |
 | Written direction (0.5) | Every line has a Direction box: write how it should be played in plain words (up to 400 characters), click a style (Whisper, Villain, Deadpan and more) to add a full sentence, or let the AI write it, for one line or for the whole scene with each character's feeling followed through. Works with ElevenLabs library, designed and cloned voices and VoiceKiller; other engines say plainly that they cannot act on words. Recent directions are remembered. |
 | Menus (0.5) | A standard File, Edit, View and Help menu bar with Ctrl+N, O, S, Shift+S, W and Q. |
 | Directing | Each line is a row of words: click between any two words to drop in a sound (laugh, sigh, gasp, grunt, your own), drag the coloured pill to move it, click its x to remove it. Per line: emotion and sound chips (including effort: grunt, strain, pant, wince), style presets (lifting something heavy, out of breath, crying while talking), a plain-language director's note, an insert menu that puts a sound into the words at the cursor, speed and pause. |

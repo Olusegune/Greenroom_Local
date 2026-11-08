@@ -1,7 +1,7 @@
 import type { Provider } from "./api";
 
 /** The places a voice can come from. A voice belongs to one engine, so choosing a voice chooses the engine. */
-export type Engine = "elevenlabs" | "voicekiller" | "kie" | "piper" | "local" | "chatterbox" | "wazobia";
+export type Engine = "elevenlabs" | "voicekiller" | "inworld" | "kie" | "piper" | "local" | "chatterbox" | "wazobia";
 
 export interface EngineInfo {
   label: string;
@@ -15,6 +15,7 @@ export interface EngineInfo {
 export const ENGINES: Record<Engine, EngineInfo> = {
   elevenlabs: { label: "ElevenLabs", local: false, tags: true, blurb: "The most expressive. Laughs, sighs and whispers from tags. Voice design and cloning." },
   voicekiller: { label: "VoiceKiller", local: false, tags: false, blurb: "About two thousand voices in many languages. Delivery is requested in words; no laugh or cough sounds." },
+  inworld: { label: "Inworld", local: false, tags: false, blurb: "Cloud voices in 200+ languages with instant cloning. Delivery steering on Inworld TTS 2; laughs, sighs and breaths from non-verbal tags." },
   kie: { label: "Kie", local: false, tags: false, blurb: "ElevenLabs Turbo through Kie, with 67 preset voices. Sound tags are not used." },
   piper: { label: "Piper (offline)", local: true, tags: false, blurb: "Runs on this PC with no internet and no cost. Many languages. Plain speech only." },
   local: { label: "My local server", local: true, tags: false, blurb: "A speech program you run on this PC, such as a Kokoro or Chatterbox server." },
@@ -22,9 +23,12 @@ export const ENGINES: Record<Engine, EngineInfo> = {
   wazobia: { label: "WazobiaVoice (offline)", local: true, tags: false, blurb: "Nigerian English, Yoruba, Hausa and Igbo on this PC, with 13 built-in voices. Research licence: not for commercial use." },
 };
 
-export const ENGINE_ORDER: Engine[] = ["elevenlabs", "voicekiller", "kie", "piper", "wazobia", "chatterbox", "local"];
+export const ENGINE_ORDER: Engine[] = ["elevenlabs", "inworld", "voicekiller", "kie", "piper", "wazobia", "chatterbox", "local"];
 
 export type ElevenModel = "eleven_v4" | "eleven_v3";
+
+/** Inworld speech models (docs, 2026-11-08). Steering by written instruction works on inworld-tts-2 only. */
+export type InworldModel = "inworld-tts-2" | "inworld-tts-2-flash";
 
 /** The backend provider name that renders speech for a voice from this engine. */
 export function providerFor(engine: Engine, model: ElevenModel, vkClone = false): Provider {
@@ -33,6 +37,8 @@ export function providerFor(engine: Engine, model: ElevenModel, vkClone = false)
       return model === "eleven_v4" ? "eleven-v4" : "eleven-tts";
     case "voicekiller":
       return vkClone ? "voicekiller-clone" : "voicekiller";
+    case "inworld":
+      return "inworld";
     case "kie":
       return "kie-tts";
     case "piper":
@@ -95,6 +101,8 @@ export interface EnginesCfg {
   /** Which engine answers the AI Director. Default: Kie (cloud). */
   directorEngine?: DirectorEngine;
   elevenModel: ElevenModel;
+  /** Which Inworld model speaks Inworld voices. Default: inworld-tts-2. */
+  inworldModel?: InworldModel;
   quality: Quality;
   /** Look for a new Greenroom when it starts. Off means only when you press the button. Default on. */
   updateCheck?: boolean;

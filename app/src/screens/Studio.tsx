@@ -11,7 +11,7 @@ import { budgetView, ledgerByEngine, ledgerTotal, money, productionReportMd, pro
 import { takeAudio } from "../media";
 import { APP_VERSION } from "../version";
 
-const PAID: Engine[] = ["elevenlabs", "voicekiller", "kie"];
+const PAID: Engine[] = ["elevenlabs", "inworld", "voicekiller", "kie"];
 
 export default function Studio() {
   const { project, library, engines, saveEngines, edit, go, toast } = useApp();

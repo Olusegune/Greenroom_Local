@@ -2,7 +2,8 @@
 
 import { api, type Provider } from "./api";
 import { applyPronunciations, composeText, stripTags, vkInstructions } from "./direct";
-import { ENGINES, providerFor, type ElevenModel } from "./engines";
+import { ENGINES, providerFor, type ElevenModel, type InworldModel } from "./engines";
+import { DEFAULT_INWORLD_MODEL, inworldPlan } from "./inworld";
 import { fromBase64 } from "./audio";
 import { remember } from "./media";
 import { uid } from "./script";
@@ -13,17 +14,39 @@ import type { Line, Pronunciation, Take, VoiceEntry } from "./types";
 export type Model = ElevenModel;
 
 /** What is sent for this line and voice. Engines without tags get the plain words, plus delivery in words where they take it. */
-export function plan(line: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = []): { provider: Provider; text: string; instructions?: string; model: Take["model"] } {
+export interface PlanOptions {
+  inworldModel?: InworldModel;
+}
+
+export interface Plan {
+  provider: Provider;
+  text: string;
+  instructions?: string;
+  model: Take["model"];
+  /** Cloud model id for engines that have several, such as inworld-tts-2. */
+  modelId?: string;
+  steering?: string[];
+  nonverbal?: string[];
+  /** What the line asked for that this voice could not be given. Shown before paying. */
+  notSent?: string[];
+}
+
+export function plan(line: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
   const e = voice.provider;
   const provider = providerFor(e, model, voice.vkClone);
+  if (e === "inworld") {
+    const modelId = opts.inworldModel ?? DEFAULT_INWORLD_MODEL;
+    const w = inworldPlan({ text: applyPronunciations(line.text, dict), direction: line.direction }, modelId);
+    return { provider, text: w.text, model: "inworld", modelId, steering: w.steering, nonverbal: w.nonverbal, notSent: w.notSent };
+  }
   if (ENGINES[e].tags) return { provider, text: applyPronunciations(composeText(line), dict), model };
   const instructions = e === "voicekiller" ? vkInstructions(line.direction.emotion, line.direction.speed, line.direction.note) : undefined;
   return { provider, text: applyPronunciations(stripTags(line.text), dict), instructions, model: e as Take["model"] };
 }
 
-export async function makeTake(projectId: string, line: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string): Promise<Take> {
-  const p = plan(line, voice, model, dict);
-  const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: line.direction.speed, instructions: p.instructions, quality });
+export async function makeTake(projectId: string, line: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const p = plan(line, voice, model, dict, opts);
+  const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: line.direction.speed, instructions: p.instructions, quality, model: p.modelId });
   const id = "t-" + uid();
   const ext = out.mime === "audio/wav" ? "wav" : "mp3";
   await api.takeWrite(projectId, id, ext, out.audioB64);
@@ -43,6 +66,10 @@ export async function makeTake(projectId: string, line: Line, voice: VoiceEntry,
       quality: voice.provider === "elevenlabs" ? quality : undefined,
       speed: voice.provider === "chatterbox" || voice.provider === "wazobia" ? 1 : line.direction.speed,
       instructions: p.instructions,
+      modelId: p.modelId,
+      steering: p.steering?.length ? p.steering : undefined,
+      nonverbal: p.nonverbal?.length ? p.nonverbal : undefined,
+      notSent: p.notSent?.length ? p.notSent : undefined,
       chars: p.text.length,
       sha256,
       appVersion: APP_VERSION,
@@ -66,5 +93,5 @@ export async function makeSound(projectId: string, prompt: string, seconds: numb
 }
 
 export function modelLabel(m: Take["model"]): string {
-  return m === "eleven_v4" ? "Eleven v4" : m === "eleven_v3" ? "Eleven v3" : m === "voicekiller" ? "VoiceKiller" : m === "kie" ? "Kie" : m === "piper" ? "Piper" : m === "chatterbox" ? "Chatterbox" : m === "wazobia" ? "WazobiaVoice" : "Local";
+  return m === "eleven_v4" ? "Eleven v4" : m === "eleven_v3" ? "Eleven v3" : m === "voicekiller" ? "VoiceKiller" : m === "inworld" ? "Inworld" : m === "kie" ? "Kie" : m === "piper" ? "Piper" : m === "chatterbox" ? "Chatterbox" : m === "wazobia" ? "WazobiaVoice" : "Local";
 }

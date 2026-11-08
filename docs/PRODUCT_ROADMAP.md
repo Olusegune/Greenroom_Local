@@ -39,6 +39,9 @@ Build curated audition packs for Nigerian English, Yoruba, Igbo, Hausa, British 
 - Guided model update channels with license/change notices.
 - A commercial-rights report that surfaces provider terms alongside each final asset.
 
+## Cinematic Engine 2.0 (requested 2026-11-08)
+Audit and status are in `docs/CINEMATIC_ENGINE_AUDIT.md`. Done so far: Inworld as a cloud engine (`docs/INWORLD.md`) and a versioned performance manifest. Not started: new local engines, the Acting Director beat editor, Voice DNA, performance memory, the engine router, Script Doctor and the 60-second stress test. `PerformancePlan` in `performance.ts` is not connected to any screen and is the first thing to wire.
+
 ## Lessons from Vois Studio (reviewed 2026-11-02, from a screenshot and its public site)
 - **A pipeline-shaped top bar** (Home, Projects, Listen, Voices, Tutorials) and a home screen of three big actions, then templates, then tutorials. Greenroom opens on an empty project list: add templates (Podcast, Audiobook, Game dialogue, Ad, Training) that create a cast and sample script.
 - **A visible engine tier chip** ("Expressive") with a status dot, always in the header: show the active voice engine and whether it is ready.

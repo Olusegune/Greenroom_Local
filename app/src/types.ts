@@ -16,6 +16,12 @@ export interface Provenance {
   quality?: string;
   speed: number;
   instructions?: string;
+  /** Cloud model that spoke the line, such as inworld-tts-2, when the engine has more than one. */
+  modelId?: string;
+  /** Inworld: the steering sentences and non-verbal tags that were sent, and what could not be. */
+  steering?: string[];
+  nonverbal?: string[];
+  notSent?: string[];
   /** Characters sent to the engine. */
   chars: number;
   /** SHA-256 of the audio file as saved, so a changed file can be spotted. */
@@ -30,7 +36,7 @@ export interface Provenance {
 export interface Take {
   id: string;
   at: string;
-  model: "eleven_v4" | "eleven_v3" | "voicekiller" | "kie" | "piper" | "local" | "chatterbox" | "wazobia";
+  model: "eleven_v4" | "eleven_v3" | "voicekiller" | "inworld" | "kie" | "piper" | "local" | "chatterbox" | "wazobia";
   ext: "mp3" | "wav";
   voiceId: string;
   /** Exactly what was sent, tags included, so a take can always be explained. */
@@ -103,6 +109,8 @@ export interface ExportCfg {
   markersInWav: boolean;
   labels: boolean;
   cueSheet: boolean;
+  /** A Cinematic Performance Manifest (.json): who spoke each line, with which voice and model, and how it was directed. */
+  performance: boolean;
   otio: boolean;
   /** A CMX 3600 cut list (.edl). */
   edl?: boolean;
@@ -114,7 +122,7 @@ export interface ExportCfg {
   manifest: boolean;
 }
 
-export const DEFAULT_EXPORT: ExportCfg = { rate: 48000, bits: 24, target: "off", ceiling: -1, fps: 24, whole: true, scenes: false, lines: true, stems: false, markersInWav: true, labels: false, cueSheet: true, otio: false, matchPicture: true, report: true, manifest: true };
+export const DEFAULT_EXPORT: ExportCfg = { rate: 48000, bits: 24, target: "off", ceiling: -1, fps: 24, whole: true, scenes: false, lines: true, stems: false, markersInWav: true, labels: false, cueSheet: true, performance: false, otio: false, matchPicture: true, report: true, manifest: true };
 
 /** How music and atmosphere dip under dialogue. */
 export interface MixCfg {

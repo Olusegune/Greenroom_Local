@@ -34,7 +34,7 @@ describe("home templates", () => {
   });
 });
 
-const none = { elevenlabs: false, kie: false, voicekiller: false, huggingface: false };
+const none = { elevenlabs: false, kie: false, voicekiller: false, inworld: false, huggingface: false };
 describe("engine chip", () => {
   it("asks for setup when nothing is ready", () => {
     expect(engineChip(none, [], false).level).toBe("setup");

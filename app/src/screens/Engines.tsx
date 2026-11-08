@@ -3,7 +3,8 @@ import { api, type PiperStatus } from "../api";
 import { useApp } from "../ctx";
 import { useLocalSfxReady } from "../localSfx";
 import { useLocalDirectorReady } from "../localDirector";
-import { ENGINES, QUALITIES, SOUND_ENGINES, directorReady, soundEngineOf, soundReady, type ElevenModel, type ElevenSfxModel, type Quality, type SoundEngine } from "../engines";
+import { INWORLD_MODELS } from "../inworld";
+import { ENGINES, QUALITIES, SOUND_ENGINES, directorReady, soundEngineOf, soundReady, type ElevenModel, type ElevenSfxModel, type InworldModel, type Quality, type SoundEngine } from "../engines";
 import { Note, useBusy } from "../ui";
 import { BASIS_LABEL } from "../trust";
 import type { ConsentBasis } from "../types";
@@ -71,6 +72,25 @@ export default function Engines() {
         )}
       </EngineCard>
 
+      <EngineCard mark="I" tone="e4" title={ENGINES.inworld.label} status={keys.inworld ? "Connected" : "Needs a key"} ok={keys.inworld} blurb="Cloud voices in 200+ languages, instant cloning, delivery steering">
+        <p className="muted small">{ENGINES.inworld.blurb} Greenroom sends a written direction as an English instruction on Inworld TTS 2, and laughs, sighs, coughs and breaths as the non-verbal tags Inworld documents. Anything else a line asks for is listed before you pay, never dropped silently. Hear a voice by ear before you rely on it.</p>
+        <label className="field" style={{ maxWidth: 360 }}>
+          Inworld model
+          <select value={engines.inworldModel ?? "inworld-tts-2"} onChange={(e) => saveEngines({ ...engines, inworldModel: e.target.value as InworldModel })}>
+            {INWORLD_MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="muted small">{INWORLD_MODELS.find((m) => m.id === (engines.inworldModel ?? "inworld-tts-2"))?.blurb} Output is requested as 48 kHz WAV. Enter your price per 1,000 characters in Studio to see costs; Greenroom does not know Inworld pricing.</p>
+        {!keys.inworld && (
+          <div>
+            <button onClick={() => go("settings")}>Add the key in Settings</button>
+          </div>
+        )}
+      </EngineCard>
       <Simple mark="V" tone="e2" title={ENGINES.voicekiller.label} ready={keys.voicekiller} short="About two thousand voices; no inline sound tags" blurb={ENGINES.voicekiller.blurb} extra={<VkClone />} />
       <Simple mark="K" tone="e3" title={ENGINES.kie.label} ready={keys.kie} short="Preset voices, sound effects, the AI Director and Suno music" blurb={ENGINES.kie.blurb} />
       <EngineCard mark="D" tone="e5" title="AI Director" status={engines.directorEngine === "local" ? "On this PC" : "Kie"} ok={directorReady(engines, keys, localDirector)} blurb="Suggests emotion, sounds and notes for every line">

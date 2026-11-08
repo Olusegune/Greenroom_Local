@@ -18,6 +18,12 @@ export function useSample() {
         const ok = await confirmSpend({ title: "Hear this voice?", lines: [`${text.length} characters, spoken by ${v.name}`, ...price.lines], warn: price.warn, skipKey: "sample" });
         if (!ok) throw new Error("cancelled");
       }
+      // Inworld previews use the streaming endpoint, which starts sooner and returns MP3.
+      if (v.provider === "inworld") {
+        const heard = await api.inworldPreview(stripTags(text), v.id, engines.inworldModel ?? "inworld-tts-2");
+        addLedger({ kind: "sample", engine: e.label, chars: text.length, items: [{ kind: "speech", engine: v.provider, chars: text.length }] });
+        return toUrl(heard);
+      }
       const out = await api.runClip({ provider: providerFor(v.provider, engines.elevenModel, v.vkClone), text: e.tags ? text : stripTags(text), voice: v.id });
       if (!e.local) addLedger({ kind: "sample", engine: e.label, chars: text.length, items: [{ kind: "speech", engine: v.provider, chars: text.length }] });
       return toUrl(out);

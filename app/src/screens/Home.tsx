@@ -11,7 +11,7 @@ export default function Home() {
   const [list, setList] = useState<ProjectInfo[] | null>(null);
   const [name, setName] = useState("");
   useEffect(() => void api.projectList().then(setList).catch(() => setList([])), []);
-  const noKeys = !keys.elevenlabs && !keys.voicekiller && !keys.kie;
+  const noKeys = !keys.elevenlabs && !keys.voicekiller && !keys.kie && !keys.inworld;
 
   return (
     <section>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ACCENTS, applyPalette, readPalette, savePalette } from "../palette";
 import { api, type KeyName } from "../api";
+import { inworldCache } from "../finder";
 import { useApp } from "../ctx";
 import { checkForUpdates, installUpdate, useUpdates } from "../updates";
 import { APP_VERSION } from "../version";
@@ -18,6 +19,8 @@ export default function Settings() {
       <ColourSettings />
       <KeyCard mark="E" tone="e1" title="ElevenLabs" hint="From elevenlabs.io, Developers, API keys. Used for speech, sound effects, voice design and cloning." fields={[["elevenlabs", "API key"]]} has={keys.elevenlabs} changed={refreshKeys} />
       <KeyCard mark="V" tone="e2" title="VoiceKiller" hint="From voicekiller.com, API page. It needs both the API key and your user id." fields={[["voicekiller", "API key"], ["voicekiller-userid", "User id"]]} has={keys.voicekiller} changed={refreshKeys} />
+      <KeyCard mark="I" tone="e4" title="Inworld" hint="From the Inworld Portal, Settings, API keys: copy the Base64 credential and paste it here as it is. Used for Inworld voices, speech and cloning." fields={[["inworld", "Base64 credential"]]} has={keys.inworld} changed={refreshKeys} />
+      <InworldConnection saved={keys.inworld} />
       <KeyCard mark="K" tone="e3" title="Kie" hint="From kie.ai, API Key page. Used for Kie voices, sound effects, the AI Director and Suno music." fields={[["kie", "API key"]]} has={keys.kie} changed={refreshKeys} />
       <h2>Model repository connections</h2>
       <KeyCard mark="H" tone="e5" title="Hugging Face" hint="Create a read-only access token in Hugging Face settings. For gated models, first obtain access on the model page. Your token is stored in your system credential store." fields={[["huggingface", "read token"]]} has={keys.huggingface} changed={refreshKeys} />
@@ -103,6 +106,47 @@ function HuggingFaceConnection({ saved }: { saved: boolean }) {
   const [busy, setBusy] = useState(false);
   const check = async () => { setBusy(true); setMessage(""); try { setMessage(`Connected as ${await api.huggingfaceCheck()}.`); } catch (e) { setMessage((e as Error).message); } finally { setBusy(false); } };
   return <div className="card stack"><div className="row wrap"><button disabled={!saved || busy} onClick={() => void check()}>{busy ? "Checking…" : "Check connection"}</button><button onClick={() => { void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl("https://huggingface.co/settings/tokens")); }}>Create a Hugging Face token</button></div><p className="muted small">The connection check sends only your token to Hugging Face. Saving or checking a token does not download a model. Advanced-model downloads and inference are still being integrated.</p>{message && <p role="status">{message}</p>}</div>;
+}
+
+function InworldConnection({ saved }: { saved: boolean }) {
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const check = async () => {
+    setBusy(true);
+    setMessage("");
+    try {
+      const n = await api.inworldCheck();
+      setMessage(`Connected. ${n} voice${n === 1 ? "" : "s"} available to this key. Open Voices to browse them.`);
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const refresh = async () => {
+    setBusy(true);
+    setMessage("");
+    try {
+      const page = await api.voicesInworld();
+      inworldCache.list = page.voices;
+      setMessage(`Loaded ${page.voices.length} voice${page.voices.length === 1 ? "" : "s"}${page.truncated ? " (the list was cut at a safe limit; narrow it in Voices)" : ""}.`);
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="card stack">
+      <div className="row wrap">
+        <button disabled={!saved || busy} onClick={() => void check()}>{busy ? "Checking…" : "Test Inworld connection"}</button>
+        <button disabled={!saved || busy} onClick={() => void refresh()}>Refresh voices</button>
+        <button onClick={() => { void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl("https://platform.inworld.ai/")); }}>Open the Inworld Portal</button>
+      </div>
+      <p className="muted small">The test only lists your voices, so it costs nothing. The key belongs to one Inworld workspace; a workspace address alone cannot sign in. Use Remove above to disconnect.</p>
+      {message && <p role="status">{message}</p>}
+    </div>
+  );
 }
 
 function KeyCard({ mark, tone, title, hint, fields, has, changed }: { mark: string; tone: string; title: string; hint: string; fields: [KeyName, string][]; has: boolean; changed: () => void }) {

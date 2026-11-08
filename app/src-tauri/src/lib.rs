@@ -4,6 +4,7 @@
 mod eleven;
 mod kie;
 mod history;
+mod inworld;
 mod local;
 mod model_manager;
 mod managed_python;
@@ -24,7 +25,7 @@ use tauri::Manager;
 const SERVICE: &str = "Greenroom Local";
 
 fn entry(name: &str) -> Result<keyring::Entry, String> {
-    if !matches!(name, "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "huggingface") {
+    if !matches!(name, "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "inworld" | "huggingface") {
         return Err("Unknown provider.".into());
     }
     keyring::Entry::new(SERVICE, name).map_err(|e| format!("Could not reach the system credential store: {e}"))
@@ -33,6 +34,7 @@ fn entry(name: &str) -> Result<keyring::Entry, String> {
 fn get_key(name: &str) -> Result<String, String> {
     let who = match name {
         "kie" => "Kie",
+        "inworld" => "Inworld",
         "voicekiller" | "voicekiller-userid" => "VoiceKiller",
         _ => "ElevenLabs",
     };
@@ -45,6 +47,10 @@ fn get_key(name: &str) -> Result<String, String> {
 
 fn eleven() -> Result<eleven::Client, String> {
     Ok(eleven::Client::new(eleven::BASE, &get_key("elevenlabs")?))
+}
+
+fn inworld_client() -> Result<inworld::Client, String> {
+    Ok(inworld::Client::new(inworld::BASE, &get_key("inworld")?))
 }
 
 fn voicekiller_client() -> Result<voicekiller::Client, String> {
@@ -74,13 +80,14 @@ struct KeyStatus {
     elevenlabs: bool,
     kie: bool,
     voicekiller: bool,
+    inworld: bool,
     huggingface: bool,
 }
 
 #[tauri::command]
 fn key_status() -> KeyStatus {
     let has = |n: &str| entry(n).ok().and_then(|e| e.get_password().ok()).map(|k| !k.trim().is_empty()).unwrap_or(false);
-    KeyStatus { elevenlabs: has("elevenlabs"), kie: has("kie"), voicekiller: has("voicekiller") && has("voicekiller-userid"), huggingface: has("huggingface") }
+    KeyStatus { elevenlabs: has("elevenlabs"), kie: has("kie"), voicekiller: has("voicekiller") && has("voicekiller-userid"), inworld: has("inworld"), huggingface: has("huggingface") }
 }
 
 #[tauri::command]
@@ -133,6 +140,8 @@ struct ClipReq {
     prompt_influence: Option<f64>,
     sfx_model: Option<String>,
     language: Option<String>,
+    model: Option<String>,
+    delivery: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -158,6 +167,7 @@ fn make_clip(root: &std::path::Path, models: &std::path::Path, req: ClipReq) -> 
         "local" => local::server_speak(&server_cfg(root), text, &voice, req.speed.unwrap_or(1.0)),
         "chatterbox" => chatterbox_speak(root, models, text, &voice),
         "wazobia" => wazobia_speak(root, models, text, &voice, req.language.as_deref().unwrap_or("en")),
+        "inworld" => Ok(inworld_client()?.speak(text, &voice, req.model.as_deref().unwrap_or("inworld-tts-2"), inworld::SpeechOpts { rate: req.speed, delivery: req.delivery.as_deref(), language: req.language.as_deref() })?.audio),
         p @ ("voicekiller" | "voicekiller-clone") => voicekiller_client()?.speak(text, &voice, req.instructions.as_deref(), p == "voicekiller-clone"),
         p @ ("kie-tts" | "kie-dialogue" | "kie-sfx") => {
             let c = kie::Client::new(kie::BASE, &get_key("kie")?);
@@ -399,6 +409,49 @@ fn chatterbox_run(root: &std::path::Path, text: &str, model: &std::path::Path, e
     let output = child.wait_with_output().map_err(|_| "Chatterbox stopped unexpectedly.")?;
     if !output.status.success() || !output.stdout.starts_with(b"RIFF") { return Err("Chatterbox could not generate this line. Check that its runtime and model files are intact.".into()); }
     Ok(output.stdout)
+}
+
+// ---- Inworld --------------------------------------------------------------------------------------------------
+
+/// Proves the saved credential works. Returns how many voices the account can see.
+#[tauri::command]
+async fn inworld_check() -> Result<u64, String> {
+    blocking(|| inworld_client()?.check()).await
+}
+
+#[tauri::command]
+async fn voices_inworld(language: Option<String>, source: Option<String>) -> Result<inworld::VoicePage, String> {
+    blocking(move || inworld_client()?.voices(language.as_deref(), source.as_deref())).await
+}
+
+/// A short listening copy through the streaming endpoint. It is billed like any other speech, so the UI asks first.
+#[tauri::command]
+async fn inworld_preview(text: String, voice: String, model: String) -> Result<Audio, String> {
+    blocking(move || {
+        let s = inworld_client()?.speak_stream_mp3(&text, &voice, &model, inworld::SpeechOpts::default())?;
+        Ok(Audio { mime: net::mime_of(&s.audio).into(), audio_b64: b64(&s.audio) })
+    })
+    .await
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct InworldCloneReq {
+    name: String,
+    language: Option<String>,
+    description: String,
+    audio_b64: String,
+    transcription: Option<String>,
+    remove_noise: bool,
+    permission: bool,
+    speaker: String,
+}
+
+/// Cloning needs the owner's confirmation that the speaker agreed; it is checked here as well as in the UI.
+#[tauri::command]
+async fn inworld_clone(req: InworldCloneReq) -> Result<inworld::Cloned, String> {
+    inworld::consent_ok(req.permission, &req.speaker)?;
+    blocking(move || inworld_client()?.clone_voice(&req.name, req.language.as_deref(), &req.description, &unb64(&req.audio_b64)?, req.transcription.as_deref(), req.remove_noise)).await
 }
 
 // ---- voices ---------------------------------------------------------------------------------------------------
@@ -1570,7 +1623,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
-            key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
+            key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
             model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert

@@ -20,7 +20,7 @@ const directorImpl = async (_s: string, user: string) => {
   };
 
 const demoSfx = { on: false };
-const keys = { elevenlabs: true, kie: true, voicekiller: true, huggingface: false } as Record<string, boolean>;
+const keys = { elevenlabs: true, kie: true, voicekiller: true, inworld: true, huggingface: false } as Record<string, boolean>;
 const projects = new Map<string, Project>();
 const takes = new Map<string, { audioB64: string; mime: string }>();
 let library: VoiceEntry[] = [];
@@ -59,7 +59,7 @@ const SHARED: VoiceInfo[] = [
 ];
 
 export const mock: Api = {
-  keyStatus: async () => ({ elevenlabs: keys.elevenlabs!, kie: keys.kie!, voicekiller: keys.voicekiller!, huggingface: keys.huggingface! }),
+  keyStatus: async () => ({ elevenlabs: keys.elevenlabs!, kie: keys.kie!, voicekiller: keys.voicekiller!, inworld: keys.inworld!, huggingface: keys.huggingface! }),
   setKey: async (n: KeyName) => void (keys[n === "voicekiller-userid" ? "voicekiller" : n] = true),
   clearKey: async (n: KeyName) => void (keys[n === "voicekiller-userid" ? "voicekiller" : n] = false),
   huggingfaceCheck: async () => { if (!keys.huggingface) throw new Error("Add a Hugging Face token first."); return "Demo account"; },
@@ -69,6 +69,14 @@ export const mock: Api = {
     return { audioB64: tone(secs, 180 + (req.text.length % 7) * 40), mime: "audio/wav", ms: 400 };
   },
   voicesMine: async () => (await wait(), MINE),
+  inworldCheck: async () => (await wait(), 3),
+  voicesInworld: async () => (await wait(), { total: 3, truncated: false, voices: [
+    { voiceId: "Alex", displayName: "Alex", language: "en-US", description: "Mature, calm narrator", tags: ["narrator", "calm"], source: "SYSTEM", gender: "MALE", ageGroup: "ADULT" },
+    { voiceId: "Olivia", displayName: "Olivia", language: "en-GB", description: "Dry, precise British voice", tags: ["british", "precise"], source: "SYSTEM", gender: "FEMALE", ageGroup: "ADULT" },
+    { voiceId: "workspace-mum", displayName: "Mum (cloned)", language: "en-US", description: "Cloned in this workspace", tags: [], source: "IVC", gender: "FEMALE", ageGroup: "ADULT" },
+  ] }),
+  inworldPreview: async () => (await wait(), { audioB64: tone(1.6, 260), mime: "audio/wav" }),
+  inworldClone: async (a: { name: string }) => (await wait(), { warnings: [], voice: { voiceId: "demo-clone", displayName: a.name, language: "en-US", description: "", tags: [], source: "IVC", gender: "", ageGroup: "" } }),
   voicesVoiceKiller: async () => (await wait(), [{ name: "Bella", language: "en" }, { name: "Lucia (es-MX)", language: "es-MX" }, { name: "Authoritative Advisor 1 (en-GB)", language: "en-GB" }]),
   voicesShared: async (search, language, accent) => {
     await wait();

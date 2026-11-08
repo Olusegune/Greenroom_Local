@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl, type DesignPreview, type PiperVoice } from "../api";
 import { useApp } from "../ctx";
 import { ENGINES, ENGINE_ORDER, type Engine } from "../engines";
-import { kieFor, piperFor, voicekillerFor, type Found } from "../finder";
+import { inworldCache, inworldFor, kieFor, piperFor, voicekillerFor, type Found } from "../finder";
 import { Flag } from "../flags";
 import { Folder, Globe, Person, Pin, Plus, Star, Trash } from "../icons";
 import { ACCENTS, languageName, TILES, type Tile } from "../languages";
@@ -313,13 +313,13 @@ function Find() {
   const [gender, setGender] = useState("");
   const [accent, setAccent] = useState("");
   const [text, setText] = useState("");
-  const [on, setOn] = useState<Record<Engine, boolean>>({ elevenlabs: true, voicekiller: true, kie: true, piper: true, wazobia: false, chatterbox: false, local: false });
+  const [on, setOn] = useState<Record<Engine, boolean>>({ elevenlabs: true, inworld: true, voicekiller: true, kie: true, piper: true, wazobia: false, chatterbox: false, local: false });
   const [slots, setSlots] = useState<Partial<Record<Engine, Slot>>>({});
   const [busyKey, setBusyKey] = useState("");
   const [expanded, setExpanded] = useState<Partial<Record<Engine, boolean>>>({});
   const token = useRef(0);
 
-  const ready: Record<Engine, boolean> = { elevenlabs: keys.elevenlabs, voicekiller: keys.voicekiller, kie: keys.kie, piper: true, wazobia: false, chatterbox: false, local: false };
+  const ready: Record<Engine, boolean> = { elevenlabs: keys.elevenlabs, inworld: keys.inworld, voicekiller: keys.voicekiller, kie: keys.kie, piper: true, wazobia: false, chatterbox: false, local: false };
   const set = (e: Engine, s: Slot) => setSlots((all) => ({ ...all, [e]: s }));
 
   const tiles = useMemo(() => TILES.filter((t) => t.name.toLowerCase().includes(filter.trim().toLowerCase())), [filter]);
@@ -347,12 +347,13 @@ function Find() {
           .catch((err: Error) => guard(() => set(e, { state: "error", items: [], error: err.message })));
       };
       needLang("voicekiller", async () => voicekillerFor(tile!, (vkCache ??= await api.voicesVoiceKiller())));
+      needLang("inworld", async () => inworldFor(tile!, (inworldCache.list ??= (await api.voicesInworld()).voices)));
       needLang("kie", async () => kieFor(tile!));
       needLang("piper", async () => piperFor(tile!, (piperCache ??= await api.piperCatalog())));
     }, 250);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tile, gender, accent, text, on, keys.elevenlabs, keys.voicekiller, keys.kie]);
+  }, [tile, gender, accent, text, on, keys.elevenlabs, keys.voicekiller, keys.kie, keys.inworld]);
 
   const more = async (e: "elevenlabs") => {
     const s = slots[e];
@@ -365,7 +366,7 @@ function Find() {
     }
   };
 
-  const toEntry = (f: Found, id = f.id): Omit<VoiceEntry, "notes" | "createdAt"> => ({ id, name: f.name, provider: f.engine, source: "library", language: f.language, accent: f.accent, gender: f.gender });
+  const toEntry = (f: Found, id = f.id): Omit<VoiceEntry, "notes" | "createdAt"> => ({ id, name: f.name, provider: f.engine, source: f.kind === "cloned" ? "cloned" : f.kind === "designed" ? "designed" : "library", language: f.language, accent: f.accent, gender: f.gender });
   const asVoice = (f: Found): VoiceEntry => ({ ...toEntry(f), notes: "", createdAt: "", previewUrl: f.previewUrl ?? undefined });
   const sample = useSample();
 
@@ -461,7 +462,7 @@ function Find() {
       </div>
 
       <h3>{tile ? `Voices for ${tile.name}` : "Popular voices on ElevenLabs"}</h3>
-      {!tile && <p className="muted small">Choose a language above to also see VoiceKiller, Kie and offline Piper voices.</p>}
+      {!tile && <p className="muted small">Choose a language above to also see Inworld, VoiceKiller, Kie and offline Piper voices.</p>}
       {tile?.mixed && <Note>{tile.name} has no language of its own. Write the lines the way they are spoken and pick a voice with a matching accent. Piper and Kie are not offered for it.</Note>}
 
       {engineList.map((e) => {
@@ -634,49 +635,118 @@ function Design({ seed }: { seed?: { description: string; line: string; n: numbe
 }
 
 function Clone() {
-  const { keys, toast } = useApp();
+  const { keys, toast, confirmSpend } = useApp();
   const add = useAdd();
+  const sample = useSample();
   const { busy, run } = useBusy();
+  const [via, setVia] = useState<"elevenlabs" | "inworld">("elevenlabs");
   const [name, setName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [perm, setPerm] = useState(false);
   const [who, setWho] = useState("");
   const [basis, setBasis] = useState<ConsentBasis | "">("");
   const [ref, setRef] = useState("");
-  const ready = name.trim() && file && perm && who.trim() && basis && keys.elevenlabs;
+  const [lang, setLang] = useState("");
+  const [words, setWords] = useState("");
+  const [about, setAbout] = useState("");
+  const [denoise, setDenoise] = useState(false);
+  const [made, setMade] = useState<VoiceEntry | null>(null);
+  const [heard, setHeard] = useState("");
+  const isIw = via === "inworld";
+  const tooBig = !!file && isIw && file.size > 12 << 20;
+  const wrongType = !!file && isIw && !/\.(wav|mp3)$/i.test(file.name);
+  const ready = name.trim() && file && perm && who.trim() && basis && keys[via] && !tooBig && !wrongType;
 
   const go = () =>
     run(async () => {
       if (!file) return;
       try {
+        const consent = { speaker: who.trim(), basis: basis as ConsentBasis, reference: ref.trim(), date: new Date().toISOString().slice(0, 10) };
         const buf = new Uint8Array(await file.arrayBuffer());
         let s = "";
         for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
-        const id = await api.voiceClone(name.trim(), file.name, file.type || "audio/mpeg", btoa(s), perm);
-        add({ id, name: name.trim(), provider: "elevenlabs", source: "cloned", language: "", accent: "", gender: "", notes: "Cloned in Greenroom", consent: { speaker: who.trim(), basis: basis as ConsentBasis, reference: ref.trim(), date: new Date().toISOString().slice(0, 10) } });
+        if (isIw) {
+          const ok = await confirmSpend({ title: "Clone this voice with Inworld?", lines: [`Sends "${file.name}" (${(file.size / 1048576).toFixed(1)} MB) to Inworld to create the voice "${name.trim()}"`, `Voice of: ${who.trim()}`, "Greenroom does not know what Inworld charges for cloning. Check your Inworld account.", "Instant cloning uses about the first 30 seconds of the recording."] });
+          if (!ok) return;
+          const r = await api.inworldClone({ name: name.trim(), language: lang.trim() || undefined, description: about.trim(), audioB64: btoa(s), transcription: words.trim() || undefined, removeNoise: denoise, permission: perm, speaker: who.trim() });
+          const entry: VoiceEntry = { id: r.voice.voiceId, name: name.trim(), provider: "inworld", source: "cloned", language: r.voice.language || lang.trim(), accent: "", gender: r.voice.gender.toLowerCase(), notes: `Cloned with Inworld. ${about.trim()}`.trim(), createdAt: new Date().toISOString(), consent };
+          add(entry);
+          inworldCache.list = null;
+          setMade(entry);
+          if (r.warnings.length) toast(`Inworld noted: ${r.warnings.join("; ")}`);
+        } else {
+          const id = await api.voiceClone(name.trim(), file.name, file.type || "audio/mpeg", btoa(s), perm);
+          add({ id, name: name.trim(), provider: "elevenlabs", source: "cloned", language: "", accent: "", gender: "", notes: "Cloned in Greenroom", consent });
+        }
         setName("");
         setFile(null);
         setPerm(false);
         setWho("");
         setBasis("");
         setRef("");
+        setWords("");
+        setAbout("");
       } catch (e) {
         toast((e as Error).message, true);
       }
     });
 
+  const hear = async () => {
+    if (!made) return;
+    try {
+      setHeard(await sample(made));
+    } catch {
+      /* the message was already shown */
+    }
+  };
+
   return (
     <>
       <p className="muted">Make a voice from a recording. A clean minute or more of one person speaking, with no music or other voices, works best.</p>
       <div className="card stack">
+        <div className="row wrap" role="group" aria-label="Clone with">
+          <span className="muted small">Clone with</span>
+          <span className="chips">
+            {(["elevenlabs", "inworld"] as const).map((e) => (
+              <button key={e} className="chip" aria-pressed={via === e} onClick={() => setVia(e)}>
+                {ENGINES[e].label}
+              </button>
+            ))}
+          </span>
+        </div>
+        {!keys[via] && <Note>Add your {ENGINES[via].label} key in Settings first.</Note>}
         <label className="field">
           Name for this voice
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="For example: Mum" />
         </label>
         <label className="field">
-          Recording (WAV, MP3, M4A, up to 30 MB)
-          <input type="file" accept="audio/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          {isIw ? "Recording (WAV or MP3, up to 12 MB; about 10 to 30 seconds is enough)" : "Recording (WAV, MP3, M4A, up to 30 MB)"}
+          <input type="file" accept={isIw ? ".wav,.mp3,audio/wav,audio/mpeg" : "audio/*"} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </label>
+        {tooBig && <p className="warn small">Inworld takes recordings up to 12 MB.</p>}
+        {wrongType && <p className="warn small">Inworld cloning takes a WAV or MP3 recording.</p>}
+        {isIw && (
+          <>
+            <div className="row wrap">
+              <label className="field" style={{ flex: 1, minWidth: 160 }}>
+                Language (optional)
+                <input type="text" value={lang} onChange={(e) => setLang(e.target.value)} placeholder="en-US, or leave blank to detect" />
+              </label>
+              <label className="field" style={{ flex: 2, minWidth: 220 }}>
+                Short description (optional)
+                <input type="text" value={about} onChange={(e) => setAbout(e.target.value)} placeholder="Warm, a little husky" />
+              </label>
+            </div>
+            <label className="field">
+              What is said in the recording (optional; Inworld writes it if left blank)
+              <input type="text" value={words} onChange={(e) => setWords(e.target.value)} />
+            </label>
+            <label className="row">
+              <input type="checkbox" checked={denoise} onChange={(e) => setDenoise(e.target.checked)} />
+              <span>Remove background noise from the recording</span>
+            </label>
+          </>
+        )}
         <div className="card stack" style={{ background: "var(--surface-1)" }}>
           <h3>Consent record</h3>
           <p className="muted small">Kept with the voice and written into your production report. Studios and platforms ask for this.</p>
@@ -706,13 +776,23 @@ function Clone() {
           <input type="checkbox" checked={perm} onChange={(e) => setPerm(e.target.checked)} />
           <span>I have permission from the person whose voice this is to clone it.</span>
         </label>
-        <p className="muted small">The recording is sent to ElevenLabs to create the voice. Cloning needs a plan that includes it.</p>
+        <p className="muted small">The recording is sent to {ENGINES[via].label} to create the voice. {isIw ? "Inworld asks you to confirm you hold the rights to the voice." : "Cloning needs a plan that includes it."}</p>
         <div>
           <button className="primary" disabled={!ready || busy} onClick={() => void go()}>
             {busy ? "Creating…" : "Create clone"}
           </button>
         </div>
       </div>
+      {made && (
+        <div className="card stack">
+          <strong>{made.name} is in your library.</strong>
+          <p className="muted small">Hearing it makes a short Inworld line, so it asks first. The voice is saved with its consent record.</p>
+          <div className="row">
+            <button onClick={() => void hear()}>Hear {made.name}</button>
+            {heard && <audio controls src={heard} />}
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -40,7 +40,7 @@ export default function Perform() {
   const patchLine = (id: string, fn: (l: Line) => Line, key?: string) => edit((p) => ({ ...p, lines: p.lines.map((l) => (l.id === id ? fn(l) : l)) }), key);
 
   const spend = (lines: Line[]) => {
-    const chars = lines.reduce((n, l) => n + (voiceOf(l) ? plan(l, voiceOf(l)!, model, dict).text.length : 0), 0);
+    const chars = lines.reduce((n, l) => n + (voiceOf(l) ? plan(l, voiceOf(l)!, model, dict, { inworldModel: engines.inworldModel }).text.length : 0), 0);
     return { chars, voices: [...new Set(lines.map((l) => voiceOf(l)?.name).filter(Boolean))].join(", ") };
   };
 
@@ -52,7 +52,8 @@ export default function Perform() {
     }
     const { chars } = spend([line]);
     const e = ENGINES[voice.provider];
-    const extra: string[] = !e.tags && vkUnsupported(line).length ? [`${e.label} cannot make: ${vkUnsupported(line).join(", ")}. Those will be left out.`] : [];
+    const pl = plan(line, voice, model, dict, { inworldModel: engines.inworldModel });
+    const extra: string[] = voice.provider === "inworld" ? [`Character: ${charOf(line)?.name ?? "?"}`, `Model: ${pl.modelId}`, ...(pl.notSent ?? []).map((n) => `Not sent: ${n}`)] : !e.tags && vkUnsupported(line).length ? [`${e.label} cannot make: ${vkUnsupported(line).join(", ")}. Those will be left out.`] : [];
     if (!e.local) {
       const price = priceLines([{ kind: "speech", engine: voice.provider, chars: chars * count }]);
       const ok = await confirmSpend({ title: count > 1 ? `Make ${count} takes?` : "Make a take?", lines: [`${chars * count} characters (${count} take${count > 1 ? "s" : ""})`, `Voice: ${voice.name}`, ...extra, ...price.lines], warn: price.warn, skipKey: count > 1 ? undefined : "take" });
@@ -60,7 +61,7 @@ export default function Perform() {
     }
     try {
       for (let i = 0; i < count; i++) {
-        const t = await makeTake(project.id, line, voice, model, dict, qualityFormat(engines.quality));
+        const t = await makeTake(project.id, line, voice, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }), "~take");
         const sent = t.provenance?.chars ?? chars;
         addLedger({ kind: "speech", engine: e.label, chars: sent, items: [{ kind: "speech", engine: voice.provider, chars: sent }] });
@@ -78,7 +79,7 @@ export default function Perform() {
     const paid = todo.filter((l) => !ENGINES[voiceOf(l)!.provider].local);
     if (paid.length > 0) {
       const s = spend(paid);
-      const price = priceLines(paid.map((l) => ({ kind: "speech" as const, engine: voiceOf(l)!.provider, chars: plan(l, voiceOf(l)!, model, dict).text.length })));
+      const price = priceLines(paid.map((l) => ({ kind: "speech" as const, engine: voiceOf(l)!.provider, chars: plan(l, voiceOf(l)!, model, dict, { inworldModel: engines.inworldModel }).text.length })));
       const ok = await confirmSpend({ title: "Make all the missing takes?", lines: [`${paid.length} lines, ${s.chars} characters${paid.length < todo.length ? ` (${todo.length - paid.length} more run offline, free)` : ""}`, `Voices: ${s.voices}`, "One take per line. You can make more later.", ...price.lines], warn: price.warn });
       if (!ok) return;
     }
@@ -89,7 +90,7 @@ export default function Perform() {
       const line = todo[i]!;
       try {
         const v = voiceOf(line)!;
-        const t = await makeTake(project.id, line, v, model, dict, qualityFormat(engines.quality));
+        const t = await makeTake(project.id, line, v, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }), "~take");
         const sent = t.provenance?.chars ?? 0;
         addLedger({ kind: "speech", engine: ENGINES[v.provider].label, chars: sent, items: [{ kind: "speech", engine: v.provider, chars: sent }] });
@@ -459,8 +460,9 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
   const [snd, setSnd] = useState({ prompt: "", placement: "after" as "before" | "after", seconds: 2, loop: false, promptInfluence: 0.3 });
   const d = line.direction;
   const note = d.note ?? "";
-  const noTags = !!voice && !ENGINES[voice.provider].tags;
-  const sent = voice ? plan(line, voice, model, dict).text : line.text;
+  const noTags = !!voice && !ENGINES[voice.provider].tags && voice.provider !== "inworld";
+  const planned = voice ? plan(line, voice, model, dict, { inworldModel: engines.inworldModel }) : null;
+  const sent = planned ? planned.text : line.text;
   const chosen = chosenTake(line);
   const label = (list: { tag: string; label: string }[], t: string) => list.find((x) => x.tag === t)?.label ?? t;
   const setDir = (fn: (x: typeof d) => typeof d) => patch((l) => ({ ...l, direction: fn(l.direction) }));
@@ -472,7 +474,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
   const fineNames = [d.emotion ? label(EMOTIONS, d.emotion) : "", ...d.sounds.filter((t) => !QUICK_SOUNDS.includes(t)).map((t) => label(ALL_SOUND_TAGS, t)), Math.abs(d.speed - 1) > 0.001 ? `${d.speed.toFixed(2)}×` : "", (d.gain ?? 0) !== 0 ? `${(d.gain ?? 0) > 0 ? "+" : ""}${(d.gain ?? 0).toFixed(1)} dB` : ""].filter(Boolean).slice(0, 3);
 
   // Written direction reaches every engine that can act on words; the line below says honestly which this voice is.
-  const reach = !voice || !note.trim() ? null : ENGINES[voice.provider].tags ? "ok" : voice.provider === "voicekiller" ? "ok" : "none";
+  const reach = !voice || !note.trim() ? null : ENGINES[voice.provider].tags ? "ok" : voice.provider === "voicekiller" ? "ok" : voice.provider === "inworld" ? ((planned?.steering?.length ?? 0) > 0 ? "ok" : "inworld-flash") : "none";
 
   const writeIt = async () => {
     const local = engines.directorEngine === "local";
@@ -615,6 +617,8 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
             {ENGINES[voice!.provider].label} cannot act on written direction. Use Re-voice a recording to perform it yourself, or choose an ElevenLabs or VoiceKiller voice.
           </p>
         )}
+        {reach === "inworld-flash" && <p className="dir-reach warn small">{engines.inworldModel === "inworld-tts-2-flash" ? "Inworld TTS 2 Flash does not follow written direction. Switch to Inworld TTS 2 in Voices, or choose another voice." : "Inworld could not use that direction."}</p>}
+        {voice?.provider === "inworld" && (planned?.notSent?.length ?? 0) > 0 && <p className="dir-reach warn small">Inworld will not get: {planned!.notSent!.join("; ")}.</p>}
         {noTags && vkUnsupported(line).length > 0 && <p className="dir-reach warn small">{ENGINES[voice!.provider].label} cannot make {vkUnsupported(line).join(", ")}. Add a sound clip instead.</p>}
       </div>
 

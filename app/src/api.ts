@@ -6,9 +6,9 @@ import { mock } from "./mock";
 import type { EnginesCfg } from "./engines";
 import type { HardwareProfile, InstalledModel } from "./models";
 
-export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "huggingface";
-export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean; huggingface: boolean };
-export type Provider = "eleven-v4" | "eleven-tts" | "eleven-sfx" | "voicekiller" | "voicekiller-clone" | "kie-tts" | "kie-dialogue" | "kie-sfx" | "piper" | "local" | "chatterbox" | "wazobia" | "local-sfx";
+export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "inworld" | "huggingface";
+export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean; inworld: boolean; huggingface: boolean };
+export type Provider = "eleven-v4" | "eleven-tts" | "eleven-sfx" | "voicekiller" | "voicekiller-clone" | "inworld" | "kie-tts" | "kie-dialogue" | "kie-sfx" | "piper" | "local" | "chatterbox" | "wazobia" | "local-sfx";
 
 export interface ClipOut {
   audioB64: string;
@@ -32,6 +32,31 @@ export interface ClipReq {
   loop?: boolean;
   promptInfluence?: number;
   sfxModel?: "eleven_text_to_sound_v2" | "eleven_text_to_sound_v3";
+  /** Inworld only: the speech model and delivery mode (STABLE, BALANCED or CREATIVE; inworld-tts-2 only). */
+  model?: string;
+  delivery?: string;
+  language?: string;
+}
+
+export interface InworldVoice {
+  voiceId: string;
+  displayName: string;
+  language: string;
+  description: string;
+  tags: string[];
+  /** SYSTEM, IVC (instant clone), TVD (designed), PVC (professional clone) or OTHER. */
+  source: string;
+  gender: string;
+  ageGroup: string;
+}
+export interface InworldVoicePage {
+  voices: InworldVoice[];
+  total: number;
+  truncated: boolean;
+}
+export interface InworldCloned {
+  voice: InworldVoice;
+  warnings: string[];
 }
 export interface DesignPreview {
   generatedVoiceId: string;
@@ -148,6 +173,10 @@ const real = {
   runClip: (req: ClipReq) => call<ClipOut>("run_clip", { req }),
   voicesMine: () => call<VoiceInfo[]>("voices_mine"),
   voicesVoiceKiller: () => call<{ name: string; language: string }[]>("voices_voicekiller"),
+  inworldCheck: () => call<number>("inworld_check"),
+  voicesInworld: (language?: string, source?: string) => call<InworldVoicePage>("voices_inworld", { language, source }),
+  inworldPreview: (text: string, voice: string, model: string) => call<Audio>("inworld_preview", { text, voice, model }),
+  inworldClone: (a: { name: string; language?: string; description: string; audioB64: string; transcription?: string; removeNoise: boolean; permission: boolean; speaker: string }) => call<InworldCloned>("inworld_clone", { req: a }),
   voicesShared: (search: string, language: string, accent: string, gender: string, page: number) => call<{ voices: VoiceInfo[]; more: boolean }>("voices_shared", { search, language, accent, gender, page }),
   voiceAddShared: (owner: string, voice: string, name: string) => call<string>("voice_add_shared", { owner, voice, name }),
   voiceDesign: (description: string, sample?: string) => call<DesignPreview[]>("voice_design", { description, sample }),

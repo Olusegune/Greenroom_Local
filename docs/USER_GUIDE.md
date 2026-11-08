@@ -54,6 +54,7 @@ Greenroom tells you under the box what your voice can do with the direction:
 |---|---|
 | ElevenLabs (library, designed or cloned) | Acted on. Each sentence is sent as an acting cue before the line. |
 | VoiceKiller | Acted on. Sent as a written instruction. |
+| Inworld | Acted on with **Inworld TTS 2** (an English instruction in brackets) and laughs, sighs, coughs and breaths as tags. **TTS 2 Flash** does not follow written direction. Anything it cannot do is listed before you pay. See [Inworld](INWORLD.md). |
 | Kie, Piper, Chatterbox, Wazobia, your own local server | These engines cannot act on written words. Greenroom says so. Use **Re-voice a recording** to perform the line yourself, or pick an ElevenLabs or VoiceKiller voice. |
 
 **Press Ctrl+Enter** inside the Direction box to make a take without reaching for the mouse.
@@ -101,6 +102,10 @@ Items that need an open project are greyed out until you open one. Projects save
 ## Check that your voices follow direction
 
 Open **Voice lab** and press **Written direction check**. It reads one line ten times (five written directions on ElevenLabs v4 and v3) so you can play them side by side and rate them. It shows a confirmation with the character count first, and uses the ElevenLabs key already saved in Settings. Judge by ear: the clips should sound clearly different from the no-direction baseline.
+
+## Inworld voices
+
+Add your Inworld Base64 credential in **Settings**, press **Test Inworld connection**, then find Inworld voices in **Voices, Find a voice** or clone one in **Voices, Clone a voice**. Pick the model in **Engines**. Inworld pricing is not known to Greenroom: enter your own price per 1,000 characters in Studio to see estimates. The full guide, with screenshots and what was and was not tested, is [Inworld](INWORLD.md).
 
 ## Keys, cost and privacy
 
