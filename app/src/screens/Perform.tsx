@@ -45,6 +45,22 @@ export default function Perform() {
   const [planReview, setPlanReview] = useState<PlanSuggestion[] | null>(null);
   const [planThinking, setPlanThinking] = useState(false);
   const [doctor, setDoctor] = useState(false);
+  const [view, setViewState] = useState<PerformView>(() => {
+    try {
+      const v = localStorage.getItem("greenroom.performView");
+      return v === "simple" || v === "advanced" ? v : "director";
+    } catch {
+      return "director";
+    }
+  });
+  const setView = (v: PerformView) => {
+    setViewState(v);
+    try {
+      localStorage.setItem("greenroom.performView", v);
+    } catch {
+      /* a remembered view is a convenience only */
+    }
+  };
   const stop = useRef(false);
   if (!project) return <section><h1>Perform</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then direct lines and generate takes here.</Empty></section>;
 
@@ -260,6 +276,16 @@ export default function Perform() {
           </button>
         </div>
       </div>
+      <div className="row wrap" role="group" aria-label="How much to show">
+        <span className="muted small">Show</span>
+        <span className="chips">
+          {([["simple", "Simple", "Voice, direction, make a take, play"], ["director", "Director", "Adds objective, subtext, feeling, body and acting presets"], ["advanced", "Advanced", "Adds speed, level, pauses, every sound and the exact text sent"]] as const).map(([id, label, tip]) => (
+            <button key={id} className="chip" aria-pressed={view === id} title={tip} onClick={() => setView(id)}>
+              {label}
+            </button>
+          ))}
+        </span>
+      </div>
       {noVoice > 0 && (
         <Note kind="warn">
           {noVoice} line{noVoice === 1 ? " has" : "s have"} no voice yet.{" "}
@@ -275,7 +301,7 @@ export default function Perform() {
           <div key={si} className="stack">
             <h3 className="scene-title">{title}</h3>
             {lines.map((line) => (
-              <LineCard key={line.id} line={line} index={project.lines.indexOf(line) + 1} character={charOf(line)} voice={voiceOf(line)} model={model} dict={dictOf(line)} patch={(fn) => patchLine(line.id, fn)} make={make} />
+              <LineCard key={line.id} line={line} index={project.lines.indexOf(line) + 1} character={charOf(line)} voice={voiceOf(line)} model={model} dict={dictOf(line)} patch={(fn) => patchLine(line.id, fn)} make={make} view={view} />
             ))}
           </div>
         );
@@ -324,6 +350,8 @@ export default function Perform() {
     </section>
   );
 }
+
+type PerformView = "simple" | "director" | "advanced";
 
 function SceneReview({ items, onClose }: { items: SceneDirection[]; onClose: () => void }) {
   const { project, edit, toast } = useApp();
@@ -500,7 +528,7 @@ const saveHistory = (h: string[]) => {
   }
 };
 
-function LineCard({ line, index, character, voice, model, dict, patch, make }: { line: Line; index: number; character?: Character; voice?: VoiceEntry; model: Model; dict: Pronunciation[]; patch: (fn: (l: Line) => Line) => void; make: (l: Line, n?: number, v?: VariationId[]) => Promise<boolean> }) {
+function LineCard({ line, index, character, voice, model, dict, patch, make, view }: { view: PerformView; line: Line; index: number; character?: Character; voice?: VoiceEntry; model: Model; dict: Pronunciation[]; patch: (fn: (l: Line) => Line) => void; make: (l: Line, n?: number, v?: VariationId[]) => Promise<boolean> }) {
   const { project, confirmSpend, toast, engines, priceLines, addLedger, library, edit, go: goTo, keys } = useApp();
   const localDirector = useLocalDirectorReady();
   const [writing, setWriting] = useState(false);
@@ -695,7 +723,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
         {noTags && vkUnsupported(line).length > 0 && <p className="dir-reach warn small">{ENGINES[voice!.provider].label} cannot make {vkUnsupported(line).join(", ")}. Add a sound clip instead.</p>}
       </div>
 
-      <details className="finetune">
+      {view === "advanced" && <details className="finetune">
         <summary>Fine-tune{fineNames.length > 0 ? ` · ${fineNames.join(", ")}` : ""}</summary>
         <div className="stack">
           <select
@@ -753,9 +781,9 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
             Sent as: <b>{sent}</b>
           </p>
         </div>
-      </details>
+      </details>}
 
-      {voice && (
+      {voice && view !== "simple" && (
         <DirectorPanel
           line={line}
           patch={patch}

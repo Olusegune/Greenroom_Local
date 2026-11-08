@@ -1,3 +1,4 @@
+import { modelStatus } from "../modelStatus";
 import { useEffect, useMemo, useState } from "react";
 import { api, inApp, type ChatterboxRuntimeStatus, type LocalRuntimeStatus } from "../api";
 import { useApp } from "../ctx";
@@ -111,6 +112,7 @@ export default function Models() {
               const fits = tierRank(m.tier) <= tierRank(profile.tier);
               const setup = modelSetupLabel(m.id, state, m.id === "kokoro-82m" ? (kokoroRuntime?.installed ?? false) : m.id === "qwen3-tts-17b" ? (qwenRuntime?.installed ?? false) : (chatterboxRuntime?.installed ?? false));
               const art = modelArt(m);
+              const st = modelStatus(m, state === "installed" ? "installed" : state, m.id === "kokoro-82m" ? (kokoroRuntime?.installed ?? false) : m.id === "qwen3-tts-17b" ? (qwenRuntime?.installed ?? false) : (chatterboxRuntime?.installed ?? false), profile);
               return <article className={`model-card ${m.experimental ? "experimental" : ""}`} key={m.id}>
                 <div className="mc-art">
                   <CardArt seed={m.id} kind={art.kind} label={art.label} />
@@ -121,7 +123,7 @@ export default function Models() {
                   <div className="mc-title"><h3>{m.name}</h3><p className="muted small">{m.maker}</p></div>
                   <p className="mc-desc">{shortDescription(m.description)}</p>
                   <p className="mc-meta"><span>~{m.sizeGb} GB</span><i aria-hidden="true" /><span>~{m.memoryGb} GB memory</span><i aria-hidden="true" /><span>{fits ? "Should fit this PC" : "May need more memory"}</span></p>
-                  <p className={`integration-state ${setup.kind}`}>{setup.label}</p>
+                  <p className={`integration-state ${st.status === "ready" ? "ready" : setup.kind}`}><strong>{st.label}{st.experimental ? " · Experimental" : ""}.</strong> {st.status === "installed" || st.status === "unsupported" || st.status === "ready" ? st.detail : setup.label}</p>
                   <details className="mc-more">
                     <summary>Details</summary>
                     <div className="stack">
@@ -158,7 +160,7 @@ function modelSetupLabel(id: string, state: InstallState, runtimeInstalled: bool
   if (id === "stable-audio-open-small") return state === "installed" ? { kind: "ready", label: "Installed · pick it as the Sound engine in Engines" } : { kind: "setup", label: "One-click setup · needs a free Hugging Face account" };
   if (id === "ace-step-v1") return state === "installed" ? { kind: "ready", label: "Installed · make music in Timeline, Make music on this PC" } : { kind: "setup", label: "One-click setup · needs an NVIDIA graphics card" };
   if (id === "director-8b") return { kind: "setup", label: "Use the AI Director now with Kie · local GGUF support is a separate engine" };
-  if (id === "kokoro-82m" || id === "qwen3-tts-17b") return runtimeInstalled ? { kind: "ready", label: "Managed local runtime ready · model weights load on first use" } : { kind: "setup", label: "Managed local runtime available · install once to use offline" };
+  if (id === "kokoro-82m" || id === "qwen3-tts-17b") return runtimeInstalled ? { kind: "ready", label: "Runtime installed. Greenroom cannot speak with this model yet" } : { kind: "setup", label: "Managed local runtime available · install once to use offline" };
   if (id === "greenroom-runtime") return { kind: "info", label: "Shared requirements · not a separate install" };
   return { kind: "link", label: "Official source link · not yet integrated" };
 }
