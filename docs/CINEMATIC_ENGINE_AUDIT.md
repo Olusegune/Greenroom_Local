@@ -64,7 +64,7 @@ Written 2026-11-08 on branch `feat/cinematic-engine-2`, from the code and the pr
 | 1 Read the code | Done |
 | 2 Audit | This document |
 | 3 Expand local engines (Chatterbox Turbo and Multilingual, Qwen3-TTS VoiceDesign, VoxCPM2, Supertonic, Pocket TTS, VibeVoice, Kitten TTS) | **Not started.** No repository, weights, licence or hash for any of them was researched or verified in this session, and none was added. |
-| 4 Cinematic Acting Director 2.0 | **Started:** per-line performance plan (objective, subtext, arc start and end, physical state, voice qualities) saved on the line, compiled into direction and pace, with a Director panel. Not started: AI-written plans from the Qwen3 Director, beat-by-beat acting inside a line, variations, A/B, presets |
+| 4 Cinematic Acting Director 2.0 | **Started:** per-line performance plan (objective, subtext, arc start and end, physical state, voice qualities) saved on the line, compiled into direction and pace, with a Director panel. **AI-written plans** (Plan the performance, local Qwen3 or Kie; unit tests and a demo run only, not run against a real model). Not started: beat-by-beat acting inside a line, variations, A/B, presets |
 | 5 Character Voice DNA | Not started |
 | 6 Director's Performance Memory | Not started |
 | 7 Smart engine router | Not started (Inworld is a selectable engine) |

@@ -1,6 +1,7 @@
 import { useRef, useState, useSyncExternalStore } from "react";
 import { useApp } from "../ctx";
-import { applySuggestion, cleanWritten, describe, parseSceneDirections, sceneBatches, sceneDirectionSystem, type SceneDirection, isDirected, parseDirector, systemPrompt, userPrompt, writeDirectionSystem, writeDirectionUser, type DirectorResult } from "../director";
+import { PlanReview } from "./PlanReview";
+import { applySuggestion, cleanWritten, describe, parsePlans, parseSceneDirections, planSystem, type PlanSuggestion, sceneBatches, sceneDirectionSystem, type SceneDirection, isDirected, parseDirector, systemPrompt, userPrompt, writeDirectionSystem, writeDirectionUser, type DirectorResult } from "../director";
 import { DirectorPanel } from "./DirectorPanel";
 import { effectiveLine } from "../performance";
 import { steers } from "../inworld";
@@ -34,6 +35,8 @@ export default function Perform() {
   const [review, setReview] = useState<DirectorResult | null>(null);
   const [sceneReview, setSceneReview] = useState<SceneDirection[] | null>(null);
   const [sceneThinking, setSceneThinking] = useState(false);
+  const [planReview, setPlanReview] = useState<PlanSuggestion[] | null>(null);
+  const [planThinking, setPlanThinking] = useState(false);
   const stop = useRef(false);
   if (!project) return <section><h1>Perform</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then direct lines and generate takes here.</Empty></section>;
 
@@ -168,6 +171,33 @@ export default function Perform() {
     setSceneThinking(false);
   };
 
+  const askPlans = async () => {
+    const local = engines.directorEngine === "local";
+    const sys = planSystem();
+    const groups = sceneBatches(project.lines);
+    const chars = groups.reduce((n, g) => n + userPrompt({ ...project, lines: g }).length + sys.length, 0);
+    if (!local) {
+      const price = priceLines(groups.map(() => ({ kind: "director" as const })));
+      const ok = await confirmSpend({ title: "Plan the performance with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to a Kie text model`, "It plans what each character wants, hides and does with their body. You review and edit before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
+      if (!ok) return;
+    }
+    setPlanThinking(true);
+    try {
+      const found: PlanSuggestion[] = [];
+      for (const g of groups) {
+        const usr = userPrompt({ ...project, lines: g });
+        const reply = local ? await api.directorLocalComplete(sys, usr) : await api.directorComplete(sys, usr);
+        if (!local) addLedger({ kind: "director", engine: "Kie text model", chars: sys.length + usr.length, items: [{ kind: "director" }] });
+        found.push(...parsePlans(reply, g.map((l) => l.id)));
+      }
+      if (found.length === 0) throw new Error("The director did not plan anything for these lines. Try again.");
+      setPlanReview(found);
+    } catch (e) {
+      toast((e as Error).message, true);
+    }
+    setPlanThinking(false);
+  };
+
   if (project.lines.length === 0) {
     return (
       <section>
@@ -209,6 +239,9 @@ export default function Perform() {
           </button>
           <button onClick={() => void askScene()} disabled={sceneThinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "Writes a full direction for every line, following each character's feeling through the scene" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
             <Sparkle size={16} /> {sceneThinking ? "Directing the scene…" : "Direct whole scene"}
+          </button>
+          <button onClick={() => void askPlans()} disabled={planThinking || !directorReady(engines, keys, localDirector)} title={directorReady(engines, keys, localDirector) ? "Plans what each character wants, hides and does with their body, line by line" : engines.directorEngine === "local" ? "Install the local Director in Model Center first" : "Add your Kie key in Settings first"}>
+            <Sparkle size={16} /> {planThinking ? "Planning the performance…" : "Plan the performance"}
           </button>
         </div>
       </div>
@@ -271,6 +304,7 @@ export default function Perform() {
       </div>
       {review && <DirectorReview result={review} onClose={() => setReview(null)} />}
       {sceneReview && <SceneReview items={sceneReview} onClose={() => setSceneReview(null)} />}
+      {planReview && <PlanReview items={planReview} onClose={() => setPlanReview(null)} />}
     </section>
   );
 }

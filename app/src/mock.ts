@@ -14,6 +14,9 @@ const demoDirector = { on: false };
 const directorImpl = async (_s: string, user: string) => {
     await wait(700);
     const ids = [...user.matchAll(/^(l-[\w-]+) \|/gm)].map((x) => x[1]!);
+    if (_s.includes("planning a whole scene")) {
+      return JSON.stringify({ lines: ids.map((id, i) => ({ id, objective: i % 2 ? "hide how hurt they are" : "get the others to hurry", subtext: i % 2 ? "afraid of being left behind" : "worried it is already too late", start: { emotion: i % 2 ? "sad" : "annoyed", strength: 0.4 }, end: { emotion: i % 2 ? "scared" : "angry", strength: 0.8 }, activity: i === 2 ? "running" : "still", effort: i === 2 ? 0.8 : 0, breathlessness: i === 2 ? 0.75 : 0, fatigue: 0, pain: 0, pace: i % 2 ? 0.9 : 1.1, projection: 0.5, tension: 0.4, breathiness: i % 2 ? 0.5 : 0.15 })) });
+    }
     if (_s.includes("directing a whole scene")) return JSON.stringify({ lines: ids.map((id, i) => ({ id, direction: i % 2 ? "Quiet and hurt, hiding it. Short breaths, a pause before the last word." : "Sharp and impatient, close to losing patience. Fast, clipped, a little breathless." })) });
     const lines = ids.map((id, i) => ({ id, emotion: i % 3 === 0 ? "annoyed" : "", sounds: i % 3 === 1 ? ["sighs"] : i % 4 === 2 ? ["laughs"] : [], note: i % 2 === 0 ? "a little tired, as if carrying a heavy box" : "", speed: 1, pauseAfter: 0.5 }));
     return ["Here you go:", "```json", JSON.stringify({ lines, atmosphere: "a busy kitchen, soft pots and pans" }), "```"].join("\n");

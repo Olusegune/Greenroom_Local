@@ -72,6 +72,12 @@ Under **Fine-tune** each line with a voice has a **Director** panel for planning
 
 Greenroom turns the plan into at most four short plain-English sentences and adds them **after your own direction** when a take is made, and the panel shows exactly what will be added. Very high breathlessness also adds the verified out-of-breath sound. Pace multiplies the line's speed. Your script text, the chips and the Direction box are never changed, and **Clear the plan** removes it. A voice that cannot act on written words (Piper, Chatterbox, Kie and others) can only follow the pace, and the panel says so. Plans are saved with the project; older projects simply have none. They are included in the performance manifest.
 
+**Let the AI plan the whole scene.** Press **Plan the performance** at the top of Perform. The Director (the local Qwen3 model, or Kie in the cloud) reads the script, including action lines, and for every line proposes an objective, a subtext, how the feeling moves from start to end, what the body is doing and the voice qualities, thinking about motivation, who the character is speaking to, hidden feelings and how the scene builds. A confirmation shows the size first when it uses Kie; the local Director costs nothing. You then get a review list.
+
+![The director's performance plan: edit the objective and subtext, tick the lines, apply](img/director-plan-review.jpg)
+
+Edit the objective and subtext, tick the lines you want and press **Apply**. Lines that already have a plan are unticked by default. Only each line's plan is written: your script, chips and Direction box are untouched, and nothing is spoken until you make a take. Long scripts go in batches of 20 lines, each sent with the whole script for context.
+
 This is wording sent to a model that may or may not obey it. Whether the result sounds strained or breathless is for you to judge by ear.
 
 ### Fine-tune and More
