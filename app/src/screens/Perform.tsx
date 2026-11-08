@@ -2,6 +2,7 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import { useApp } from "../ctx";
 import { PlanReview } from "./PlanReview";
 import { ScriptDoctor } from "./ScriptDoctor";
+import { TakeCompare } from "./TakeCompare";
 import { applySuggestion, cleanWritten, describe, parsePlans, parseSceneDirections, planSystem, type PlanSuggestion, sceneBatches, sceneDirectionSystem, type SceneDirection, isDirected, parseDirector, systemPrompt, userPrompt, writeDirectionSystem, writeDirectionUser, type DirectorResult } from "../director";
 import { DirectorPanel } from "./DirectorPanel";
 import { effectiveLine } from "../performance";
@@ -539,6 +540,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
   const [menuOpen, setMenuOpen] = useState(false);
   const [editText, setEditText] = useState(false);
   const [revoice, setRevoice] = useState(false);
+  const [compare, setCompare] = useState(false);
   const [snd, setSnd] = useState({ prompt: "", placement: "after" as "before" | "after", seconds: 2, loop: false, promptInfluence: 0.3 });
   const d = line.direction;
   const note = d.note ?? "";
@@ -797,6 +799,14 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
         />
       )}
 
+      {line.takes.length >= 2 && (
+        <div>
+          <button className="sm ghost" onClick={() => setCompare(true)} title="Listen to two takes side by side with their waveforms and timing">
+            Compare takes
+          </button>
+        </div>
+      )}
+      {compare && <TakeCompare projectId={project!.id} line={line} onClose={() => setCompare(false)} />}
       {line.takes.map((t, i) => (
         <TakeRow key={t.id} t={t} n={i + 1} lineId={line.id} projectId={project!.id} chosen={t.id === chosen?.id} choose={() => patch((l) => ({ ...l, chosen: t.id }))} reference={voice && character ? () => makeRef(t) : undefined} />
       ))}
@@ -933,6 +943,7 @@ function TakeFacts({ t }: { t: Take }) {
         Made {t.at.slice(0, 19).replace("T", " ")} with {p ? ENGINES[p.engine].label : "an engine"} ({modelLabel(t.model)}) using the voice {p?.voiceName ?? t.voiceId}.
       </span>
       {(p?.note || p?.emotion || (p?.sounds?.length ?? 0) > 0) && <span>Direction: {[p?.emotion, ...(p?.sounds ?? []), p?.note ? `“${p.note}”` : ""].filter(Boolean).join(" · ")}</span>}
+      {p?.convert && <span>Compared with the recording: length {p.convert.driftPercent > 0 ? "+" : ""}{p.convert.driftPercent}%, pauses {p.convert.pausesSource} to {p.convert.pausesResult}{p.convert.flags.length ? `. ${p.convert.flags.join(" ")}` : "."}</span>}
       {(p?.check?.length ?? 0) > 0 && <span className="warn">Worth a second listen: {p!.check!.join(" ")}</span>}
       {p?.variation && <span>Made as the {p.variation} interpretation.</span>}
       {p?.quality && <span>Audio quality asked for: {p.quality}.</span>}

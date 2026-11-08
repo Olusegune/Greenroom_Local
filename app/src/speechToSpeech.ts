@@ -47,12 +47,12 @@ export function convertedTake(args: { id: string; at: string; voice: Pick<VoiceE
 }
 
 /** Decodes any recording the browser can play to a mono 16-bit WAV, which the converter can always read. */
-export async function decodeToWav(data: ArrayBuffer): Promise<{ b64: string; seconds: number }> {
+export async function decodeToWav(data: ArrayBuffer): Promise<{ b64: string; seconds: number; samples: Float32Array; rate: number }> {
   const ctx = new AudioContext();
   try {
     const buf = await ctx.decodeAudioData(data.slice(0));
     const mono = new Float32Array(buf.length);
     for (let c = 0; c < buf.numberOfChannels; c++) { const ch = buf.getChannelData(c); for (let i = 0; i < buf.length; i++) mono[i]! += ch[i]! / buf.numberOfChannels; }
-    return { b64: toBase64(encodeWav([mono], buf.sampleRate)), seconds: buf.duration };
+    return { b64: toBase64(encodeWav([mono], buf.sampleRate)), seconds: buf.duration, samples: mono, rate: buf.sampleRate };
   } finally { void ctx.close(); }
 }

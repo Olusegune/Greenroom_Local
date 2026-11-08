@@ -14,6 +14,13 @@ The take records that **a real person performed the line**, with the source (rec
 
 Needs the Chatterbox engine and model installed in Model Center. The dialog says so, with a link, if they are not.
 
+## Checks before and after (added 2026-11-08, unit-tested only)
+
+- **Before converting**, the recording is checked and you are warned if it is noisy (speech under about 20 dB above the background), clipped, very quiet, silent, or longer than a minute (long recordings are slower and less reliable; one line at a time works best).
+- **After converting**, the dialog stays open and shows your recording and the result side by side, with their lengths, pause counts and rough pitch, and flags anything unusual: the result is more than 5% longer or shorter than your recording, pauses were lost or added, the speech starts noticeably later or earlier, or the result is much flatter than your performance. The same comparison and the **phrase timings** of the result are saved with the take (and written to the performance manifest) so editing and lip-sync tools can use them. They are phrase timings, not word timings.
+- None of this has been run on a real conversion: the measurements are tested on synthetic audio. They say nothing about how the result sounds.
+- Not built: converting a whole scene at once (you re-voice one line at a time), and automatic character-voice consistency scoring.
+
 ## Tested on a real machine (Windows 11, CPU runtime, 2026-11-02)
 The app's exact Chatterbox install was replayed (embedded Python 3.11, CPU PyTorch 2.6.0, `chatterbox-tts` 0.1.7), then the app's real worker script (`runtime/chatterbox_vc_once.py`) converted a recording with the real model files (checksum-verified `s3gen.pt`, `conds.pt`).
 

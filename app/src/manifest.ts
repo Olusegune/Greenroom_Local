@@ -40,6 +40,8 @@ export interface ManifestTake {
   /** Things the line asked for that this voice could not be given. Disclosed, never hidden. */
   notSent: string[];
   characters: number;
+  /** Phrase timings of a re-voiced take, in seconds, when measured. Not word timings. */
+  speechSegments: [number, number][] | null;
 }
 
 export interface ManifestLine {
@@ -91,6 +93,7 @@ const takeOf = (t: Take | undefined): ManifestTake | null =>
         nonverbalTags: t.provenance?.nonverbal ?? [],
         notSent: t.provenance?.notSent ?? [],
         characters: t.provenance?.chars ?? t.sent.length,
+        speechSegments: t.provenance?.convert?.segmentsResult ?? null,
       }
     : null;
 

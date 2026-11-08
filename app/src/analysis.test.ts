@@ -79,3 +79,13 @@ describe("wordCount", () => {
     expect(wordCount("  ")).toBe(0);
   });
 });
+
+import { waveformPeaks } from "./analysis";
+describe("waveformPeaks", () => {
+  it("gives the loudest sample of each slice, from 0 to 1", () => {
+    const x = Float32Array.from([0, 0.2, -0.9, 0.1, 0, 0, 0.5, -0.5]);
+    expect(waveformPeaks(x, 4)).toEqual([0.2, 0.9, 0, 0.5]);
+    expect(waveformPeaks(new Float32Array(0), 3)).toEqual([0, 0, 0]);
+    expect(waveformPeaks(Float32Array.from([3, -3]), 2)).toEqual([1, 1]);
+  });
+});

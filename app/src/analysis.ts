@@ -160,3 +160,18 @@ export function takeFlags(s: TakeStats, words: number): string[] {
   if (words <= 4 && s.pausesMs.length >= 2) out.push(`A ${words}-word line came back in ${s.pausesMs.length + 1} separate phrases. It may have been repeated.`);
   return out;
 }
+
+/** The loudest sample in each of `bins` equal slices, from 0 to 1, for drawing a waveform. */
+export function waveformPeaks(x: Float32Array, bins: number): number[] {
+  const out: number[] = [];
+  const size = Math.max(1, Math.floor(x.length / bins));
+  for (let b = 0; b < bins; b++) {
+    let m = 0;
+    for (let i = b * size; i < Math.min(x.length, (b + 1) * size); i++) {
+      const v = Math.abs(x[i]!);
+      if (v > m) m = v;
+    }
+    out.push(Number(Math.min(1, m).toFixed(3)));
+  }
+  return out;
+}

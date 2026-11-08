@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import { fromBase64 } from "../audio";
 import { useApp } from "../ctx";
-import { remember } from "../media";
+import { remember, takeBuffer, takeUrl } from "../media";
+import { analyzeSamples, wordCount } from "../analysis";
+import { checkRecordingQuality, compareConversion, type ConvertReport } from "../convertReport";
 import { uid } from "../script";
 import { checkRecording, convertedTake, decodeToWav, sampleExt } from "../speechToSpeech";
 import { sha256Hex } from "../trust";
@@ -11,7 +13,7 @@ import { Note } from "../ui";
 import { useSample } from "../useSample";
 import { APP_VERSION } from "../version";
 
-type Source = { url: string; b64: string; seconds: number; label: string };
+type Source = { url: string; b64: string; seconds: number; label: string; samples: Float32Array; rate: number; warnings: string[] };
 
 /** Speech to speech: perform the line yourself, then hear it in the character's voice. The timing, pauses and emotion are yours. */
 export default function ReVoiceDialog({ line, character, voice, projectId, onClose, onDone }: { line: Line; character?: Character; voice: VoiceEntry; projectId: string; onClose: () => void; onDone: (t: Take) => void }) {
@@ -22,6 +24,7 @@ export default function ReVoiceDialog({ line, character, voice, projectId, onClo
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState<boolean | null>(null);
   const [error, setError] = useState("");
+  const [result, setResult] = useState<{ url: string; report: ConvertReport } | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
   const stream = useRef<MediaStream | null>(null);
   const url = useRef("");
@@ -29,12 +32,13 @@ export default function ReVoiceDialog({ line, character, voice, projectId, onClo
 
   const take = async (data: ArrayBuffer, blob: Blob, label: string) => {
     try {
-      const { b64, seconds } = await decodeToWav(data);
+      const { b64, seconds, samples, rate } = await decodeToWav(data);
       const problem = checkRecording(seconds);
       if (problem) { setError(problem); return; }
       if (url.current) URL.revokeObjectURL(url.current);
       url.current = URL.createObjectURL(blob);
-      setSource({ url: url.current, b64, seconds, label });
+      setSource({ url: url.current, b64, seconds, label, samples, rate, warnings: checkRecordingQuality(samples, rate).warnings });
+      setResult(null);
       setError("");
     } catch { setError("Greenroom could not read that audio. Try a WAV or MP3 file, or record again."); }
   };
@@ -73,9 +77,14 @@ export default function ReVoiceDialog({ line, character, voice, projectId, onClo
       await api.takeWrite(projectId, id, "wav", out.audioB64);
       const seconds = await remember(id, out);
       const sha256 = await sha256Hex(fromBase64(out.audioB64));
-      onDone(convertedTake({ id, at: new Date().toISOString(), voice, seconds, sha256, appVersion: APP_VERSION, source: source.label, emotion: line.direction.emotion, note: line.direction.note ?? "" }));
+      // Compare the result with the recording: did the timing, the pauses and the liveliness survive?
+      const words = wordCount(line.text);
+      const buf = await takeBuffer(projectId, id);
+      const report = compareConversion(analyzeSamples(source.samples, source.rate, words), analyzeSamples(buf.getChannelData(0), buf.sampleRate, words), buf.getChannelData(0), buf.sampleRate);
+      const t = convertedTake({ id, at: new Date().toISOString(), voice, seconds, sha256, appVersion: APP_VERSION, source: source.label, emotion: line.direction.emotion, note: line.direction.note ?? "" });
+      onDone({ ...t, provenance: t.provenance ? { ...t.provenance, convert: report } : t.provenance });
+      setResult({ url: await takeUrl(projectId, id), report });
       toast(`Re-voiced as ${voice.name}. It is added as a take on this line.`);
-      onClose();
     } catch (e) { const m = (e as Error).message; if (m !== "cancelled") setError(m); }
     finally { setBusy(false); }
   };
@@ -95,7 +104,29 @@ export default function ReVoiceDialog({ line, character, voice, projectId, onClo
         {source && (
           <div className="card stack lit">
             <div className="row wrap"><audio controls src={source.url} /><span className="muted small">{source.seconds.toFixed(1)} s, {source.label}</span></div>
+            {source.warnings.map((w) => (
+              <p key={w} className="warn small" role="status">{w}</p>
+            ))}
             <button className="primary" disabled={busy || ready === false} onClick={() => void convert()}>{busy ? "Re-voicing… (about a minute on most PCs)" : `Re-voice as ${voice.name}`}</button>
+          </div>
+        )}
+        {result && (
+          <div className="card stack lit" aria-label="Your recording and the result">
+            <strong>Your recording and the result</strong>
+            <div className="row wrap">
+              <span className="small muted">Yours</span>
+              <audio controls src={source?.url} />
+              <span className="small muted">As {voice.name}</span>
+              <audio controls src={result.url} />
+            </div>
+            <p className="small">
+              Length {result.report.sourceSeconds.toFixed(2)} s to {result.report.resultSeconds.toFixed(2)} s ({result.report.driftPercent > 0 ? "+" : ""}{result.report.driftPercent}%). Pauses {result.report.pausesSource} to {result.report.pausesResult}.
+              {result.report.pitchSource && result.report.pitchResult ? ` Pitch about ${result.report.pitchSource} Hz to ${result.report.pitchResult} Hz.` : ""} Phrase timings are saved with the take for lip-sync.
+            </p>
+            {result.report.flags.map((f) => (
+              <p key={f} className="warn small">{f}</p>
+            ))}
+            {result.report.flags.length === 0 && <p className="muted small">Nothing unusual in the measurements. Listening is the real test.</p>}
           </div>
         )}
         {error && <p role="alert" className="error small">{error}</p>}

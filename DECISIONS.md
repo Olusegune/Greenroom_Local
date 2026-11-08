@@ -44,4 +44,4 @@
 | D-37 | 2026-11-08 | New takes are measured once and flagged "check by ear" when a short line comes back under 0.9 words a second or in three or more phrases. These are hints, not proof. | Same incident; a repeated short line is slow and split. |
 | D-38 | 2026-11-08 | Model Center says Ready only for models in `CONNECTED` (`modelStatus.ts`). Kokoro and Qwen3-TTS install a runtime but cannot speak, so they say so and their install buttons are hidden. | Honesty rule: a model download is not a working engine. |
 | D-39 | 2026-11-08 | Character Voice DNA lives on the character and in saved casts; acting references store measurements, not audio, and never claim another engine will reproduce a delivery. The engine router only suggests. | Assignment sections 5, 6 and 7. |
-
+| D-40 | 2026-11-08 | Re-voiced takes carry a measured comparison with the source recording (drift, pauses, liveliness, pitch) and its phrase timings; recordings are checked for noise, clipping, level and length before conversion. Measurements only; no claim about quality. | Assignment section 8. Unit-tested on synthetic audio; not run on a real conversion. |

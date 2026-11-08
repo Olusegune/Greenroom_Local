@@ -103,6 +103,10 @@ On **Cast**, each character has a **Character profile** (their Voice DNA): timbr
 
 On Perform, choose a take you approve and press **Use as acting reference**. Greenroom measures that take (words a second, pauses, level, the rough pitch and how it moves) and keeps the measurements with the character. On another line, **Match acting reference** in the Director panel sets pace, projection and the pause after from it. These are estimates to listen to and change; another voice or engine will not copy the delivery exactly.
 
+### Compare takes
+
+When a line has two or more takes, **Compare takes** opens them side by side. Each has a player and a waveform on one shared time scale (a longer take looks longer), and a table compares length, speaking time, pace, pauses, silence at each end, level, liveliness and rough pitch. These are measurements; which take is better is for your ears. It is the natural place to listen to the four interpretations.
+
 ### Script Doctor
 
 ![Script Doctor suggestions](img/script-doctor.jpg)
