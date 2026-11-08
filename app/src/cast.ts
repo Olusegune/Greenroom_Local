@@ -1,4 +1,5 @@
 import type { Character, Project, VoiceEntry } from "./types";
+import { migrateDna, type VoiceDna } from "./voiceDna";
 
 /** A named set of voices for named characters, kept apart from any one project so a show or series can reuse it. */
 export interface SavedCast {
@@ -16,6 +17,8 @@ export interface CastMember {
   voiceName: string;
   provider: VoiceEntry["provider"];
   language: string;
+  /** The character's profile, so a series keeps it from one project to the next. */
+  dna?: VoiceDna;
 }
 
 const norm = (s: string) => s.trim().toLowerCase();
@@ -28,7 +31,7 @@ export function castFrom(project: Pick<Project, "characters" | "lines">, library
     if (!speaking.has(c.id)) continue;
     const v = library.find((x) => x.id === c.voiceId);
     if (!v) continue;
-    members.push({ name: c.name, voiceId: v.id, voiceName: v.name, provider: v.provider, language: c.language });
+    members.push({ name: c.name, voiceId: v.id, voiceName: v.name, provider: v.provider, language: c.language, ...(c.dna ? { dna: c.dna } : {}) });
   }
   return { id, name: name.trim() || "Cast", createdAt: now, members };
 }
@@ -64,7 +67,7 @@ export function applyCast(project: Pick<Project, "characters" | "lines">, cast: 
       return c;
     }
     applied.push(c.name);
-    return { ...c, voiceId: v.id, language: m.language || c.language };
+    return { ...c, voiceId: v.id, language: m.language || c.language, dna: migrateDna(m.dna) ?? c.dna };
   });
   const speaking = new Set(project.lines.map((l) => l.characterId));
   return {

@@ -1,6 +1,7 @@
 import { mergePronunciations, parsePronunciationCsv, pronunciationsToCsv } from "../pronunciationCsv";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
+import { CharacterProfile } from "./CharacterProfile";
 import { appliedSummary, applyCast, castFrom, type SavedCast } from "../cast";
 import { useApp } from "../ctx";
 import { ENGINES, ENGINE_ORDER, type Engine } from "../engines";
@@ -114,6 +115,7 @@ export default function Cast() {
                   </select>
                 </span>
               </label>
+              <CharacterProfile character={c} voice={voice} save={(dna) => patch(c.id, { dna })} />
               {voice && first && <PlayButton label={`Hear ${c.name}'s first line`} get={() => sample(voice, first.text.replace(/\[[^\]]*\]/g, "").trim() || first.text)} />}
             </div>
           );

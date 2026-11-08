@@ -1,7 +1,9 @@
 import { ACTING_PRESETS, applyPreset } from "../acting";
 import { EMOTIONS } from "../direct";
 import { ACTIVITIES, compilePerformance, DEFAULT_PERFORMANCE, isDefaultPerformance, migratePerformance, type PerformancePlan, type PerformancePoint } from "../performance";
+import { referenceHint } from "../analysis";
 import type { Line } from "../types";
+import type { ActingReference } from "../voiceDna";
 
 const ACTIVITY_LABEL: Record<(typeof ACTIVITIES)[number], string> = { still: "Standing still", walking: "Walking", running: "Running", lifting: "Lifting something heavy", pushing: "Pushing", fighting: "Fighting", injured: "Hurt", cold: "Freezing cold", custom: "Something else (describe it)" };
 
@@ -10,7 +12,7 @@ const ACTIVITY_LABEL: Record<(typeof ACTIVITIES)[number], string> = { still: "St
  * body is doing. It is saved on the line and turned into words (and a pace) when a take is made. It never changes the
  * script text, the chips or the direction box.
  */
-export function DirectorPanel({ line, patch, actsOnWords, engineLabel }: { line: Line; patch: (fn: (l: Line) => Line) => void; actsOnWords: boolean; engineLabel: string }) {
+export function DirectorPanel({ line, patch, actsOnWords, engineLabel, references = [], preferred = [] }: { line: Line; patch: (fn: (l: Line) => Line) => void; actsOnWords: boolean; engineLabel: string; references?: ActingReference[]; preferred?: string[] }) {
   const plan = migratePerformance(line.performance) ?? DEFAULT_PERFORMANCE;
   const set = (fn: (p: PerformancePlan) => PerformancePlan) =>
     patch((l) => {
@@ -49,12 +51,30 @@ export function DirectorPanel({ line, patch, actsOnWords, engineLabel }: { line:
           }}
         >
           <option value="">Start from an acting preset…</option>
-          {ACTING_PRESETS.map((pr) => (
+          {[...ACTING_PRESETS].sort((a, b) => Number(preferred.includes(b.id)) - Number(preferred.includes(a.id))).map((pr) => (
             <option key={pr.id} value={pr.id}>
-              {pr.label} — {pr.blurb}
+              {preferred.includes(pr.id) ? "★ " : ""}{pr.label} — {pr.blurb}
             </option>
           ))}
         </select>
+        {references.length > 0 && (
+          <div className="row wrap">
+            <button
+              className="sm"
+              title="Sets pace, projection and the pause after from the measured take. An estimate to listen to and change."
+              onClick={() => {
+                const ref = references[0]!;
+                const h = referenceHint(ref.stats);
+                patch((l) => ({ ...l, direction: { ...l.direction, pauseAfter: h.pauseAfter }, performance: { ...(migratePerformance(l.performance) ?? DEFAULT_PERFORMANCE), pace: h.pace, projection: h.projection } }));
+              }}
+            >
+              Match acting reference
+            </button>
+            <span className="muted small">
+              from “{references[0]!.text.slice(0, 40)}”: {referenceHint(references[0]!.stats).pace.toFixed(2)}× pace, {Math.round(referenceHint(references[0]!.stats).projection * 100)}% projection, {referenceHint(references[0]!.stats).pauseAfter.toFixed(1)} s pause. Another engine will not copy the delivery exactly.
+            </span>
+          </div>
+        )}
         <label className="field">
           Objective: what is the character trying to do?
           <input type="text" maxLength={160} value={plan.objective} placeholder="intimidate while appearing polite" onChange={(e) => set((p) => ({ ...p, objective: e.target.value }))} />

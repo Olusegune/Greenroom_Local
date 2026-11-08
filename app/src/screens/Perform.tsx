@@ -6,6 +6,7 @@ import { DirectorPanel } from "./DirectorPanel";
 import { effectiveLine } from "../performance";
 import { steers } from "../inworld";
 import { actsOnWords } from "../engineCaps";
+import { dictFor } from "../voiceDna";
 import { VARIATIONS, type VariationId } from "../acting";
 import { applyPreset, chosenTake, cleanNote, ALL_SOUND_TAGS, EMOTIONS, hasStyle, MORE_SOUNDS, NOTE_MAX, PRESETS, pushHistory, SOUNDS, STYLES, toggleIn, toggleStyle, vkUnsupported } from "../direct";
 import { VisualLine } from "../VisualLine";
@@ -16,7 +17,9 @@ import { useLocalDirectorReady } from "../localDirector";
 import { makeSound, makeTake, modelLabel, plan, type Model } from "../generate";
 import ReVoiceDialog from "./ReVoiceDialog";
 import { Pause, Play, Sparkle, Stop, Trash } from "../icons";
-import { parsePlayback, pausePlayback, playbackSnapshot, resumePlayback, stopPlayback, subscribePlayback, takeUrl } from "../media";
+import { parsePlayback, pausePlayback, playbackSnapshot, resumePlayback, stopPlayback, subscribePlayback, takeBuffer, takeUrl } from "../media";
+import { wordCount } from "../analysis";
+import { addReference, makeReference, migrateDna } from "../voiceDna";
 import { audioPlan, previewScene } from "../preview";
 import { uid } from "../script";
 import type { Character, Line, Pronunciation, VoiceEntry } from "../types";
@@ -43,12 +46,14 @@ export default function Perform() {
   if (!project) return <section><h1>Perform</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then direct lines and generate takes here.</Empty></section>;
 
   const dict: Pronunciation[] = project.pronunciations ?? [];
+  // A character's own pronunciations are added to the project's for their lines only.
+  const dictOf = (l: Line): Pronunciation[] => dictFor(dict, project.characters.find((c) => c.id === l.characterId)?.dna);
   const charOf = (l: Line): Character | undefined => project.characters.find((c) => c.id === l.characterId);
   const voiceOf = (l: Line): VoiceEntry | undefined => library.find((v) => v.id === charOf(l)?.voiceId);
   const patchLine = (id: string, fn: (l: Line) => Line, key?: string) => edit((p) => ({ ...p, lines: p.lines.map((l) => (l.id === id ? fn(l) : l)) }), key);
 
   const spend = (lines: Line[]) => {
-    const chars = lines.reduce((n, l) => n + (voiceOf(l) ? plan(l, voiceOf(l)!, model, dict, { inworldModel: engines.inworldModel }).text.length : 0), 0);
+    const chars = lines.reduce((n, l) => n + (voiceOf(l) ? plan(l, voiceOf(l)!, model, dictOf(l), { inworldModel: engines.inworldModel }).text.length : 0), 0);
     return { chars, voices: [...new Set(lines.map((l) => voiceOf(l)?.name).filter(Boolean))].join(", ") };
   };
 
@@ -59,9 +64,9 @@ export default function Perform() {
       return false;
     }
     const runs: (VariationId | undefined)[] = variations ?? Array.from({ length: count }, () => undefined);
-    const chars = runs.reduce((n, v) => n + plan(line, voice, model, dict, { inworldModel: engines.inworldModel, variation: v }).text.length, 0);
+    const chars = runs.reduce((n, v) => n + plan(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel, variation: v }).text.length, 0);
     const e = ENGINES[voice.provider];
-    const pl = plan(line, voice, model, dict, { inworldModel: engines.inworldModel });
+    const pl = plan(line, voice, model, dictOf(line), { inworldModel: engines.inworldModel });
     const extra: string[] = voice.provider === "inworld" ? [`Character: ${charOf(line)?.name ?? "?"}`, `Model: ${pl.modelId}`, ...(pl.notSent ?? []).map((n) => `Not sent: ${n}`)] : !e.tags && vkUnsupported(effectiveLine(line)).length ? [`${e.label} cannot make: ${vkUnsupported(effectiveLine(line)).join(", ")}. Those will be left out.`] : [];
     if (!e.local) {
       const price = priceLines([{ kind: "speech", engine: voice.provider, chars }]);
@@ -70,7 +75,7 @@ export default function Perform() {
     }
     try {
       for (let i = 0; i < runs.length; i++) {
-        const t = await makeTake(project.id, line, voice, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i] });
+        const t = await makeTake(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i] });
         // A set of interpretations never replaces a take you already chose.
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: variations ? l.chosen ?? t.id : t.id }), "~take");
         const sent = t.provenance?.chars ?? chars;
@@ -89,7 +94,7 @@ export default function Perform() {
     const paid = todo.filter((l) => !ENGINES[voiceOf(l)!.provider].local);
     if (paid.length > 0) {
       const s = spend(paid);
-      const price = priceLines(paid.map((l) => ({ kind: "speech" as const, engine: voiceOf(l)!.provider, chars: plan(l, voiceOf(l)!, model, dict, { inworldModel: engines.inworldModel }).text.length })));
+      const price = priceLines(paid.map((l) => ({ kind: "speech" as const, engine: voiceOf(l)!.provider, chars: plan(l, voiceOf(l)!, model, dictOf(l), { inworldModel: engines.inworldModel }).text.length })));
       const ok = await confirmSpend({ title: "Make all the missing takes?", lines: [`${paid.length} lines, ${s.chars} characters${paid.length < todo.length ? ` (${todo.length - paid.length} more run offline, free)` : ""}`, `Voices: ${s.voices}`, "One take per line. You can make more later.", ...price.lines], warn: price.warn });
       if (!ok) return;
     }
@@ -100,7 +105,7 @@ export default function Perform() {
       const line = todo[i]!;
       try {
         const v = voiceOf(line)!;
-        const t = await makeTake(project.id, line, v, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
+        const t = await makeTake(project.id, line, v, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }), "~take");
         const sent = t.provenance?.chars ?? 0;
         addLedger({ kind: "speech", engine: ENGINES[v.provider].label, chars: sent, items: [{ kind: "speech", engine: v.provider, chars: sent }] });
@@ -264,7 +269,7 @@ export default function Perform() {
           <div key={si} className="stack">
             <h3 className="scene-title">{title}</h3>
             {lines.map((line) => (
-              <LineCard key={line.id} line={line} index={project.lines.indexOf(line) + 1} character={charOf(line)} voice={voiceOf(line)} model={model} dict={dict} patch={(fn) => patchLine(line.id, fn)} make={make} />
+              <LineCard key={line.id} line={line} index={project.lines.indexOf(line) + 1} character={charOf(line)} voice={voiceOf(line)} model={model} dict={dictOf(line)} patch={(fn) => patchLine(line.id, fn)} make={make} />
             ))}
           </div>
         );
@@ -515,6 +520,17 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
   const fineNames = [d.emotion ? label(EMOTIONS, d.emotion) : "", ...d.sounds.filter((t) => !QUICK_SOUNDS.includes(t)).map((t) => label(ALL_SOUND_TAGS, t)), Math.abs(d.speed - 1) > 0.001 ? `${d.speed.toFixed(2)}×` : "", (d.gain ?? 0) !== 0 ? `${(d.gain ?? 0) > 0 ? "+" : ""}${(d.gain ?? 0).toFixed(1)} dB` : ""].filter(Boolean).slice(0, 3);
 
   // Written direction reaches every engine that can act on words; the line below says honestly which this voice is.
+  const makeRef = async (t: Take) => {
+    if (!voice || !character) return;
+    try {
+      const buf = await takeBuffer(project!.id, t.id);
+      const ref = makeReference({ takeId: t.id, lineId: line.id, at: new Date().toISOString(), text: line.text, seconds: t.seconds, sha256: t.provenance?.sha256 ?? null, voice, modelId: t.provenance?.modelId ?? null, samples: buf.getChannelData(0), rate: buf.sampleRate, words: wordCount(line.text) });
+      edit((pr) => ({ ...pr, characters: pr.characters.map((c) => (c.id === character.id ? { ...c, dna: addReference(migrateDna(c.dna), ref) } : c)) }));
+      toast(`Saved as an acting reference for ${character.name}: ${ref.stats.wordsPerSecond ? `${ref.stats.wordsPerSecond} words a second` : "pace not measured"}, ${ref.stats.pausesMs.length} pause${ref.stats.pausesMs.length === 1 ? "" : "s"}. Open Match acting reference in the Director panel on another line.`);
+    } catch (e) {
+      toast((e as Error).message || "Could not measure that take.", true);
+    }
+  };
   const capable = library.filter((v) => actsOnWords(v.provider, engines.inworldModel));
   const reach = !voice || !note.trim() ? null : ENGINES[voice.provider].tags ? "ok" : voice.provider === "voicekiller" ? "ok" : voice.provider === "inworld" ? ((planned?.steering?.length ?? 0) > 0 ? "ok" : "inworld-flash") : "none";
 
@@ -729,12 +745,14 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
           line={line}
           patch={patch}
           engineLabel={ENGINES[voice.provider].label}
+          references={migrateDna(character?.dna)?.references ?? []}
+          preferred={migrateDna(character?.dna)?.presets ?? []}
           actsOnWords={ENGINES[voice.provider].tags || voice.provider === "voicekiller" || (voice.provider === "inworld" && steers(engines.inworldModel))}
         />
       )}
 
       {line.takes.map((t, i) => (
-        <TakeRow key={t.id} t={t} n={i + 1} lineId={line.id} projectId={project!.id} chosen={t.id === chosen?.id} choose={() => patch((l) => ({ ...l, chosen: t.id }))} />
+        <TakeRow key={t.id} t={t} n={i + 1} lineId={line.id} projectId={project!.id} chosen={t.id === chosen?.id} choose={() => patch((l) => ({ ...l, chosen: t.id }))} reference={voice && character ? () => makeRef(t) : undefined} />
       ))}
       {line.events.map((e) => (
         <div key={e.id} className="take">
@@ -827,8 +845,9 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
   );
 }
 
-function TakeRow({ t, n, lineId, projectId, chosen, choose }: { t: Take; n: number; lineId: string; projectId: string; chosen: boolean; choose: () => void }) {
+function TakeRow({ t, n, lineId, projectId, chosen, choose, reference }: { t: Take; n: number; lineId: string; projectId: string; chosen: boolean; choose: () => void; reference?: () => Promise<void> }) {
   const [info, setInfo] = useState(false);
+  const [refBusy, setRefBusy] = useState(false);
   return (
     <div className="stack" style={{ gap: 4 }}>
       <div className={chosen ? "take chosen" : "take"}>
@@ -838,6 +857,11 @@ function TakeRow({ t, n, lineId, projectId, chosen, choose }: { t: Take; n: numb
         <button className="sm ghost" aria-expanded={info} onClick={() => setInfo(!info)} title="Where this take came from">
           Details
         </button>
+        {chosen && reference && (
+          <button className="sm ghost" disabled={refBusy} title="Measure this take (pace, pauses, level, pitch) and keep it as guidance for this character's other lines" onClick={() => { setRefBusy(true); void reference().finally(() => setRefBusy(false)); }}>
+            {refBusy ? "Measuring…" : "Use as acting reference"}
+          </button>
+        )}
         <span className="spacer" />
         <label className="row small">
           <input type="radio" name={`use-${lineId}`} checked={chosen} onChange={choose} /> Use this one

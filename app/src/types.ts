@@ -1,5 +1,6 @@
 import type { Engine } from "./engines";
 import type { PerformancePlan } from "./performance";
+import type { VoiceDna } from "./voiceDna";
 
 export interface Character {
   id: string;
@@ -7,6 +8,8 @@ export interface Character {
   voiceId?: string;
   /** Free label such as "English", "Yoruba" or "Taglish": a reminder and a voice-search filter, not a switch sent to the model. */
   language: string;
+  /** The character's recurring profile: timbre, tendencies, preferred presets, pronunciations, approved reference takes. Absent until the owner fills it in. */
+  dna?: VoiceDna;
 }
 
 /** What produced a piece of audio, kept with it so a studio can answer "where did this come from?". */
