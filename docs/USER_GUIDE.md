@@ -80,6 +80,43 @@ Edit the objective and subtext, tick the lines you want and press **Apply**. Lin
 
 This is wording sent to a model that may or may not obey it. Whether the result sounds strained or breathless is for you to judge by ear.
 
+### Show: Simple, Director or Advanced
+
+![The Show control and the Perform header](img/perform-views.jpg)
+
+At the top of Perform, **Show** chooses how much each line card displays. **Simple** is the voice, the Direction box, quick styles, **Make a take** and playing. **Director** (the default) adds the Director panel. **Advanced** adds Fine-tune: speed, level, pause, every emotion and sound, and the exact text sent. Your choice is remembered on this computer.
+
+### Acting presets and four interpretations
+
+![The Director panel after choosing the Cold menace preset](img/acting-presets.jpg)
+
+- **Start from an acting preset** in the Director panel sets the feeling, body, pace, projection, tension and breathiness for British bureaucratic sarcasm, suppressed grief, controlled anger, cold menace, quiet tenderness, frightened whisper, emotional confession, physical exhaustion, comedic deadpan, inspirational narration, cinematic documentary or childlike wonder. A preset keeps your objective and subtext. Presets that suit a character are starred (see Character profile).
+- **More, Make 4 interpretations** makes the same line four ways: **Natural** (exactly as planned), **Restrained** (feeling turned down, understated), **Expressive** (a wider range) and **Intense** (pushed close to the limit of control). It shows one cost sheet for all four, keeps the take you already chose, and labels each take with its interpretation.
+
+The preset and interpretation wording has not been judged by ear. A voice that cannot act on written words can only follow the pace, and Greenroom says so.
+
+### Character profile and acting references
+
+![A character profile on the Cast screen](img/char-profile.jpg)
+
+On **Cast**, each character has a **Character profile** (their Voice DNA): timbre, accent, performance tendencies, emotional range, the acting presets that suit them, pronunciations only they use, the voice you approved for them, and acting references. It travels with a **saved cast**, so a series keeps its characters from one project to the next. If you later change the character's voice, engine or Inworld model, Greenroom warns that their identity may change.
+
+On Perform, choose a take you approve and press **Use as acting reference**. Greenroom measures that take (words a second, pauses, level, the rough pitch and how it moves) and keeps the measurements with the character. On another line, **Match acting reference** in the Director panel sets pace, projection and the pause after from it. These are estimates to listen to and change; another voice or engine will not copy the delivery exactly.
+
+### Script Doctor
+
+![Script Doctor suggestions](img/script-doctor.jpg)
+
+**Script Doctor** on Perform suggests breath (a long stretch with no pause, with a comma before a conjunction), pronunciation (names, abbreviations and accented words that may need a spoken form, which you supply), emphasis (the word a "not X but Y" sentence turns on, offered for Inworld voices only) and rhythm (a very long line, or sentences that are all the same length). **Nothing changes until you press Apply** on one suggestion, and the original wording is shown beside any rewrite. It has no pronunciation dictionary, so it cannot say how a name sounds: it asks you. It does not offer IPA because none of Greenroom's voice engines documents it.
+
+### When a direction is longer than the line
+
+A long direction in front of a few words can make a voice read the direction aloud or repeat the line (this happened on a three-word line with a 280-character direction). Greenroom now sends only as much direction as the line can carry: the first sentence is shortened if it must be, and later sentences are kept whole or left out. Perform tells you when a short line gets only part of your direction, and **Advanced** shows exactly what is sent. A new take that comes back far too slow for its words, or in several phrases, gets a **check by ear** badge.
+
+### Sound clip checks and the technical QA report
+
+New sound clips are checked automatically (clipping, silence, very low level, an off-centre waveform, length against what you asked, low sample rate) and show a warning badge when something is worth a look. **Export, For producers and legal, Technical QA report** writes a table of the same measurements for every file in the mix. These are measurements, not a judgement of how anything sounds.
+
 ### Fine-tune and More
 
 ![The Fine-tune panel open and the More menu showing Make 3 takes, Re-voice a recording and Add a sound clip](img/guide-6-finetune-more.jpg)

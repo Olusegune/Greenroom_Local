@@ -43,3 +43,7 @@
 .dir-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .dir-recent { height: 30px; max-width: 170px; font-size: 12.5px; border-radius: 99px; padding: 0 10px; }
 .play-stop { position: absolute; left: -4px; bottom: -4px; width: 26px; height: 26px; min-height: 0; padding: 0; justify-content: center; border-radius: 50%; border: 2px solid var(--surface-2); background: var(--surface-4); color: var(--text); }
+
+/* A character profile is long: when it is open the card takes the whole row instead of stretching its neighbours. */
+.voice-card:has(details.char-profile[open]) { grid-column: 1 / -1; }
+.char-profile .field { max-width: 640px; }

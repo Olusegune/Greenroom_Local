@@ -60,3 +60,10 @@ describe("Script Doctor", () => {
     expect(rhythm([]).sentences).toBe(0);
   });
 });
+
+describe("Script Doctor names", () => {
+  it("treats neighbouring capitalised words as one name", () => {
+    const f = diagnose([line("Deep in Lantern Wood a fox named Pip slept.")], []).findings.filter((x) => x.kind === "pronunciation").map((x) => x.word);
+    expect(f).toEqual(["Lantern Wood", "Pip"]);
+  });
+});

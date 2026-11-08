@@ -70,21 +70,36 @@ function pronunciation(line: Line, rules: Pronunciation[], seen: Set<string>): F
   const have = new Set(rules.map((r) => r.from.trim().toLowerCase()));
   const out: Finding[] = [];
   const ws = words(plain(line.text));
-  ws.forEach((raw, i) => {
-    const w = clean(raw);
+  let i = 0;
+  while (i < ws.length) {
+    const w = clean(ws[i]!);
     const lw = w.toLowerCase();
-    if (w.length < 2 || have.has(lw) || seen.has(lw) || COMMON_CAPS.has(lw)) return;
     const startsSentence = i === 0 || /[.!?…]$/.test(ws[i - 1]!);
-    const name = /^\p{Lu}\p{Ll}{2,}/u.test(w) && !startsSentence;
+    const isName = (x: string, atStart: boolean) => /^\p{Lu}\p{Ll}{2,}/u.test(x) && !atStart && !COMMON_CAPS.has(x.toLowerCase());
+    if (isName(w, startsSentence)) {
+      // A name of several capitalised words ("Lantern Wood") is one thing to pronounce.
+      let j = i;
+      while (j + 1 < ws.length && !/[,.;:!?…]$/.test(ws[j]!) && isName(clean(ws[j + 1]!), false)) j++;
+      const phrase = ws.slice(i, j + 1).map(clean).join(" ");
+      const key = phrase.toLowerCase();
+      if (!have.has(key) && !seen.has(key)) {
+        seen.add(key);
+        out.push({ id: `${line.id}:pron:${key}`, kind: "pronunciation", lineId: line.id, word: phrase, message: `"${phrase}" looks like a name. If the voice may say it wrongly, add how it should be spoken.` });
+      }
+      i = j + 1;
+      continue;
+    }
     const acronym = /^\p{Lu}{2,}$/u.test(w);
-    const accented = /[À-ɏ]/.test(w);
+    const accented = /[\u00C0-\u024F]/.test(w);
     const mixed = /\d/.test(w) && /\p{L}/u.test(w);
     const odd = /['’-]/.test(w.slice(1, -1)) && /\p{Lu}/u.test(w) && !/^[A-Z][a-z]+'(s|t|re|ve|ll|d|m)$/.test(w);
-    if (!(name || acronym || accented || mixed || odd)) return;
-    seen.add(lw);
-    const why = acronym ? "an abbreviation (letters or a word?)" : mixed ? "letters and numbers" : accented ? "an accented word" : "a name";
-    out.push({ id: `${line.id}:pron:${lw}`, kind: "pronunciation", lineId: line.id, word: w, message: `"${w}" looks like ${why}. If the voice may say it wrongly, add how it should be spoken.` });
-  });
+    if (w.length >= 2 && !have.has(lw) && !seen.has(lw) && !COMMON_CAPS.has(lw) && (acronym || accented || mixed || odd)) {
+      seen.add(lw);
+      const why = acronym ? "an abbreviation (letters or a word?)" : mixed ? "letters and numbers" : accented ? "an accented word" : "a name";
+      out.push({ id: `${line.id}:pron:${lw}`, kind: "pronunciation", lineId: line.id, word: w, message: `"${w}" looks like ${why}. If the voice may say it wrongly, add how it should be spoken.` });
+    }
+    i++;
+  }
   return out;
 }
 

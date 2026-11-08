@@ -57,24 +57,25 @@ Written 2026-11-08 on branch `feat/cinematic-engine-2`, from the code and the pr
 5. The three reconstructed runtime scripts (`acestep_once.py`, `sfx_once.py`, `chatterbox_vc_once.py`) have never run against a real model since being rebuilt.
 6. `rafter run` has no quota left this billing period, so no remote SAST/SCA scan of this branch has run. `rafter secrets .` ran clean.
 
-## Scope of this branch against the assignment
+## Scope of this branch against the assignment (updated 2026-11-08, end of session)
 
 | Assignment part | State |
 |---|---|
 | 1 Read the code | Done |
 | 2 Audit | This document |
-| 3 Expand local engines (Chatterbox Turbo and Multilingual, Qwen3-TTS VoiceDesign, VoxCPM2, Supertonic, Pocket TTS, VibeVoice, Kitten TTS) | **Not started.** No repository, weights, licence or hash for any of them was researched or verified in this session, and none was added. |
-| 4 Cinematic Acting Director 2.0 | **Started:** per-line performance plan (objective, subtext, arc start and end, physical state, voice qualities) saved on the line, compiled into direction and pace, with a Director panel. **AI-written plans** (Plan the performance, local Qwen3 or Kie; unit tests and a demo run only, not run against a real model). Not started: beat-by-beat acting inside a line, variations, A/B, presets |
-| 5 Character Voice DNA | Not started |
-| 6 Director's Performance Memory | Not started |
-| 7 Smart engine router | Not started (Inworld is a selectable engine) |
-| 8 Speech-to-speech improvements | Not started |
-| 9 Script Doctor | Not started |
-| 10 FilmCrafter/Pulseframe bridge | **Started:** versioned manifest and export. No API or CLI. |
-| 11 Sound production | Not started |
-| 12 UI/UX (Simple / Director / Advanced views, Model Center grouping) | Not started. Perform already has Simple-style defaults with Fine-tune folded. |
-| 13 60-second stress test | **Not run.** It needs real local models and the Acting Director work above; Greenroom's rule against paid calls in automated testing also applies. |
-| Phase 15 Inworld | **Done and tested against mocks; not run live.** See `INWORLD.md`. |
+| 3 Expand local engines | **Evaluated, not added.** `LOCAL_ENGINE_EVALUATION.md` records licences and facts from the official pages. No engine was added, downloaded, hashed or tested on 12 GB: Chatterbox's own project is retired, Supertonic is archived, VibeVoice is research-only, and Kokoro and Qwen3-TTS still have no speech route |
+| 4 Cinematic Acting Director 2.0 | **Mostly built, none judged by ear.** Per-line performance plan; AI Director writes plans for the whole scene; 12 acting presets; four interpretations with a single cost sheet. **Not built:** beat-by-beat acting inside one line (the arc is a start and an end), regenerating a single beat, an A/B listening view with waveforms |
+| 5 Character Voice DNA | **Built**: profile on the character, travels with saved casts, engine/voice/model change warning, per-character pronunciations. Not built: stored language/engine compatibility beyond a capability note |
+| 6 Director's Performance Memory | **Built (estimates)**: Use as acting reference measures pace, pauses, level and rough pitch; Match acting reference applies pace, projection and the pause. Pitch contour is measured but not applied to a line |
+| 7 Smart engine router | **Partly built**: a capability table and a pure suggester (private text is never routed to the cloud, nothing is switched silently) used by Perform to name your voices that can act on a direction. No automatic selection and no cross-engine A/B for the same line |
+| 8 Speech-to-speech improvements | **Not started** |
+| 9 Script Doctor | **Built without a lexicon**: breath, names and abbreviations needing a spoken form, emphasis for Inworld, rhythm. No IPA, no accent-aware reference pronunciations |
+| 10 FilmCrafter/Pulseframe bridge | Versioned manifest with performance plans, in Export. **No local API or command line** |
+| 11 Sound production | **Partly built**: automatic technical checks on sound clips and a QA report export. Not built: reaction libraries, spatial perspective, Foley planning, ambience transitions (dialogue-aware ducking already existed) |
+| 12 UI/UX | **Built**: Simple/Director/Advanced on Perform; Model Center shows Download required, Installed, Ready, Requires setup or Unsupported, never "Ready" for a model Greenroom cannot use, and no longer offers to install runtimes that do nothing. Not built: a regrouping of Model Center by capability |
+| 13 60-second stress test | **Kit written, not run**: `STRESS_TEST.md` has the original three-character script, procedure and listening sheet. No audio was generated |
+| 14 Delivery | Installers rebuilt, screenshots captured, branch pushed. No pull request (no GitHub login) |
+| Phase 15 Inworld | Done and tested against a fake server; **not run live**. See `INWORLD.md` |
 
 ## Suggested order for what remains
 
