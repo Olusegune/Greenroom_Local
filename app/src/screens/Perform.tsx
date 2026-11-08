@@ -20,6 +20,7 @@ import ReVoiceDialog from "./ReVoiceDialog";
 import { Pause, Play, Sparkle, Stop, Trash } from "../icons";
 import { parsePlayback, pausePlayback, playbackSnapshot, resumePlayback, stopPlayback, subscribePlayback, takeBuffer, takeUrl } from "../media";
 import { wordCount } from "../analysis";
+import { validateClip } from "../soundQa";
 import { addReference, makeReference, migrateDna } from "../voiceDna";
 import { audioPlan, previewScene } from "../preview";
 import { uid } from "../script";
@@ -588,7 +589,15 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
       const options = isEleven ? { loop: snd.loop, promptInfluence: snd.promptInfluence, sfxModel: engines.elevenSfxModel ?? "eleven_text_to_sound_v3" } : {};
       const t = await makeSound(project.id, snd.prompt.trim(), snd.seconds, qualityFormat(engines.quality), soundEngineOf(engines).provider, options);
       if (!free) addLedger({ kind: "sound", engine: soundEngineOf(engines).ledger, chars: snd.prompt.trim().length, items: [{ kind: "sound", count: 1 }], note: snd.prompt.trim().slice(0, 60) });
-      patch((l) => ({ ...l, events: [...l.events, { id: "e-" + uid(), prompt: snd.prompt.trim(), placement: snd.placement, seconds: snd.seconds, loop: snd.loop, promptInfluence: snd.promptInfluence, model: options.sfxModel, take: t }] }));
+      let qa: { peakDb: number; lufs: number | null; issues: string[] } | undefined;
+      try {
+        const b = await takeBuffer(project.id, t.id);
+        const q = validateClip(Array.from({ length: b.numberOfChannels }, (_, i) => b.getChannelData(i)), b.sampleRate, { requestedSeconds: snd.seconds, kind: "sound" });
+        qa = { peakDb: Number(q.peakDb.toFixed(1)), lufs: q.lufs === null ? null : Number(q.lufs.toFixed(1)), issues: q.issues.map((i) => i.text) };
+      } catch {
+        /* the checks are a bonus; the clip is kept either way */
+      }
+      patch((l) => ({ ...l, events: [...l.events, { id: "e-" + uid(), prompt: snd.prompt.trim(), placement: snd.placement, seconds: snd.seconds, loop: snd.loop, promptInfluence: snd.promptInfluence, model: options.sfxModel, take: { ...t, qa } }] }));
       setSnd({ ...snd, prompt: "" });
     } catch (e) {
       toast((e as Error).message, true);
@@ -764,6 +773,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make }: {
         <div key={e.id} className="take">
           <PlayButton label={e.prompt.slice(0, 22)} get={() => takeUrl(project!.id, e.take!.id)} disabled={!e.take} />
           <span className="badge">sound {e.placement === "before" ? "before" : "after"}</span>
+          {(e.take?.qa?.issues.length ?? 0) > 0 && <span className="badge warn" title={e.take!.qa!.issues.join(" ")}>⚠ {e.take!.qa!.issues.length} to check</span>}
           <span className="spacer" />
           <button className="sm icon ghost" aria-label={`Remove sound ${e.prompt}`} onClick={() => patch((l) => ({ ...l, events: l.events.filter((x) => x.id !== e.id) }))}>
             <Trash size={14} />

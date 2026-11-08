@@ -59,7 +59,7 @@ export interface SoundEvent {
   model?: "eleven_text_to_sound_v2" | "eleven_text_to_sound_v3";
   loop?: boolean;
   promptInfluence?: number;
-  take?: { id: string; ext: "mp3" | "wav"; seconds: number; sha256?: string; prompt?: string };
+  take?: { id: string; ext: "mp3" | "wav"; seconds: number; sha256?: string; prompt?: string; /** Automatic checks made when the clip was created. */ qa?: { peakDb: number; lufs: number | null; issues: string[] } };
 }
 
 export interface Direction {
@@ -117,6 +117,8 @@ export interface ExportCfg {
   markersInWav: boolean;
   labels: boolean;
   cueSheet: boolean;
+  /** A technical QA report (.md): level, clipping, silence, length and sample rate of every file in the mix. */
+  qa?: boolean;
   /** A Cinematic Performance Manifest (.json): who spoke each line, with which voice and model, and how it was directed. */
   performance: boolean;
   otio: boolean;

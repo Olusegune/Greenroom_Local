@@ -11,6 +11,7 @@ import { makeSound } from "../generate";
 import { applyGain, fmtDb, fmtLufs, measure, planNormalization, TARGETS, type Measure } from "../loudness";
 import { audacityLabels, buildMarkers, cueSheetCsv, edl, otioTimeline } from "../markers";
 import { buildManifest } from "../manifest";
+import { qaMarkdown, validateClip, type QaRow } from "../soundQa";
 import { productionReportMd, projectRights, rightsCsv, rightsSummary, sha256Hex } from "../trust";
 import { APP_VERSION } from "../version";
 import { parsePlayback, pausePlayback, playbackSnapshot, resumePlayback, stopPlayback, subscribePlayback, takeAudio, takeBuffer, takeUrl } from "../media";
@@ -172,6 +173,19 @@ export default function Export() {
         if (cfg.labels) await save("", `${stem} - markers.txt`, textBase64(audacityLabels(buildMarkers(project, plan))));
         if (cfg.cueSheet) await save("", `${stem} - cue sheet.csv`, textBase64(cueSheetCsv(project, plan, cfg.fps, library, pic)));
         if (cfg.performance) await save("", `${stem} - performance manifest.json`, textBase64(JSON.stringify(buildManifest(project, library, APP_VERSION, new Date().toISOString()), null, 2) + "\n"));
+        if (cfg.qa) {
+          const rows: QaRow[] = [];
+          for (const it of plan.items) {
+            try {
+              const b = await takeBuffer(project.id, it.ref.id);
+              const q = validateClip(Array.from({ length: b.numberOfChannels }, (_, i) => b.getChannelData(i)), b.sampleRate, { kind: it.kind === "speech" ? "speech" : "sound" });
+              rows.push({ name: `${it.ref.id}.${it.ref.ext}`, kind: it.kind === "speech" ? "speech" : "sound", qa: q });
+            } catch {
+              /* a file that cannot be read is simply left out of the report */
+            }
+          }
+          await save("", `${stem} - technical QA.md`, textBase64(qaMarkdown(project.name, rows, APP_VERSION, new Date().toISOString().slice(0, 16).replace("T", " "))));
+        }
         if (cfg.otio) await save("", `${stem}.otio`, textBase64(otioTimeline(project, plan, cfg.fps, written, pic)));
         if (cfg.edl) await save("", `${stem}.edl`, textBase64(edl(project, plan, cfg.fps, written, pic)));
         if (cfg.report) {
@@ -455,6 +469,7 @@ export default function Export() {
             <strong>For producers and legal</strong> <span className="muted small">report, rights register, integrity manifest</span>
           </summary>
           <div className="stack" style={{ marginTop: 10 }}>
+        {check("qa", "Technical QA report (.md)", "Level, clipping, silence, length and sample rate of every file in the mix. Measurements only, not a judgement of how it sounds.")}
         {check("report", "Production report and rights register", "AI disclosure, voices and consent, estimated cost, every take with its fingerprint.")}
         {check("manifest", "Integrity manifest", "The SHA-256 of every file saved, so a changed file can be spotted later.")}
           </div>
@@ -475,7 +490,7 @@ export default function Export() {
           {plan.items.filter((i) => i.kind === "speech").length} lines, about {fmtTime(plan.total)} long.
         </p>
         <div className="row wrap">
-          <button className="primary" disabled={busy || plan.items.length === 0 || !(cfg.whole || cfg.scenes || cfg.stems || cfg.lines || cfg.labels || cfg.cueSheet || cfg.performance || cfg.otio || cfg.edl || cfg.report)} onClick={() => void doExport()}>
+          <button className="primary" disabled={busy || plan.items.length === 0 || !(cfg.whole || cfg.scenes || cfg.stems || cfg.lines || cfg.labels || cfg.cueSheet || cfg.performance || cfg.qa || cfg.otio || cfg.edl || cfg.report)} onClick={() => void doExport()}>
             {busy ? "Exporting…" : "Export"}
           </button>
           {listening ? (
