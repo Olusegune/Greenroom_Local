@@ -1,7 +1,7 @@
 import type { Provider } from "./api";
 
 /** The places a voice can come from. A voice belongs to one engine, so choosing a voice chooses the engine. */
-export type Engine = "elevenlabs" | "voicekiller" | "inworld" | "kie" | "piper" | "local" | "chatterbox" | "kokoro" | "wazobia";
+export type Engine = "elevenlabs" | "voicekiller" | "inworld" | "kie" | "piper" | "local" | "chatterbox" | "kokoro" | "qwen" | "wazobia";
 
 export interface EngineInfo {
   label: string;
@@ -21,10 +21,11 @@ export const ENGINES: Record<Engine, EngineInfo> = {
   local: { label: "My local server", local: true, tags: false, blurb: "A speech program you run on this PC, such as a Kokoro or Chatterbox server." },
   chatterbox: { label: "Chatterbox (offline)", local: true, tags: false, blurb: "Local English speech using the Chatterbox default voice. Acting controls and cloning are not connected yet." },
   kokoro: { label: "Kokoro (offline)", local: true, tags: false, blurb: "Small, fast local English speech with a set of ready-made voices. Plain delivery: no acting tags, no cloning." },
+  qwen: { label: "Qwen3-TTS (offline)", local: true, tags: false, blurb: "Experimental local English speech: each voice is made from a written description, so it can differ a little between lines. Slow on a CPU." },
   wazobia: { label: "WazobiaVoice (offline)", local: true, tags: false, blurb: "Nigerian English, Yoruba, Hausa and Igbo on this PC, with 13 built-in voices. Research licence: not for commercial use." },
 };
 
-export const ENGINE_ORDER: Engine[] = ["elevenlabs", "inworld", "voicekiller", "kie", "piper", "kokoro", "wazobia", "chatterbox", "local"];
+export const ENGINE_ORDER: Engine[] = ["elevenlabs", "inworld", "voicekiller", "kie", "piper", "kokoro", "qwen", "wazobia", "chatterbox", "local"];
 
 export type ElevenModel = "eleven_v4" | "eleven_v3";
 
@@ -50,6 +51,8 @@ export function providerFor(engine: Engine, model: ElevenModel, vkClone = false)
       return "chatterbox";
     case "kokoro":
       return "kokoro";
+    case "qwen":
+      return "qwen";
     case "wazobia":
       return "wazobia";
   }

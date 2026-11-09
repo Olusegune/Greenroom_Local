@@ -173,6 +173,7 @@ fn make_clip(root: &std::path::Path, models: &std::path::Path, req: ClipReq) -> 
         "local" => local::server_speak(&server_cfg(root), text, &voice, req.speed.unwrap_or(1.0)),
         "chatterbox" => chatterbox_speak(root, models, text, &voice),
         "kokoro" => kokoro_speak(root, text, &voice, req.speed.unwrap_or(1.0)),
+        "qwen" => qwen_speak(root, text, &voice),
         "wazobia" => wazobia_speak(root, models, text, &voice, req.language.as_deref().unwrap_or("en")),
         "inworld" => Ok(inworld_client()?.speak(text, &voice, req.model.as_deref().unwrap_or("inworld-tts-2"), inworld::SpeechOpts { rate: req.speed, delivery: req.delivery.as_deref(), language: req.language.as_deref() })?.audio),
         p @ ("voicekiller" | "voicekiller-clone") => voicekiller_client()?.speak(text, &voice, req.instructions.as_deref(), p == "voicekiller-clone"),
@@ -258,6 +259,8 @@ fn setup_managed_runtime(root: &std::path::Path, name: &str, package: &str, impo
     let python = managed_python::bootstrap(&dir)?;
     let program = python.to_string_lossy();
     run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--only-binary=:all:", "--index-url", "https://download.pytorch.org/whl/cpu", "torch==2.6.0", "torchaudio==2.6.0"], "the CPU speech runtime installer")?;
+    // Some dependencies (Qwen3-TTS has one) are built from source and need setuptools, which the embedded Python lacks. Found in a real run.
+    run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--only-binary=:all:", "setuptools<81", "wheel"], "the build tools installer")?;
     run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", package], "the local speech package installer")?;
     if !command_ok(&python, &["-c", import_check]) { return Err(format!("{name} installed but could not be verified. Retry setup.")); }
     crate::store::atomic_write(&dir.join("complete"), package.as_bytes())?;
@@ -269,9 +272,9 @@ async fn kokoro_runtime_status(app: tauri::AppHandle) -> Result<LocalRuntimeStat
 #[tauri::command]
 async fn kokoro_runtime_install(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || { setup_managed_runtime(&docs, "kokoro", "kokoro==0.9.4", "from kokoro import KPipeline; import torch")?; Ok(kokoro_status(&docs)) }).await }
 #[tauri::command]
-async fn qwen_runtime_status(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || Ok(managed_runtime_status(&docs, "qwen", "from qwen_tts import Qwen3TTS; import torch"))).await }
+async fn qwen_runtime_status(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || Ok(qwen_status(&docs))).await }
 #[tauri::command]
-async fn qwen_runtime_install(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || setup_managed_runtime(&docs, "qwen", "qwen-tts==0.1.1", "from qwen_tts import Qwen3TTS; import torch")).await }
+async fn qwen_runtime_install(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || { setup_managed_runtime(&docs, "qwen", QWEN_PACKAGE, QWEN_CHECK)?; Ok(qwen_status(&docs)) }).await }
 
 /// Chatterbox needs its watermarker to load: this is the check that failed in real testing when setuptools was missing.
 const CHATTERBOX_CHECK: &str = "import chatterbox, torch, torchaudio, perth; assert perth.PerthImplicitWatermarker is not None";
@@ -472,6 +475,68 @@ fn kokoro_status(root: &std::path::Path) -> LocalRuntimeStatus {
 
 #[tauri::command]
 async fn kokoro_prefetch(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || kokoro_prefetch_blocking(&docs)).await }
+
+// ---- Qwen3-TTS VoiceDesign (local speech, experimental) -----------------------------------------------------------
+
+const QWEN_PACKAGE: &str = "qwen-tts==0.1.1";
+const QWEN_CHECK: &str = "from qwen_tts import Qwen3TTSModel; import torch";
+/// The VoiceDesign checkpoint named in the QwenLM/Qwen3-TTS README (Apache-2.0), checked 2026-11-09.
+const QWEN_MODEL: &str = "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign";
+
+/// VoiceDesign has no fixed voices: each is a written description of one. These are the built-in ones. Greenroom's
+/// ids are the keys; anything else is refused before a process starts.
+fn qwen_voice_description(id: &str) -> Option<&'static str> {
+    Some(match id {
+        "qwen-warm-narrator" => "A warm, clear adult woman with a calm, steady storytelling voice.",
+        "qwen-gravel-man" => "A deep, gravelly adult man who speaks slowly and seriously.",
+        "qwen-bright-young-woman" => "A bright, energetic young woman, friendly and quick.",
+        "qwen-gentle-older-man" => "An older man with a gentle, slightly husky, thoughtful voice.",
+        _ => return None,
+    })
+}
+
+fn qwen_dir(root: &std::path::Path) -> PathBuf { root.join("runtime").join("qwen-managed") }
+fn qwen_python(root: &std::path::Path) -> PathBuf { qwen_dir(root).join("python.exe") }
+fn qwen_weights_marker(root: &std::path::Path) -> PathBuf { qwen_dir(root).join("weights-ok") }
+
+fn qwen_speak(root: &std::path::Path, text: &str, voice: &str) -> Result<Vec<u8>, String> {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    static GENERATION: Mutex<()> = Mutex::new(());
+    let instruct = qwen_voice_description(voice).ok_or("That Qwen voice is not available.")?;
+    if text.chars().count() > 600 { return Err("Qwen3-TTS supports up to 600 characters per line here.".into()); }
+    let python = qwen_python(root);
+    if !python.is_file() { return Err("The Qwen3-TTS runtime is not installed on this computer yet. Install it in Model Center.".into()); }
+    let _guard = GENERATION.lock().map_err(|_| "Qwen3-TTS is unavailable. Restart Greenroom and try again.")?;
+    let mut cmd = Command::new(python);
+    cmd.args(["-c", include_str!("../../../runtime/qwen_once.py")]).env("HF_HOME", qwen_dir(root).join("hf")).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
+    #[cfg(windows)] { use std::os::windows::process::CommandExt; cmd.creation_flags(0x08000000); }
+    let mut child = cmd.spawn().map_err(|_| "Could not start the Qwen3-TTS runtime.")?;
+    let input = serde_json::json!({"text": text, "instruct": instruct, "language": "English", "model": QWEN_MODEL});
+    child.stdin.take().ok_or("Could not send text to Qwen3-TTS.")?.write_all(input.to_string().as_bytes()).map_err(|_| "Could not send text to Qwen3-TTS.")?;
+    let output = child.wait_with_output().map_err(|_| "Qwen3-TTS stopped unexpectedly.")?;
+    if !output.status.success() || !output.stdout.starts_with(b"RIFF") { return Err("Qwen3-TTS could not generate this line. If this is the first run, check your internet connection (it downloads its model once) and try Set up again.".into()); }
+    Ok(output.stdout)
+}
+
+fn qwen_status(root: &std::path::Path) -> LocalRuntimeStatus {
+    let mut s = managed_runtime_status(root, "qwen", QWEN_CHECK);
+    s.model_ready = s.installed && qwen_weights_marker(root).is_file();
+    s.detail = if s.model_ready { "Qwen3-TTS is ready: runtime installed and model downloaded.".into() } else if s.installed { "Runtime installed. Download the Qwen3-TTS model to enable speech.".into() } else { "Install the Qwen3-TTS runtime to enable local speech.".into() };
+    s
+}
+
+/// One short line through Qwen3-TTS. The first run downloads the model, so this is the download step and the proof.
+fn qwen_prefetch_blocking(root: &std::path::Path) -> Result<LocalRuntimeStatus, String> {
+    if !managed_runtime_status(root, "qwen", QWEN_CHECK).installed { return Err("Install the Qwen3-TTS runtime first.".into()); }
+    let audio = qwen_speak(root, "Hello. This is a test of the local voice.", "qwen-warm-narrator")?;
+    if audio.len() < 2000 { return Err("Qwen3-TTS returned almost no audio. Try Set up again.".into()); }
+    crate::store::atomic_write(&qwen_weights_marker(root), QWEN_MODEL.as_bytes())?;
+    Ok(qwen_status(root))
+}
+
+#[tauri::command]
+async fn qwen_prefetch(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || qwen_prefetch_blocking(&docs)).await }
 
 // ---- Portraits ------------------------------------------------------------------------------------------------
 
@@ -1766,7 +1831,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
+            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
         ])
         .build(tauri::generate_context!())
         .expect("error while building Greenroom")
@@ -1813,6 +1878,50 @@ mod kokoro_tests {
         assert!(kokoro_prefetch_blocking(&tmp).unwrap_err().contains("runtime"));
         let s = kokoro_status(&tmp);
         assert!(!s.installed && !s.model_ready);
+    }
+}
+
+#[cfg(test)]
+mod qwen_tests {
+    use super::*;
+    #[test]
+    fn only_built_in_voices_are_accepted_before_any_process_starts() {
+        assert!(qwen_voice_description("qwen-warm-narrator").is_some());
+        for bad in ["", "../evil", "qwen-", "af_heart", "qwen-warm-narrator.pt"] { assert!(qwen_voice_description(bad).is_none(), "{bad}"); }
+        let tmp = std::env::temp_dir();
+        assert!(qwen_speak(&tmp, "hi", "../evil").unwrap_err().contains("not available"));
+        assert!(qwen_speak(&tmp, "hi", "qwen-warm-narrator").unwrap_err().contains("not installed"));
+        assert!(qwen_speak(&tmp, &"x".repeat(601), "qwen-warm-narrator").unwrap_err().contains("600"));
+    }
+    #[test]
+    fn the_runtime_check_uses_the_documented_class_name() {
+        assert!(QWEN_CHECK.contains("Qwen3TTSModel"));
+        let tmp = std::env::temp_dir().join("greenroom-qwen-test-none");
+        assert!(qwen_prefetch_blocking(&tmp).unwrap_err().contains("runtime"));
+        let s = qwen_status(&tmp);
+        assert!(!s.installed && !s.model_ready);
+    }
+    /// A real install and a real spoken line on the CPU. Downloads several GB, so it only runs when asked:
+    /// GREENROOM_REAL_ROOT=<data folder> GREENROOM_REAL_OUT=<folder> cargo test real_qwen -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    fn real_qwen_install_and_speak() {
+        let root = PathBuf::from(std::env::var("GREENROOM_REAL_ROOT").expect("GREENROOM_REAL_ROOT"));
+        let out = PathBuf::from(std::env::var("GREENROOM_REAL_OUT").expect("GREENROOM_REAL_OUT"));
+        std::fs::create_dir_all(&out).unwrap();
+        let t = std::time::Instant::now();
+        setup_managed_runtime(&root, "qwen", QWEN_PACKAGE, QWEN_CHECK).expect("runtime install");
+        println!("runtime installed in {:?}", t.elapsed());
+        let s = qwen_prefetch_blocking(&root).expect("prefetch");
+        println!("prefetch done in {:?}: {s:?}", t.elapsed());
+        assert!(s.model_ready);
+        for v in ["qwen-warm-narrator", "qwen-gravel-man"] {
+            let t1 = std::time::Instant::now();
+            let wav = qwen_speak(&root, "Good evening. I do hope you are well. Your soul is overdue.", v).expect(v);
+            assert!(wav.starts_with(b"RIFF"));
+            std::fs::write(out.join(format!("{v}.wav")), &wav).unwrap();
+            println!("{v}: {} bytes in {:?}", wav.len(), t1.elapsed());
+        }
     }
 }
 

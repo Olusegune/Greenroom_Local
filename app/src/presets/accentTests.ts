@@ -84,7 +84,7 @@ export interface AccentReview {
 const RELATIONS: Relation[] = ["native_speaker", "community_member", "other"];
 const VERDICTS: Verdict[] = ["supported", "partly", "not_supported"];
 const text = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, max) : "");
-const ENGINE_NAMES = new Set(["elevenlabs", "voicekiller", "inworld", "kie", "piper", "local", "chatterbox", "kokoro", "wazobia"]);
+const ENGINE_NAMES = new Set(["elevenlabs", "voicekiller", "inworld", "kie", "piper", "local", "chatterbox", "kokoro", "qwen", "wazobia"]);
 
 /** A review read from saved or imported data. Returns null unless it is complete and sensible. */
 export function readReview(raw: unknown, imported = false): AccentReview | null {

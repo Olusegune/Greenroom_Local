@@ -19,6 +19,7 @@ export interface StatusInfo {
 export const CONNECTED: Record<string, string> = {
   "chatterbox-multilingual-v3": "Speaks with the default voice in Perform.",
   "kokoro-82m": "Speaks in Perform with its built-in voices once they are in your library.",
+  "qwen3-tts-17b": "Speaks in Perform with described voices once they are in your library.",
   "wazobia-voice": "Speaks in Perform once its voices are added to your library.",
   "director-qwen3-4b": "Used by the AI Director when chosen in Engines.",
   "ace-step-v1": "Makes music from the Timeline.",
@@ -26,7 +27,7 @@ export const CONNECTED: Record<string, string> = {
 };
 
 /** Routes that exist but have not been run on a real model since their runtime script was rebuilt (see CINEMATIC_ENGINE_AUDIT.md). They are Installed, not Ready. */
-export const UNVERIFIED = new Set(["stable-audio-open-small", "ace-step-v1", "kokoro-82m"]);
+export const UNVERIFIED = new Set(["stable-audio-open-small", "ace-step-v1", "kokoro-82m", "qwen3-tts-17b"]);
 
 export const LABEL: Record<ModelStatus, string> = { "download-required": "Download required", installed: "Installed", ready: "Ready", "requires-setup": "Requires setup", unsupported: "Unsupported on this hardware" };
 
@@ -37,7 +38,7 @@ export function modelStatus(m: LocalModel, state: InstallState, runtimeInstalled
   const needsRuntime = ["chatterbox-multilingual-v3", "wazobia-voice", "kokoro-82m", "qwen3-tts-17b"].includes(m.id);
   const weights = state === "installed";
   if (m.id === "greenroom-runtime") return { ...base, status: "installed", label: "Shared requirements", detail: "Not a separate install." };
-  if (!weights && !(needsRuntime && runtimeInstalled && m.id === "qwen3-tts-17b")) {
+  if (!weights) {
     return { ...base, status: "download-required", label: LABEL["download-required"], detail: state === "downloading" ? "Downloading." : `About ${m.sizeGb} GB.` };
   }
   if (needsRuntime && !runtimeInstalled) return { ...base, status: "requires-setup", label: LABEL["requires-setup"], detail: "The model files are here but its runtime is not installed." };

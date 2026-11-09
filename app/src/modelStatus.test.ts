@@ -7,9 +7,11 @@ const m = (id: string) => MODEL_CATALOG.find((x) => x.id === id)!;
 
 describe("model status", () => {
   it("never calls a model Ready unless Greenroom can use it", () => {
+    // Qwen3-TTS has a route now, but is Installed, not Ready, until someone has heard it work.
     const q = modelStatus(m("qwen3-tts-17b"), "installed", true, hw);
     expect(q.status).toBe("installed");
-    expect(q.detail).toMatch(/no route/);
+    expect(q.detail).toMatch(/not marked Ready/);
+    expect(modelStatus(m("qwen3-tts-17b"), "available", true, hw).status).toBe("download-required");
     // Kokoro has a route but has never run on a real install: it is Installed, not Ready, until someone has heard it work.
     const k = modelStatus(m("kokoro-82m"), "installed", true, hw);
     expect(k.status).toBe("installed");

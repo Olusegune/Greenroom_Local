@@ -28,6 +28,7 @@ export const CAPS: Record<Engine, EngineCaps> = {
   piper: { words: false, nonverbal: false, speed: true, cloning: false, free: true, cloud: false, note: "Plain speech on this PC." },
   chatterbox: { words: false, nonverbal: false, speed: false, cloning: false, free: true, cloud: false, note: "Default voice only; acting and cloning are not connected yet." },
   kokoro: { words: false, nonverbal: false, speed: true, cloning: false, free: true, cloud: false, note: "Plain English speech on this PC from a fixed set of voices; no acting or cloning." },
+  qwen: { words: false, nonverbal: false, speed: false, cloning: false, free: true, cloud: false, note: "Plain English speech on this PC from described voices; per-line direction and cloning are not connected, and a voice can drift between lines." },
   wazobia: { words: false, nonverbal: false, speed: false, cloning: false, free: true, cloud: false, note: "Nigerian English, Yoruba, Hausa and Igbo on this PC; research licence." },
   local: { words: false, nonverbal: false, speed: true, cloning: false, free: true, cloud: false, note: "Your own speech server on this PC." },
 };

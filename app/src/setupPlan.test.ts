@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { KOKORO_VOICES, PIPER_ENGINE_MB, planKokoro, planSetup, runSetup, STARTER_VOICES, summarize, type SetupInput, type SetupStep } from "./setupPlan";
+import { KOKORO_VOICES, PIPER_ENGINE_MB, planKokoro, planQwen, planSetup, QWEN_VOICES, runSetup, STARTER_VOICES, summarize, type SetupInput, type SetupStep } from "./setupPlan";
 
 const base: SetupInput = { hardware: { tier: "standard", memoryGb: 16 }, piperInstalled: false, piperVoices: [], libraryVoices: [], chatterboxRuntime: false, chatterboxModel: "available", withChatterbox: false };
 
@@ -58,6 +58,21 @@ describe("Kokoro steps", () => {
     expect(planKokoro({ kokoroRuntime: true, kokoroModel: true, libraryKokoro: KOKORO_VOICES.map((v) => v.id) }).steps).toEqual([]);
   });
   it("only ever lists voice names Kokoro accepts", () => { for (const v of KOKORO_VOICES) expect(v.id).toMatch(/^[ab][fm]_[a-z]+$/); });
+});
+
+describe("Qwen steps", () => {
+  it("are absent unless chosen", () => { expect(planSetup(base).steps.some((s) => s.kind.startsWith("qwen"))).toBe(false); });
+  it("run runtime, then model, then voices, each waiting on the one before", () => {
+    const p = planQwen({ qwenRuntime: false, qwenModel: false, libraryQwen: [] });
+    expect(p.steps.map((s) => s.kind)).toEqual(["qwen-runtime", "qwen-model", "qwen-voices"]);
+    expect(p.steps[1]!.needs).toBe("qwen-runtime");
+    expect(p.steps[2]!.needs).toBe("qwen-model");
+  });
+  it("skip what is done", () => {
+    expect(planQwen({ qwenRuntime: true, qwenModel: true, libraryQwen: QWEN_VOICES.map((v) => v.id) }).steps).toEqual([]);
+    expect(planQwen({ qwenRuntime: true, qwenModel: true, libraryQwen: [] }).steps.map((s) => s.kind)).toEqual(["qwen-voices"]);
+  });
+  it("voice ids are the built-in ones the app accepts", () => { for (const v of QWEN_VOICES) expect(v.id).toMatch(/^qwen-[a-z-]+$/); });
 });
 
 describe("runSetup", () => {

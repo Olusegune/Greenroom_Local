@@ -3,7 +3,7 @@ import { MODEL_CATALOG, type HardwareProfile, type InstallState } from "./models
 /** One thing the setup wizard installs. */
 export interface SetupStep {
   id: string;
-  kind: "piper" | "voice" | "chatterbox-runtime" | "chatterbox-model" | "kokoro-runtime" | "kokoro-model" | "kokoro-voices";
+  kind: "piper" | "voice" | "chatterbox-runtime" | "chatterbox-model" | "kokoro-runtime" | "kokoro-model" | "kokoro-voices" | "qwen-runtime" | "qwen-model" | "qwen-voices";
   label: string;
   why: string;
   /** Known download size in MB, or undefined when the size is not known in advance. */
@@ -31,6 +31,12 @@ export interface SetupInput {
   kokoroModel?: boolean;
   /** Kokoro voice ids already in the voice library. */
   libraryKokoro?: string[];
+  /** The owner ticked "Also set up Qwen3-TTS". */
+  withQwen?: boolean;
+  qwenRuntime?: boolean;
+  qwenModel?: boolean;
+  /** Qwen voice ids already in the voice library. */
+  libraryQwen?: string[];
   /** The Piper catalogue's own sizes, which win over the estimates below. */
   catalog?: { key: string; sizeMb: number }[];
 }
@@ -59,6 +65,13 @@ export const KOKORO_VOICES: { id: string; name: string; gender: "female" | "male
   { id: "am_michael", name: "Michael (American, male)", gender: "male", accent: "American" },
   { id: "bf_emma", name: "Emma (British, female)", gender: "female", accent: "British" },
   { id: "bm_george", name: "George (British, male)", gender: "male", accent: "British" },
+];
+/** Qwen3-TTS VoiceDesign voices: each is a written description kept in the app (lib.rs, qwen_voice_description). */
+export const QWEN_VOICES: { id: string; name: string; gender: "female" | "male"; age: "young" | "mid" | "old" }[] = [
+  { id: "qwen-warm-narrator", name: "Warm narrator (Qwen, female)", gender: "female", age: "mid" },
+  { id: "qwen-gravel-man", name: "Gravel voice (Qwen, male)", gender: "male", age: "mid" },
+  { id: "qwen-bright-young-woman", name: "Bright young woman (Qwen)", gender: "female", age: "young" },
+  { id: "qwen-gentle-older-man", name: "Gentle older man (Qwen)", gender: "male", age: "old" },
 ];
 export const PIPER_ENGINE_MB = 22;
 export const CHATTERBOX_MODEL_ID = "chatterbox-multilingual-v3";
@@ -95,6 +108,13 @@ export function planSetup(i: SetupInput): SetupPlan {
     if (!missing.length) done.push("Kokoro voices"); else steps.push({ id: "kokoro-voices", kind: "kokoro-voices", label: "Kokoro voices (" + missing.length + ")", why: "Adds ready-made English voices to your voice library. No download.", sizeMb: 0, needs: i.kokoroModel ? undefined : "kokoro-model" });
   }
 
+  if (i.withQwen) {
+    if (i.qwenRuntime) done.push("Qwen3-TTS runtime"); else steps.push({ id: "qwen-runtime", kind: "qwen-runtime", label: "Qwen3-TTS runtime", why: "A private Python environment for Qwen3-TTS (a few GB, several minutes)." });
+    if (i.qwenModel) done.push("Qwen3-TTS model"); else steps.push({ id: "qwen-model", kind: "qwen-model", label: "Qwen3-TTS model and test line", why: "Downloads the Qwen3-TTS model (several GB) and speaks one short line, which is slow on a CPU. Needs internet this once.", needs: i.qwenRuntime ? undefined : "qwen-runtime" });
+    const missing = QWEN_VOICES.filter((v) => !(i.libraryQwen ?? []).includes(v.id));
+    if (!missing.length) done.push("Qwen voices"); else steps.push({ id: "qwen-voices", kind: "qwen-voices", label: "Qwen voices (" + missing.length + ")", why: "Adds four described voices to your voice library. No download.", sizeMb: 0, needs: i.qwenModel ? undefined : "qwen-model" });
+  }
+
   return {
     steps,
     alreadyDone: done,
@@ -108,6 +128,11 @@ export function planSetup(i: SetupInput): SetupPlan {
 /** Only the Kokoro steps, for the Kokoro card in Model Center. */
 export function planKokoro(i: { kokoroRuntime: boolean; kokoroModel: boolean; libraryKokoro: string[] }): SetupPlan {
   return planSetup({ hardware: { tier: "standard", memoryGb: 16 }, piperInstalled: true, piperVoices: STARTER_VOICES.map((v) => v.key), libraryVoices: STARTER_VOICES.map((v) => v.key), chatterboxRuntime: true, chatterboxModel: "installed", withChatterbox: false, withKokoro: true, ...i });
+}
+
+/** Only the Qwen3-TTS steps, for the Qwen card in Model Center. */
+export function planQwen(i: { qwenRuntime: boolean; qwenModel: boolean; libraryQwen: string[] }): SetupPlan {
+  return planSetup({ hardware: { tier: "standard", memoryGb: 16 }, piperInstalled: true, piperVoices: STARTER_VOICES.map((v) => v.key), libraryVoices: STARTER_VOICES.map((v) => v.key), chatterboxRuntime: true, chatterboxModel: "installed", withChatterbox: false, withQwen: true, ...i });
 }
 
 export type StepStatus = "waiting" | "running" | "done" | "failed" | "skipped";

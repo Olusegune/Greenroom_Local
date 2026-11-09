@@ -85,6 +85,10 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
 
+## New in 0.12.3
+- **Qwen3-TTS is connected** (experimental). Model Center, Qwen card, "Set up Qwen3-TTS automatically", or the tick in Set up my PC. It makes four described English voices. It is slow on a CPU (about a minute per short line here), a voice can differ a little between lines, and the install is about 6.4 GB. Nobody has listened to it, so it shows as Installed, not Ready.
+- The shared installer now installs setuptools first, which a real run showed Qwen needs.
+
 ## New in 0.12.2
 - **Kokoro is connected.** Model Center, Kokoro card, "Set up Kokoro automatically" (or the Kokoro tick in Set up my PC): installs its runtime, downloads the model and speaks a test line, then adds four English voices to your library. About 2 GB in all; needs internet once. Nobody has listened to it yet, so it shows as Installed, not Ready.
 

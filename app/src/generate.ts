@@ -240,5 +240,5 @@ export async function remakeBeat(projectId: string, original: Line, from: Take, 
 }
 
 export function modelLabel(m: Take["model"]): string {
-  return m === "eleven_v4" ? "Eleven v4" : m === "eleven_v3" ? "Eleven v3" : m === "voicekiller" ? "VoiceKiller" : m === "inworld" ? "Inworld" : m === "kie" ? "Kie" : m === "piper" ? "Piper" : m === "chatterbox" ? "Chatterbox" : m === "kokoro" ? "Kokoro" : m === "wazobia" ? "WazobiaVoice" : "Local";
+  return m === "eleven_v4" ? "Eleven v4" : m === "eleven_v3" ? "Eleven v3" : m === "voicekiller" ? "VoiceKiller" : m === "inworld" ? "Inworld" : m === "kie" ? "Kie" : m === "piper" ? "Piper" : m === "chatterbox" ? "Chatterbox" : m === "kokoro" ? "Kokoro" : m === "qwen" ? "Qwen3-TTS" : m === "wazobia" ? "WazobiaVoice" : "Local";
 }

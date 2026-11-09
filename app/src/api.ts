@@ -10,7 +10,7 @@ export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid
 export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean; inworld: boolean; huggingface: boolean; openai: boolean; gemini: boolean };
 export type ScriptFile = { name: string; format: "text" | "fountain" | "word" | "pdf"; text: string; truncated: boolean };
 export type LlmModels = { openai: { models: string[]; default: string }; gemini: { models: string[]; default: string } };
-export type Provider = "eleven-v4" | "eleven-tts" | "eleven-sfx" | "voicekiller" | "voicekiller-clone" | "inworld" | "kie-tts" | "kie-dialogue" | "kie-sfx" | "piper" | "local" | "chatterbox" | "kokoro" | "wazobia" | "local-sfx";
+export type Provider = "eleven-v4" | "eleven-tts" | "eleven-sfx" | "voicekiller" | "voicekiller-clone" | "inworld" | "kie-tts" | "kie-dialogue" | "kie-sfx" | "piper" | "local" | "chatterbox" | "kokoro" | "qwen" | "wazobia" | "local-sfx";
 
 export interface ClipOut {
   audioB64: string;
@@ -239,6 +239,8 @@ const real = {
   kokoroPrefetch: () => call<LocalRuntimeStatus>("kokoro_prefetch"),
   qwenRuntimeStatus: () => call<LocalRuntimeStatus>("qwen_runtime_status"),
   qwenRuntimeInstall: () => call<LocalRuntimeStatus>("qwen_runtime_install"),
+  /** Runs one short line through Qwen3-TTS: downloads the model on first use and proves the chain works. */
+  qwenPrefetch: () => call<LocalRuntimeStatus>("qwen_prefetch"),
   voiceConvert: (req: { sourceB64: string; sourceExt: string; targetB64: string; targetExt: string }) => call<ClipOut>("voice_convert", { req }),
   directorLocalStatus: () => call<LocalRuntimeStatus>("director_local_status"),
   directorLocalInstall: () => call<LocalRuntimeStatus>("director_local_install"),

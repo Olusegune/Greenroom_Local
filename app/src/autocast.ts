@@ -4,7 +4,7 @@ import type { Character, VoiceEntry } from "./types";
 
 /** Names that usually mean a storyteller or announcer rather than a person in the scene. */
 const NARRATION = /^(narrator|narration|announcer|host|presenter|voiceover|voice over|instructor|reader|storyteller)\b/i;
-const LOCAL: VoiceEntry["provider"][] = ["piper", "wazobia", "chatterbox", "kokoro", "local"];
+const LOCAL: VoiceEntry["provider"][] = ["piper", "wazobia", "chatterbox", "kokoro", "qwen", "local"];
 
 export const wantsNarration = (name: string) => NARRATION.test(name.trim());
 const norm = (s: string) => s.trim().toLowerCase();

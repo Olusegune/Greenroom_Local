@@ -29,6 +29,7 @@ const projects = new Map<string, Project>();
 const takes = new Map<string, { audioB64: string; mime: string }>();
 let library: VoiceEntry[] = [];
 const demoKokoro = { runtime: false, model: false };
+const demoQwen = { runtime: false, model: false };
 let casts: SavedCast[] = [];
 let sheetJson = "{}";
 const versions = new Map<string, { id: string; at: string; label: string; json: string }[]>();
@@ -206,8 +207,9 @@ export const mock: Api = {
   kokoroRuntimeStatus: async () => ({ installed: demoKokoro.runtime, modelReady: demoKokoro.model, detail: demoKokoro.model ? "Kokoro is ready: runtime installed and model downloaded." : demoKokoro.runtime ? "Runtime installed. Download the Kokoro model to enable speech." : "Install the Kokoro runtime to enable local speech." }),
   kokoroRuntimeInstall: async () => (await wait(800), (demoKokoro.runtime = true), { installed: true, modelReady: demoKokoro.model, detail: "Runtime installed. Download the Kokoro model to enable speech." }),
   kokoroPrefetch: async () => { if (!demoKokoro.runtime) throw new Error("Install the Kokoro runtime first."); await wait(800); demoKokoro.model = true; return { installed: true, modelReady: true, detail: "Kokoro is ready: runtime installed and model downloaded." }; },
-  qwenRuntimeStatus: async () => ({ installed: false, modelReady: false, detail: "Install the managed Qwen3-TTS runtime to enable local speech." }),
-  qwenRuntimeInstall: async () => (await wait(800), { installed: true, modelReady: false, detail: "Qwen3-TTS runtime ready. Model weights load on first use." }),
+  qwenRuntimeStatus: async () => ({ installed: demoQwen.runtime, modelReady: demoQwen.model, detail: demoQwen.model ? "Qwen3-TTS is ready: runtime installed and model downloaded." : demoQwen.runtime ? "Runtime installed. Download the Qwen3-TTS model to enable speech." : "Install the Qwen3-TTS runtime to enable local speech." }),
+  qwenRuntimeInstall: async () => (await wait(800), (demoQwen.runtime = true), { installed: true, modelReady: demoQwen.model, detail: "Runtime installed. Download the Qwen3-TTS model to enable speech." }),
+  qwenPrefetch: async () => { if (!demoQwen.runtime) throw new Error("Install the Qwen3-TTS runtime first."); await wait(800); demoQwen.model = true; return { installed: true, modelReady: true, detail: "Qwen3-TTS is ready: runtime installed and model downloaded." }; },
   voiceConvert: async () => { await wait(1500); return { audioB64: tone(4, 330), mime: "audio/wav", ms: 1500 }; },
   directorLocalStatus: async () => ({ installed: demoDirector.on, modelReady: demoDirector.on, detail: demoDirector.on ? "Ready. The Director runs on this computer." : "Install the local director: a 38 MB engine and a 2.5 GB model." }),
   directorLocalInstall: async () => (await wait(1500), (demoDirector.on = true), { installed: true, modelReady: true, detail: "Ready. The Director runs on this computer." }),

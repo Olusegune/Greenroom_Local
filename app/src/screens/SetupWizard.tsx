@@ -15,6 +15,8 @@ export default function SetupWizard({ profile, onChanged }: { profile: HardwareP
   const [open, setOpen] = useState(false);
   const [withChatterbox, setWithChatterbox] = useState(false);
   const [withKokoro, setWithKokoro] = useState(false);
+  const [withQwen, setWithQwen] = useState(false);
+  const [qwen, setQwen] = useState({ runtime: false, model: false });
   const [kokoro, setKokoro] = useState({ runtime: false, model: false });
   const [piperInstalled, setPiperInstalled] = useState(false);
   const [piperVoices, setPiperVoices] = useState<string[]>([]);
@@ -28,8 +30,9 @@ export default function SetupWizard({ profile, onChanged }: { profile: HardwareP
   const stopRef = useRef(false);
 
   const refresh = async () => {
-    const [p, c, r, m, k] = await Promise.all([api.piperStatus().catch(() => null), api.piperCatalog().catch(() => [] as PiperVoice[]), api.chatterboxRuntimeStatus().catch(() => null), api.modelStates([CHATTERBOX_MODEL_ID]).catch(() => []), api.kokoroRuntimeStatus().catch(() => null)]);
+    const [p, c, r, m, k, q] = await Promise.all([api.piperStatus().catch(() => null), api.piperCatalog().catch(() => [] as PiperVoice[]), api.chatterboxRuntimeStatus().catch(() => null), api.modelStates([CHATTERBOX_MODEL_ID]).catch(() => []), api.kokoroRuntimeStatus().catch(() => null), api.qwenRuntimeStatus().catch(() => null)]);
     setKokoro({ runtime: k?.installed ?? false, model: k?.modelReady ?? false });
+    setQwen({ runtime: q?.installed ?? false, model: q?.modelReady ?? false });
     if (p) { setPiperInstalled(p.installed); setPiperVoices(p.voices); }
     setCatalog(c);
     setCbRuntime(r?.installed ?? false);
@@ -44,8 +47,9 @@ export default function SetupWizard({ profile, onChanged }: { profile: HardwareP
   }, []);
 
   const libraryKokoro = useMemo(() => library.filter((v) => v.provider === "kokoro").map((v) => v.id), [library]);
+  const libraryQwen = useMemo(() => library.filter((v) => v.provider === "qwen").map((v) => v.id), [library]);
   const libraryKeys = useMemo(() => library.filter((v) => v.provider === "piper").map((v) => v.id), [library]);
-  const plan = useMemo(() => planSetup({ hardware: profile, piperInstalled, piperVoices, libraryVoices: libraryKeys, chatterboxRuntime: cbRuntime, chatterboxModel: cbModel, withChatterbox, withKokoro, kokoroRuntime: kokoro.runtime, kokoroModel: kokoro.model, libraryKokoro, catalog }), [profile, piperInstalled, piperVoices, libraryKeys, cbRuntime, cbModel, withChatterbox, withKokoro, kokoro, libraryKokoro, catalog]);
+  const plan = useMemo(() => planSetup({ hardware: profile, piperInstalled, piperVoices, libraryVoices: libraryKeys, chatterboxRuntime: cbRuntime, chatterboxModel: cbModel, withChatterbox, withKokoro, kokoroRuntime: kokoro.runtime, kokoroModel: kokoro.model, libraryKokoro, withQwen, qwenRuntime: qwen.runtime, qwenModel: qwen.model, libraryQwen, catalog }), [profile, piperInstalled, piperVoices, libraryKeys, cbRuntime, cbModel, withChatterbox, withKokoro, kokoro, libraryKokoro, withQwen, qwen, libraryQwen, catalog]);
 
   const exec = (s: SetupStep) => { if (s.kind === "chatterbox-model") setPercent(0); return execStep(s, { catalog, saveLibrary }); };
 
@@ -80,6 +84,7 @@ export default function SetupWizard({ profile, onChanged }: { profile: HardwareP
           <label className="row small"><input type="checkbox" checked={withChatterbox} onChange={(e) => setWithChatterbox(e.target.checked)} /> Also set up Chatterbox (adds Re-voice; several GB and several minutes)</label>
           <p className="muted small">{plan.chatterboxNote}</p>
           <label className="row small"><input type="checkbox" checked={withKokoro} onChange={(e) => setWithKokoro(e.target.checked)} /> Also set up Kokoro (small, fast English voices; about 2 GB and several minutes; needs internet once)</label>
+          <label className="row small"><input type="checkbox" checked={withQwen} onChange={(e) => setWithQwen(e.target.checked)} /> Also set up Qwen3-TTS (experimental; several GB; slow on a CPU; needs internet once)</label>
           {plan.steps.length === 0 ? <Note>Everything you chose is already set up.</Note> : (
             <ul className="stack small">{plan.steps.map((s) => <li key={s.id}><strong>{s.label}</strong> <span className="muted">{s.sizeMb === undefined ? "several GB" : s.sizeMb === 0 ? "no download" : fmt(s.sizeMb)}</span><br /><span className="muted">{s.why}</span></li>)}</ul>
           )}

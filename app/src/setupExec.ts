@@ -1,6 +1,6 @@
 import { api, type PiperVoice } from "./api";
 import { genderWord } from "./avatarLibrary";
-import { CHATTERBOX_MODEL_ID, KOKORO_VOICES, type SetupStep } from "./setupPlan";
+import { CHATTERBOX_MODEL_ID, KOKORO_VOICES, QWEN_VOICES, type SetupStep } from "./setupPlan";
 import type { VoiceEntry } from "./types";
 
 type SaveLibrary = (fn: (l: VoiceEntry[]) => VoiceEntry[]) => void;
@@ -29,6 +29,14 @@ export async function execStep(s: SetupStep, ctx: { catalog: PiperVoice[]; saveL
   } else if (s.kind === "kokoro-model") {
     const st = await api.kokoroPrefetch();
     if (!st.modelReady) throw new Error(st.detail || "Kokoro did not finish setting up.");
+  } else if (s.kind === "qwen-runtime") {
+    const st = await api.qwenRuntimeInstall();
+    if (!st.installed) throw new Error(st.detail || "The Qwen3-TTS runtime did not install.");
+  } else if (s.kind === "qwen-model") {
+    const st = await api.qwenPrefetch();
+    if (!st.modelReady) throw new Error(st.detail || "Qwen3-TTS did not finish setting up.");
+  } else if (s.kind === "qwen-voices") {
+    ctx.saveLibrary((l) => [...l, ...QWEN_VOICES.filter((v) => !l.some((x) => x.provider === "qwen" && x.id === v.id)).map((v): VoiceEntry => ({ id: v.id, name: v.name, provider: "qwen", source: "designed", language: "English", accent: "", gender: v.gender, age: v.age, notes: "Qwen3-TTS voice made from a written description. Experimental: it can differ a little between lines, and it is slow on a CPU.", createdAt: now }))]);
   } else if (s.kind === "kokoro-voices") {
     ctx.saveLibrary((l) => [...l, ...KOKORO_VOICES.filter((v) => !l.some((x) => x.provider === "kokoro" && x.id === v.id)).map((v): VoiceEntry => ({ id: v.id, name: v.name, provider: "kokoro", source: "library", language: "English", accent: v.accent, gender: v.gender, notes: "Kokoro built-in voice. Plain delivery on this PC.", createdAt: now }))]);
   }
