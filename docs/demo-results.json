@@ -1,0 +1,280 @@
+{
+ "builtAt": "2026-11-09T16:07:05.386Z",
+ "appVersion": "0.11.0",
+ "results": [
+  {
+   "id": "demo-venomspur",
+   "name": "Demo: Venomspur (dark comedy)",
+   "rendered": true,
+   "characters": 2,
+   "lines": 8,
+   "takes": 8,
+   "seconds": 34.5,
+   "lufs": -17.2,
+   "notSent": [
+    "emotion: nervous (piper does not act on written direction)",
+    "physical state: still (piper does not act on written direction)",
+    "voice: quiet, tense (piper does not act on written direction)",
+    "emotion: polite → menacing (piper does not act on written direction)",
+    "clear throat (piper does not play sounds from tags)",
+    "chuckle (piper does not play sounds from tags)",
+    "pause 0.7s (one-request lines cannot hold a timed pause)",
+    "a pause after a phrase (needs assemble mode)"
+   ],
+   "qc": {
+    "problems": 9,
+    "listen": 1,
+    "notes": 0,
+    "sample": [
+     "GRIMBLE: more than 52% of the take is silence. Listen.",
+     "GRIMBLE: not played by the engine: emotion: nervous (piper does not act on written direction).",
+     "GRIMBLE: not played by the engine: physical state: still (piper does not act on written direction).",
+     "GRIMBLE: not played by the engine: voice: quiet, tense (piper does not act on written direction).",
+     "VENOMSPUR: not played by the engine: emotion: polite → menacing (piper does not act on written direction)."
+    ]
+   },
+   "steps": {
+    "analyze": "completed",
+    "cast": "completed",
+    "audition": "completed",
+    "direct": "completed",
+    "take:l-veno1": "completed",
+    "take:l-veno2": "completed",
+    "take:l-veno3": "completed",
+    "take:l-veno4": "completed",
+    "take:l-veno5": "completed",
+    "take:l-veno6": "completed",
+    "take:l-veno7": "completed",
+    "take:l-veno8": "completed",
+    "qc": "completed",
+    "sound": "planned",
+    "timeline": "completed",
+    "export": "completed"
+   },
+   "auditEntries": 34,
+   "spent": 0,
+   "engine": "Piper (local, real inference)",
+   "export": {
+    "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\projects\\demo-venomspur\\exports\\Demo Venomspur dark comedy - full scene.wav",
+    "sha256": "83e1864d8f23977094fb407f0936b2787c67e8f1d61c0cf3ecd587f9f264d64b",
+    "lufs": -16,
+    "truePeakDb": -2.9,
+    "seconds": 37.7
+   },
+   "verified": [
+    "2 characters, each with a library voice, a profile and a portrait",
+    "8 take files present, each matching its recorded SHA-256",
+    "agent run reads back through the strict reader (16 steps, 34 audit entries, local-only: true)",
+    "exported WAV present on disk"
+   ]
+  },
+  {
+   "id": "demo-nigerian-family",
+   "name": "Demo: Nigerian family drama",
+   "rendered": false,
+   "blocked": "Needs a voice engine that can do Nigerian English, Yoruba, Igbo and Hausa accents (ElevenLabs with your key, or WazobiaVoice installed). Piper here has none, and rendering these characters in an unrelated accent would be misleading. The accent labels are unverified; use the Listening test before relying on them. The dialogue is English: lines in Yoruba, Igbo or Hausa need a native writer.",
+   "characters": 4,
+   "lines": 8,
+   "takes": 0,
+   "seconds": 0,
+   "lufs": null,
+   "notSent": [],
+   "qc": {
+    "problems": 0,
+    "listen": 0,
+    "notes": 0,
+    "sample": []
+   },
+   "steps": {
+    "analyze": "planned",
+    "cast": "planned",
+    "audition": "planned",
+    "direct": "planned",
+    "take:l-nige1": "planned",
+    "take:l-nige2": "planned",
+    "take:l-nige3": "planned",
+    "take:l-nige4": "planned",
+    "take:l-nige5": "planned",
+    "take:l-nige6": "planned",
+    "take:l-nige7": "planned",
+    "take:l-nige8": "planned",
+    "qc": "planned",
+    "sound": "planned",
+    "timeline": "planned",
+    "export": "planned"
+   },
+   "auditEntries": 1,
+   "spent": 0,
+   "engine": "none: not rendered",
+   "verified": [
+    "4 characters, each with a library voice, a profile and a portrait",
+    "0 take files present, each matching its recorded SHA-256",
+    "agent run reads back through the strict reader (16 steps, 1 audit entries, local-only: false)"
+   ]
+  },
+  {
+   "id": "demo-childrens-adventure",
+   "name": "Demo: Children's adventure (animated)",
+   "rendered": true,
+   "characters": 3,
+   "lines": 8,
+   "takes": 8,
+   "seconds": 35,
+   "lufs": -17.4,
+   "notSent": [],
+   "qc": {
+    "problems": 0,
+    "listen": 0,
+    "notes": 0,
+    "sample": []
+   },
+   "steps": {
+    "analyze": "completed",
+    "cast": "completed",
+    "audition": "completed",
+    "direct": "completed",
+    "take:l-chil1": "completed",
+    "take:l-chil2": "completed",
+    "take:l-chil3": "completed",
+    "take:l-chil4": "completed",
+    "take:l-chil5": "completed",
+    "take:l-chil6": "completed",
+    "take:l-chil7": "completed",
+    "take:l-chil8": "completed",
+    "qc": "completed",
+    "sound": "planned",
+    "timeline": "completed",
+    "export": "completed"
+   },
+   "auditEntries": 34,
+   "spent": 0,
+   "engine": "Piper (local, real inference)",
+   "export": {
+    "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\projects\\demo-childrens-adventure\\exports\\Demo Childrens adventure animated - full scene.wav",
+    "sha256": "36dc1980eb47bf6fde6222723b541823935330f8f5dc206a896085be8660308b",
+    "lufs": -16,
+    "truePeakDb": -1.5,
+    "seconds": 38.2
+   },
+   "verified": [
+    "3 characters, each with a library voice, a profile and a portrait",
+    "8 take files present, each matching its recorded SHA-256",
+    "agent run reads back through the strict reader (16 steps, 34 audit entries, local-only: true)",
+    "exported WAV present on disk"
+   ]
+  },
+  {
+   "id": "demo-fantasy-rpg",
+   "name": "Demo: Fantasy RPG dialogue",
+   "rendered": true,
+   "characters": 4,
+   "lines": 8,
+   "takes": 8,
+   "seconds": 38.4,
+   "lufs": -16.7,
+   "notSent": [
+    "physical state: still (piper does not act on written direction)",
+    "voice: projected (piper does not act on written direction)",
+    "shouting (piper cannot whisper or shout on request)",
+    "grunt (piper does not play sounds from tags)",
+    "pant (piper does not play sounds from tags)"
+   ],
+   "qc": {
+    "problems": 6,
+    "listen": 0,
+    "notes": 0,
+    "sample": [
+     "MARA: not played by the engine: physical state: still (piper does not act on written direction).",
+     "MARA: not played by the engine: voice: projected (piper does not act on written direction).",
+     "MARA: not played by the engine: shouting (piper cannot whisper or shout on request).",
+     "MARA: not played by the engine: grunt (piper does not play sounds from tags).",
+     "MARA: not played by the engine: pant (piper does not play sounds from tags)."
+    ]
+   },
+   "steps": {
+    "analyze": "completed",
+    "cast": "completed",
+    "audition": "completed",
+    "direct": "completed",
+    "take:l-fant1": "completed",
+    "take:l-fant2": "completed",
+    "take:l-fant3": "completed",
+    "take:l-fant4": "completed",
+    "take:l-fant5": "completed",
+    "take:l-fant6": "completed",
+    "take:l-fant7": "completed",
+    "take:l-fant8": "completed",
+    "qc": "completed",
+    "sound": "planned",
+    "timeline": "completed",
+    "export": "completed"
+   },
+   "auditEntries": 34,
+   "spent": 0,
+   "engine": "Piper (local, real inference)",
+   "export": {
+    "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\projects\\demo-fantasy-rpg\\exports\\Demo Fantasy RPG dialogue - full scene.wav",
+    "sha256": "0f85f6a37ac4983ea8ce338ebc48f4d286dc4a0240dd7af126b9c3e4525c3b0a",
+    "lufs": -16,
+    "truePeakDb": -2.2,
+    "seconds": 41.6
+   },
+   "verified": [
+    "4 characters, each with a library voice, a profile and a portrait",
+    "8 take files present, each matching its recorded SHA-256",
+    "agent run reads back through the strict reader (16 steps, 34 audit entries, local-only: true)",
+    "exported WAV present on disk"
+   ]
+  },
+  {
+   "id": "demo-science-explainer",
+   "name": "Demo: Science explainer (narration)",
+   "rendered": true,
+   "characters": 2,
+   "lines": 7,
+   "takes": 7,
+   "seconds": 37.2,
+   "lufs": -18.2,
+   "notSent": [],
+   "qc": {
+    "problems": 0,
+    "listen": 0,
+    "notes": 0,
+    "sample": []
+   },
+   "steps": {
+    "analyze": "completed",
+    "cast": "completed",
+    "audition": "completed",
+    "direct": "completed",
+    "take:l-scie1": "completed",
+    "take:l-scie2": "completed",
+    "take:l-scie3": "completed",
+    "take:l-scie4": "completed",
+    "take:l-scie5": "completed",
+    "take:l-scie6": "completed",
+    "take:l-scie7": "completed",
+    "qc": "completed",
+    "sound": "planned",
+    "timeline": "completed",
+    "export": "completed"
+   },
+   "auditEntries": 32,
+   "spent": 0,
+   "engine": "Piper (local, real inference)",
+   "export": {
+    "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\projects\\demo-science-explainer\\exports\\Demo Science explainer narration - full scene.wav",
+    "sha256": "8764401ba6eae9a469f9337f4b62898a66b665319c51617d75518d7e717f9b20",
+    "lufs": -16.4,
+    "truePeakDb": -1,
+    "seconds": 40
+   },
+   "verified": [
+    "2 characters, each with a library voice, a profile and a portrait",
+    "7 take files present, each matching its recorded SHA-256",
+    "agent run reads back through the strict reader (15 steps, 32 audit entries, local-only: true)",
+    "exported WAV present on disk"
+   ]
+  }
+ ]
+}

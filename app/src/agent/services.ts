@@ -146,12 +146,15 @@ export function executors(env: Env): Executors {
     async export() {
       const p = env.project();
       const f = qualityCheck(p, env.library());
-      const bad = f.filter((x) => x.severity === "problem" && x.kind !== "listen");
+      // Unsupported acting (an engine that could not play a sound or hold a pause) is flagged for the person, who sees the
+      // "not sent" list when approving delivery. It does not block the file being written; everything else that is a problem does.
+      const bad = f.filter((x) => x.severity === "problem" && x.kind !== "listen" && x.kind !== "unsupported");
       if (bad.length) throw new Error(`${bad.length} problem(s) must be fixed before export: ${bad[0]!.text}`);
+      const unsupported = [...new Set(f.filter((x) => x.kind === "unsupported").map((x) => x.text))];
       // This step is behind the delivery gate: it only runs after the person approved it.
-      if (!env.exportScene) return { output: { ready: true, note: "Ready. Open Export to choose a format and deliver." } };
+      if (!env.exportScene) return { output: { ready: true, unsupported, note: "Ready. Open Export to choose a format and deliver." } };
       const out = await env.exportScene(p);
-      return { output: { ...out, note: "Written. Stems, OTIO, EDL, cue sheet and the production report are on the Export screen." } };
+      return { output: { ...out, unsupported, note: "Written. Stems, OTIO, EDL, cue sheet and the production report are on the Export screen." } };
     },
   };
 }

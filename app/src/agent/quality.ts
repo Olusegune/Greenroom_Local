@@ -10,7 +10,22 @@ export type Severity = "problem" | "listen" | "note";
 export interface Finding { severity: Severity; lineId?: string; kind: "missing" | "clipping" | "silence" | "timing" | "unsupported" | "assignment" | "rights" | "listen" | "loudness" | "ducking" | "sync"; text: string }
 
 /** What was measured on a take, when it could be. Absent means not measured, which is reported, not assumed fine. */
-export interface Measured { peak: number; silenceRatio: number; seconds: number; /** Integrated loudness in LUFS, when measured. */ lufs?: number | null }
+export interface Measured {
+  peak: number; silenceRatio: number; seconds: number;
+  /** Integrated loudness in LUFS, when measured. */
+  lufs?: number | null;
+  /** How many runs of three or more full-scale samples in a row the take has: flat tops, which is what clipping is. Absent when not counted. */
+  clipRuns?: number;
+}
+
+/** Runs of three or more consecutive samples at full scale. A take normalised to 0 dBFS has a peak there but no such runs; a clipped one does. */
+export function countClipRuns(x: ArrayLike<number>, threshold = 0.9999): number {
+  let runs = 0, len = 0;
+  for (let i = 0; i < x.length; i++) {
+    if (Math.abs(x[i]!) >= threshold) { len++; if (len === 3) runs++; } else len = 0;
+  }
+  return runs;
+}
 
 const NOMINAL_WPS = 2.6;
 const words = (t: string) => t.replace(/\[[^\]]*\]/g, " ").split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
@@ -34,7 +49,13 @@ export function qualityCheck(project: Project, library: VoiceEntry[], measured: 
     const m = measured[take.id];
     if (!m) { out.push({ severity: "note", lineId: l.id, kind: "listen", text: `${who}: this take was not measured.` }); }
     else {
-      if (m.peak >= 0.99) out.push({ severity: "problem", lineId: l.id, kind: "clipping", text: `${who}: the take clips (peak ${(20 * Math.log10(Math.max(m.peak, 1e-6))).toFixed(1)} dBFS).` });
+      const dbfs = (20 * Math.log10(Math.max(m.peak, 1e-6))).toFixed(1);
+      if (typeof m.clipRuns === "number") {
+        if (m.clipRuns > 0) out.push({ severity: "problem", lineId: l.id, kind: "clipping", text: `${who}: the take clips (${m.clipRuns} flat-topped stretch${m.clipRuns === 1 ? "" : "es"}, peak ${dbfs} dBFS).` });
+      } else if (m.peak >= 0.999) {
+        // Only the peak is known: full scale can be a normalised take or a clipped one, so it is for a listen, not a block.
+        out.push({ severity: "listen", lineId: l.id, kind: "clipping", text: `${who}: the peak is at full scale (${dbfs} dBFS). It may be normalised or clipped. Listen.` });
+      }
       if (m.silenceRatio > 0.45) out.push({ severity: "listen", lineId: l.id, kind: "silence", text: `${who}: more than ${Math.round(m.silenceRatio * 100)}% of the take is silence. Listen.` });
       const w = words(l.text);
       const expected = w / NOMINAL_WPS;

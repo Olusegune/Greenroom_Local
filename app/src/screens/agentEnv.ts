@@ -6,7 +6,7 @@ import type { MutableRefObject } from "react";
 import { frameActivity } from "../analysis";
 import { integratedLoudness } from "../loudness";
 import type { Env } from "../agent/services";
-import type { Measured } from "../agent/quality";
+import { countClipRuns, type Measured } from "../agent/quality";
 import { interpret } from "../agent/brief";
 import { readyEnginesFrom } from "../presets/cast";
 import { DEFAULT_PRICES, ENGINES, qualityFormat, soundEngineOf } from "../engines";
@@ -71,8 +71,9 @@ export function agentEnv({ app, live }: { app: ReturnType<typeof useApp>; live: 
       const x = b.getChannelData(0);
       let peak = 0;
       for (let i = 0; i < x.length; i++) { const a = Math.abs(x[i]!); if (a > peak) peak = a; }
+      const clipRuns = countClipRuns(x);
       const { voiced } = frameActivity(x, b.sampleRate);
-      return { peak, silenceRatio: voiced.length ? 1 - voiced.filter(Boolean).length / voiced.length : 0, seconds: x.length / b.sampleRate, lufs: integratedLoudness([x], b.sampleRate) };
+      return { peak, silenceRatio: voiced.length ? 1 - voiced.filter(Boolean).length / voiced.length : 0, seconds: x.length / b.sampleRate, lufs: integratedLoudness([x], b.sampleRate), clipRuns };
     },
   };
 }
