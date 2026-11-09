@@ -268,3 +268,20 @@ describe("what the owner or the voice service states outranks the description", 
     expect(genderWord("zz-nobody-low")).toBe("");
   });
 });
+
+describe("a nationality, a city or an accent is not a costume", () => {
+  const plain = ["A hospitable Egyptian shopkeeper in his fifties", "Roman accent, warm", "a Highland Scottish accent", "I cannot bear it when he sings", "A frontier town doctor", "from Cairo, speaking English with an Arabic accent", "a Roman Catholic priest's housekeeper"];
+  for (const h of plain) {
+    it(`"${h}" gets an ordinary person, not a pharaoh, centurion, warrior or animal`, () => {
+      expect(readVoice("", h).story, h).toBeUndefined();
+      for (const a of faces(h, "")) expect(isPlainFace(a), `${h} -> ${a.id}`).toBe(true);
+    });
+  }
+  it("the real roles still work", () => {
+    expect(readVoice("", "the Pharaoh Ramses").story).toBeDefined();
+    expect(readVoice("", "a Roman centurion").story).toBeDefined();
+    expect(readVoice("", "a Highland warrior").story).toBeDefined();
+    expect(readVoice("", "a talking bear").story).toBeDefined();
+    expect(readVoice("", "an ancient Egyptian priest").story).toBeDefined();
+  });
+});

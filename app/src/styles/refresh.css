@@ -328,7 +328,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { box-shadow:0
 
 /* A voice is an auditionable character, not a cramped database row. */
 .shelf-grid { grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:16px; }
-.shelf-voice { display:grid; grid-template-columns:58px minmax(0, 1fr) auto; align-items:center; min-height:118px; padding:18px; gap:16px; overflow:hidden; }
+.shelf-voice { position:relative; isolation:isolate; display:grid; grid-template-columns:58px minmax(0, 1fr) auto; align-items:center; min-height:118px; padding:18px; gap:16px; overflow:hidden; }
 .shelf-voice::before { content:""; position:absolute; width:130px; height:130px; margin:-80px 0 0 -80px; border-radius:50%; background:radial-gradient(circle, var(--accent-wash), transparent 68%); pointer-events:none; }
 .shelf-voice > * { position:relative; }
 .shelf-info { gap:4px; }
