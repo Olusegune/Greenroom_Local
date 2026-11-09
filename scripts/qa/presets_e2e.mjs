@@ -30,6 +30,7 @@ const check = (name, ok, detail = "") => checks.push(`${ok ? "ok  " : "FAIL"} ${
 await send("Page.enable"); await send("Runtime.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: 1360, height: 1000, deviceScaleFactor: 1, mobile: false });
 await send("Page.navigate", { url: "http://127.0.0.1:5173/" }); await sleep(2500);
+await ev("localStorage.clear()"); await send("Page.navigate", { url: "http://127.0.0.1:5173/" }); await sleep(2500); // start clean: the profile keeps favourites and recents between runs
 
 // With no project open
 check("Presets is in the sidebar", await click("Presets", ".rail button.nav")); await sleep(500);

@@ -14,6 +14,9 @@ import { takeBuffer } from "../media";
 import { estimateCost } from "../trust";
 import type { Project } from "../types";
 import { dictFor } from "../voiceDna";
+import { currentManifest } from "../avatarState";
+import { assignPresetFaces } from "../presets/portraits";
+import { STARTER_PRESETS } from "../presets";
 import type { useApp } from "../ctx";
 
 export function agentEnv({ app, live }: { app: ReturnType<typeof useApp>; live: MutableRefObject<Project | null> }): Env {
@@ -26,6 +29,7 @@ export function agentEnv({ app, live }: { app: ReturnType<typeof useApp>; live: 
     ready: () => readyEnginesFrom(keys, library),
     localOnly: live.current?.agent?.localOnly !== false,
     interpretation: interpret(brief),
+    portraitFor: (() => { const m = assignPresetFaces(currentManifest(), STARTER_PRESETS); return (id: string) => m.get(id); })(),
     edit: (fn) => { live.current = fn(live.current!); edit(fn, "agent"); },
     async makeTake(line, voice) {
       const p = live.current!;

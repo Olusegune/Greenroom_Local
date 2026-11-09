@@ -34,7 +34,7 @@ const ageLook: Record<string, NonNullable<Character["look"]>["age"]> = { child: 
  * Applies a preset to a character. With a voice, the character also gets that voice and the profile records it as the
  * approved identity. Without one, only the profile is filled in and the preset says it still needs a voice.
  */
-export function applyPreset(character: Character, preset: VoicePreset, opts: { voice?: VoiceEntry; replace?: boolean; modelId?: string | null } = {}): PresetApplication {
+export function applyPreset(character: Character, preset: VoicePreset, opts: { voice?: VoiceEntry; replace?: boolean; modelId?: string | null; avatarId?: string } = {}): PresetApplication {
   const dna = migrateDna(character.dna) ?? emptyDna();
   const filled: string[] = [];
   const kept: string[] = [];
@@ -66,11 +66,14 @@ export function applyPreset(character: Character, preset: VoicePreset, opts: { v
   if (preset.accent.quality !== "native_reviewed" && preset.accent.quality !== "community_reviewed" && preset.accent.label !== "Neutral") warnings.push(`Accent "${preset.accent.label}" is ${preset.accent.quality === "experimental" ? "experimental" : "not verified"}: listen before relying on it.`);
   const look = { ...(character.look ?? {}) };
   const lookAge = preset.ageRange.length === 1 ? ageLook[preset.ageRange[0]!] : undefined;
+  if (opts.avatarId && !character.avatarId) filled.push("picture");
   if (lookAge && !look.age) { look.age = lookAge; filled.push("age"); }
   if (preset.gender && !look.gender && preset.gender !== "nonbinary") { look.gender = preset.gender === "male" ? "m" : "f"; filled.push("presentation"); }
   const out: Character = {
     ...character,
     ...(opts.voice ? { voiceId: opts.voice.id } : {}),
+    // The picture is separate from the voice: a character that already has one keeps it.
+    ...(opts.avatarId && !character.avatarId ? { avatarId: opts.avatarId } : {}),
     language: !character.language || character.language === "English" ? preset.language : character.language,
     ...(Object.keys(look).length ? { look } : {}),
     dna: { ...next, presets: next.presets },

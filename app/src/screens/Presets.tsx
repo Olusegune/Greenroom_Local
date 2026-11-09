@@ -7,6 +7,9 @@ import { ACCENT_QUALITY, ACCENT_QUALITY_LABEL, compatibleEngines, duplicatePrese
 import { applyPreset, readyEnginesFrom, voicesFor } from "../presets/cast";
 import { addCustom, loadState, markRecent, removeCustom, saveState, toggleFavorite, type PresetState } from "../presets/state";
 import { Empty, Note, PlayButton } from "../ui";
+import { faceFor } from "../avatarLibrary";
+import { useAvatars } from "../avatarState";
+import { assignPresetFaces } from "../presets/portraits";
 import { useSample } from "../useSample";
 import type { VoiceEntry } from "../types";
 
@@ -30,6 +33,10 @@ export default function Presets() {
   const [picked, setPicked] = useState<Record<string, string>>({});
 
   const all = useMemo(() => [...STARTER_PRESETS, ...state.custom], [state.custom]);
+  const { manifest, store: avatarStore } = useAvatars();
+  // A face from the existing portrait library for each preset. Appearance is never taken from accent or language.
+  const faceIds = useMemo(() => assignPresetFaces(manifest, all), [manifest, all]);
+  const faceOf = (id: string) => { const f = faceFor(faceIds.get(id), manifest, avatarStore); return f ? { src: f.small, id: faceIds.get(id)! } : undefined; };
   const byId = useMemo(() => new Map(all.map((p) => [p.id, p])), [all]);
   const ready = useMemo(() => readyEnginesFrom(keys, library), [keys, library]);
   const libraryEngines = useMemo(() => [...new Set(library.map((v) => v.provider))] as Engine[], [library]);
@@ -71,6 +78,7 @@ export default function Presets() {
     <PresetCard
       key={p.id}
       preset={p}
+      face={faceOf(p.id)?.src}
       favorite={kept.has(p.id)}
       comparing={compare.includes(p.id)}
       ready={ready}
@@ -141,7 +149,7 @@ export default function Presets() {
         ? <Empty title="Nothing matches" action={<button className="sm" onClick={() => { setQuery(""); setGenre(null); setAge(""); setGender(""); setQuality(""); setReadyOnly(false); setFavOnly(false); }}>Clear filters</button>}>{readyOnly ? "No preset can be heard with the voices and engines you have now. Turn off “Only presets I can hear now” to see them all." : "Try fewer words or another genre."}</Empty>
         : <div className="grid preset-grid" aria-live="polite">{list.map(card)}</div>)}
 
-      {compare.length > 0 && <CompareTable presets={compare.map((id) => byId.get(id)).filter((p): p is VoicePreset => !!p)} ready={ready} libraryEngines={libraryEngines} onClose={() => setCompare([])} />}
+      {compare.length > 0 && <CompareTable faceOf={(id) => faceOf(id)?.src} presets={compare.map((id) => byId.get(id)).filter((p): p is VoicePreset => !!p)} ready={ready} libraryEngines={libraryEngines} onClose={() => setCompare([])} />}
 
       {castPreset && (
         <CastPanel
@@ -150,12 +158,14 @@ export default function Presets() {
           voices={voicesFor(castPreset, library, ready)}
           hasProject={!!project}
           initialVoice={picked[castPreset.id]}
+          face={faceOf(castPreset.id)?.src}
           go={go}
           onClose={() => setCasting(null)}
           onApply={(characterId, voice, replace) => {
+            const avatarId = faceOf(castPreset.id)?.id;
             const c = speakers.find((x) => x.id === characterId);
             if (!c) return;
-            const res = applyPreset(c, castPreset, { ...(voice ? { voice } : {}), replace });
+            const res = applyPreset(c, castPreset, { ...(voice ? { voice } : {}), replace, ...(avatarId ? { avatarId } : {}) });
             edit((p) => ({ ...p, characters: p.characters.map((x) => (x.id === characterId ? res.character : x)) }), "preset-apply");
             toast(`${c.name} now follows "${castPreset.name}". ${voice ? `Voice: ${voice.name}.` : "No voice chosen yet."} Press Undo to revert.`);
             setCasting(null);
@@ -171,8 +181,15 @@ function statusOf(p: VoicePreset, ready: Engine[], libraryEngines: Engine[]) {
   return r.state === "ready" ? { cls: "ok", label: "Ready to hear" } : r.state === "needs_voice" ? { cls: "warn", label: "Requires voice selection" } : { cls: "warn", label: "Needs an engine" };
 }
 
+function PresetFace({ src, name, size = 56 }: { src?: string; name: string; size?: number }) {
+  // The portrait is decoration: the name is always next to it, so it has no alt text of its own.
+  return src
+    ? <img className="preset-face" src={src} alt="" width={size} height={size} loading="lazy" decoding="async" />
+    : <span className="preset-face fallback" style={{ width: size, height: size }} aria-hidden="true">{name.slice(0, 1)}</span>;
+}
+
 function PresetCard(props: {
-  preset: VoicePreset; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined;
+  preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined;
   onVoice: (id: string) => void; onFavorite: () => void; onCompare: () => void; onAudition: (v: VoiceEntry) => Promise<string>; onCast: () => void; onDuplicate: () => void; onRemove: (() => void) | undefined; go: (t: "voices" | "models") => void;
 }) {
   const { preset: p, voices } = props;
@@ -183,7 +200,8 @@ function PresetCard(props: {
   return (
     <article className="card preset-card" aria-label={p.name}>
       <header className="row between top">
-        <div>
+        <PresetFace src={props.face} name={p.name} />
+        <div className="grow">
           <h3>{p.name}</h3>
           <div className="muted small">{GENRE_LABEL[p.genre]}{p.availability !== "starter" ? ` · ${p.availability}` : ""}</div>
         </div>
@@ -225,7 +243,7 @@ function PresetCard(props: {
   );
 }
 
-function CompareTable({ presets, ready, libraryEngines, onClose }: { presets: VoicePreset[]; ready: Engine[]; libraryEngines: Engine[]; onClose: () => void }) {
+function CompareTable({ presets, ready, libraryEngines, onClose, faceOf }: { presets: VoicePreset[]; ready: Engine[]; libraryEngines: Engine[]; onClose: () => void; faceOf: (id: string) => string | undefined }) {
   const rows: [string, (p: VoicePreset) => string][] = [
     ["Genre", (p) => GENRE_LABEL[p.genre]],
     ["Age", (p) => p.ageRange.map((a) => AGE_LABEL[a]).join(", ")],
@@ -241,7 +259,7 @@ function CompareTable({ presets, ready, libraryEngines, onClose }: { presets: Vo
       <div className="row between"><h2>Compare</h2><button className="sm ghost" onClick={onClose}>Clear</button></div>
       <div className="table-wrap">
         <table>
-          <thead><tr><th scope="col"><span className="sr-only">Property</span></th>{presets.map((p) => <th key={p.id} scope="col">{p.name}</th>)}</tr></thead>
+          <thead><tr><th scope="col"><span className="sr-only">Property</span></th>{presets.map((p) => <th key={p.id} scope="col"><PresetFace src={faceOf(p.id)} name={p.name} size={40} /> {p.name}</th>)}</tr></thead>
           <tbody>{rows.map(([label, f]) => <tr key={label}><th scope="row">{label}</th>{presets.map((p) => <td key={p.id}>{f(p)}</td>)}</tr>)}</tbody>
         </table>
       </div>
@@ -250,17 +268,17 @@ function CompareTable({ presets, ready, libraryEngines, onClose }: { presets: Vo
   );
 }
 
-function CastPanel({ preset, characters, voices, hasProject, initialVoice, go, onClose, onApply }: { preset: VoicePreset; characters: { id: string; name: string }[]; voices: VoiceEntry[]; hasProject: boolean; initialVoice: string | undefined; go: (t: "write" | "home" | "voices") => void; onClose: () => void; onApply: (characterId: string, voice: VoiceEntry | undefined, replace: boolean) => void }) {
+function CastPanel({ preset, face, characters, voices, hasProject, initialVoice, go, onClose, onApply }: { face?: string | undefined; preset: VoicePreset; characters: { id: string; name: string }[]; voices: VoiceEntry[]; hasProject: boolean; initialVoice: string | undefined; go: (t: "write" | "home" | "voices") => void; onClose: () => void; onApply: (characterId: string, voice: VoiceEntry | undefined, replace: boolean) => void }) {
   const { project } = useApp();
   const [who, setWho] = useState(characters[0]?.id ?? "");
   const [voiceId, setVoiceId] = useState(initialVoice ?? "");
   const [replace, setReplace] = useState(false);
   const voice = voices.find((v) => v.id === voiceId);
   const character = project?.characters.find((c) => c.id === who);
-  const preview = character ? applyPreset(character, preset, { ...(voice ? { voice } : {}), replace }) : null;
+  const preview = character ? applyPreset(character, preset, { ...(voice ? { voice } : {}), replace, ...(face ? { avatarId: "preview" } : {}) }) : null;
   return (
     <div className="card lit cast-panel" role="region" aria-label={`Add ${preset.name} to the cast`}>
-      <div className="row between"><h2>Add “{preset.name}” to the cast</h2><button className="sm ghost" onClick={onClose}>Close</button></div>
+      <div className="row between"><span className="row"><PresetFace src={face} name={preset.name} size={44} /><h2>Add “{preset.name}” to the cast</h2></span><button className="sm ghost" onClick={onClose}>Close</button></div>
       {!hasProject ? (
         <Note kind="warn">Open a project first. <button className="sm" onClick={() => go("home")}>Open Projects</button></Note>
       ) : characters.length === 0 ? (

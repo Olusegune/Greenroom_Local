@@ -60,4 +60,5 @@ export async function updateStore(fn: (s: AvatarStore) => AvatarStore): Promise<
   await api.avatarsSave(JSON.stringify(next));
 }
 
+export const currentManifest = () => state.manifest;
 export const currentFace = (id: string | undefined, expression?: Expression): Face | null => faceFor(id, state.manifest, state.store, expression);

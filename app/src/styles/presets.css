@@ -49,3 +49,8 @@
 .board-card pre { white-space: pre-wrap; word-break: break-word; max-height: 160px; overflow: auto; margin: 4px 0 0; }
 .err-text { color: var(--warn); }
 .audit { max-height: 240px; overflow: auto; padding-left: 18px; }
+
+.preset-face { border-radius: 50%; object-fit: cover; flex: none; background: var(--surface-1); border: 1px solid var(--line); }
+.preset-face.fallback { display: inline-flex; align-items: center; justify-content: center; color: var(--text-2); font-weight: 600; }
+.preset-card > header { gap: var(--s3); align-items: center; }
+.compare th .preset-face { vertical-align: middle; margin-right: 6px; }

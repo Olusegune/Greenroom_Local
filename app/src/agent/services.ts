@@ -22,6 +22,8 @@ export interface Env {
   measure: (take: Take) => Promise<Measured | null>;
   interpretation?: Interpretation;
   localOnly: boolean;
+  /** A portrait id from the existing library for a preset, when the library is loaded. */
+  portraitFor?: (presetId: string) => string | undefined;
 }
 
 const genreOf = (i?: Interpretation): Genre | undefined => i?.proposals.find((p): p is Extract<typeof p, { kind: "genre" }> => p.kind === "genre")?.genre;
@@ -47,7 +49,8 @@ export function executors(env: Env): Executors {
         const pick = recs.map((r) => ({ r, voices: voicesFor(r.preset, lib, ready) })).find((x) => x.voices.length);
         if (!pick) { missing.push(c.name); continue; }
         const voice = pick.voices[0]!;
-        const applied = applyToCharacter(c, pick.r.preset, { voice });
+        const avatarId = env.portraitFor?.(pick.r.preset.id);
+        const applied = applyToCharacter(c, pick.r.preset, { voice, ...(avatarId ? { avatarId } : {}) });
         env.edit((p) => ({ ...p, characters: p.characters.map((x) => (x.id === c.id ? applied.character : x)) }));
         made.push({ character: c.name, voice: voice.name, preset: pick.r.preset.name });
       }

@@ -3,13 +3,14 @@
 // performance good or bad: "sounds unnatural" is the director's call.
 
 import type { Project, VoiceEntry } from "../types";
+import { DEFAULT_MIX } from "../types";
 import { identityWarning, migrateDna } from "../voiceDna";
 
 export type Severity = "problem" | "listen" | "note";
-export interface Finding { severity: Severity; lineId?: string; kind: "missing" | "clipping" | "silence" | "timing" | "unsupported" | "assignment" | "rights" | "listen"; text: string }
+export interface Finding { severity: Severity; lineId?: string; kind: "missing" | "clipping" | "silence" | "timing" | "unsupported" | "assignment" | "rights" | "listen" | "loudness" | "ducking" | "sync"; text: string }
 
 /** What was measured on a take, when it could be. Absent means not measured, which is reported, not assumed fine. */
-export interface Measured { peak: number; silenceRatio: number; seconds: number }
+export interface Measured { peak: number; silenceRatio: number; seconds: number; /** Integrated loudness in LUFS, when measured. */ lufs?: number | null }
 
 const NOMINAL_WPS = 2.6;
 const words = (t: string) => t.replace(/\[[^\]]*\]/g, " ").split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
@@ -41,6 +42,51 @@ export function qualityCheck(project: Project, library: VoiceEntry[], measured: 
     }
     for (const n of take.provenance?.check ?? []) out.push({ severity: "listen", lineId: l.id, kind: "listen", text: `${who}: ${n}` });
   }
+  out.push(...loudnessChecks(project, measured), ...mixChecks(project), ...syncChecks(project));
+  return out;
+}
+
+const chosenTake = (l: Project["lines"][number]) => l.takes.find((t) => t.id === l.chosen) ?? l.takes[l.takes.length - 1];
+const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2; };
+
+/** Loudness consistency: a line far from the scene's typical level is worth a listen (about 6 LU is clearly audible). */
+export function loudnessChecks(project: Project, measured: Record<string, Measured>, spreadLu = 6): Finding[] {
+  const rows = project.lines.flatMap((l) => { const t = chosenTake(l); const m = t ? measured[t.id] : undefined; return t && m && typeof m.lufs === "number" && Number.isFinite(m.lufs) && m.lufs > -70 ? [{ l, lufs: m.lufs }] : []; });
+  if (rows.length < 3) return [];
+  const mid = median(rows.map((r) => r.lufs));
+  return rows.filter((r) => Math.abs(r.lufs - mid) > spreadLu).map((r) => ({ severity: "listen" as const, lineId: r.l.id, kind: "loudness" as const, text: `${project.characters.find((c) => c.id === r.l.characterId)?.name ?? "A line"}: ${r.lufs.toFixed(1)} LUFS, ${Math.abs(r.lufs - mid).toFixed(1)} LU ${r.lufs > mid ? "louder" : "quieter"} than the scene's typical ${mid.toFixed(1)}. Listen, or normalise.` }));
+}
+
+/** Music against dialogue: music that does not dip under speech, or dips too little to keep words clear. */
+export function mixChecks(project: Project): Finding[] {
+  const music = project.music ?? [];
+  const speaks = project.lines.some((l) => l.takes.length);
+  if (!music.length || !speaks) return [];
+  const mix = { ...DEFAULT_MIX, ...(project.mix ?? {}) };
+  const out: Finding[] = [];
+  const clips = music.filter((m) => m.duck);
+  if (!mix.duck) out.push({ severity: "problem", kind: "ducking", text: "Music is in the mix but ducking is off, so it will sit on top of the dialogue." });
+  else if (!clips.length) out.push({ severity: "problem", kind: "ducking", text: "Ducking is on but none of the music clips is set to dip under dialogue." });
+  else if (mix.amountDb > -6) out.push({ severity: "listen", kind: "ducking", text: `Music dips only ${Math.abs(mix.amountDb)} dB under speech. Around 8 to 12 dB usually keeps words clear. Listen.` });
+  if (mix.duck && mix.attack < 0.05) out.push({ severity: "note", kind: "ducking", text: "The dip starts almost with the line, so the first word may be partly covered." });
+  return out;
+}
+
+/** Picture sync: cues past the end of the picture, and lines that run into the next cued line. */
+export function syncChecks(project: Project): Finding[] {
+  const pic = project.picture;
+  if (!pic) return [];
+  const out: Finding[] = [];
+  const timed = project.lines.filter((l) => typeof l.cue === "number" && l.text.trim()).map((l) => ({ l, at: l.cue as number, len: chosenTake(l)?.seconds ?? 0 })).sort((a, b) => a.at - b.at);
+  const name = (l: Project["lines"][number]) => project.characters.find((c) => c.id === l.characterId)?.name ?? "A line";
+  for (const t of timed) if (pic.duration > 0 && t.at + t.len > pic.duration + 0.05) out.push({ severity: "problem", lineId: t.l.id, kind: "sync", text: `${name(t.l)}: the line ends ${(t.at + t.len - pic.duration).toFixed(1)}s after the picture does.` });
+  for (let i = 0; i + 1 < timed.length; i++) {
+    const a = timed[i]!, b = timed[i + 1]!;
+    if (a.len > 0 && a.at + a.len > b.at + 0.05) out.push({ severity: "listen", lineId: b.l.id, kind: "sync", text: `${name(a.l)}'s line runs ${(a.at + a.len - b.at).toFixed(1)}s into ${name(b.l)}'s cue. They overlap. Listen.` });
+  }
+  const uncued = project.lines.filter((l) => l.text.trim() && typeof l.cue !== "number").length;
+  if (timed.length && uncued) out.push({ severity: "note", kind: "sync", text: `${uncued} line${uncued === 1 ? " has" : "s have"} no cue and will follow the line before.` });
+  if (!timed.length && project.lines.some((l) => l.text.trim())) out.push({ severity: "note", kind: "sync", text: "A picture is attached but no line has a cue, so nothing is timed to it." });
   return out;
 }
 

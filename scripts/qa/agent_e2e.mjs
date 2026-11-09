@@ -33,6 +33,7 @@ const colsText = () => ev(`[...document.querySelectorAll('.board-col')].map(c=>c
 await send("Page.enable"); await send("Runtime.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: 1360, height: 1100, deviceScaleFactor: 1, mobile: false });
 await send("Page.navigate", { url: "http://127.0.0.1:5173/" }); await sleep(2500);
+await ev("localStorage.clear()"); await send("Page.navigate", { url: "http://127.0.0.1:5173/" }); await sleep(2500);
 
 check("no project: asks to open one", (await click("Agent Studio", ".rail button.nav")) === false && (await ev(`!!document.querySelector('.rail')`)));
 await click("Animation story"); await sleep(1500);
