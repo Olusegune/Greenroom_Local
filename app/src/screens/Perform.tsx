@@ -12,6 +12,7 @@ import { steers } from "../inworld";
 import { actsOnWords } from "../engineCaps";
 import { dictFor } from "../voiceDna";
 import { noteFit } from "../direct";
+import ActingBrief from "./ActingBrief";
 import { VARIATIONS, type VariationId } from "../acting";
 import { applyPreset, chosenTake, cleanNote, ALL_SOUND_TAGS, EMOTIONS, hasStyle, MORE_SOUNDS, NOTE_MAX, PRESETS, pushHistory, SOUNDS, STYLES, toggleIn, toggleStyle, vkUnsupported } from "../direct";
 import { VisualLine } from "../VisualLine";
@@ -844,6 +845,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
         {reach === "inworld-flash" && <p className="dir-reach warn small">{engines.inworldModel === "inworld-tts-2-flash" ? "Inworld TTS 2 Flash does not follow written direction. Switch to Inworld TTS 2 in Voices, or choose another voice." : "Inworld could not use that direction."}</p>}
         {voice?.provider === "inworld" && (planned?.notSent?.length ?? 0) > 0 && <p className="dir-reach warn small">Inworld will not get: {planned!.notSent!.join("; ")}.</p>}
         {noTags && vkUnsupported(line).length > 0 && <p className="dir-reach warn small">{ENGINES[voice!.provider].label} cannot make {vkUnsupported(line).join(", ")}. Add a sound clip instead.</p>}
+        <ActingBrief line={line} voice={voice} inworldModel={engines.inworldModel} patch={patch} />
       </div>
 
       <div className="lc-quick">

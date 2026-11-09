@@ -111,6 +111,8 @@ export interface Line {
   performance?: PerformancePlan;
   /** Acting inside the line: an emotion, intention, emphasis, pace or pause for individual phrases. Absent unless the owner sets one. */
   beats?: BeatSetting[];
+  /** The director's own words for this line ("begins politely, clears his throat, pauses..."). Compiled for each voice when a take is made (performanceCompiler.ts); the saved text is never changed. */
+  acting?: string;
   /** How beats reach a voice: written cues in one request (default), or each phrase made separately and joined. */
   beatMode?: BeatMode;
   /** Seconds from the start of the picture at which this line starts speaking. Without one, the line follows the one before it. */

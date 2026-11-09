@@ -7,6 +7,7 @@ import { DEFAULT_INWORLD_MODEL, inworldPlan } from "./inworld";
 import { applyVariation, type VariationId } from "./acting";
 import { assemblePlan, cueText, emphasise, hasBeats, isAssembled, spliceBeat, type BeatPart } from "./beats";
 import { effectiveLine } from "./performance";
+import { withActing } from "./performanceCompiler";
 import { encodeWav, fromBase64, toBase64 } from "./audio";
 import { decode, remember, takeBuffer } from "./media";
 import { analyzeSamples, takeFlags } from "./analysis";
@@ -37,6 +38,9 @@ export interface Plan {
   notSent?: string[];
 }
 
+/** The director's own words for the line (if any) compiled for this voice's engine. The saved line is never changed. */
+const acted = (l: Line, v: VoiceEntry, o: PlanOptions) => withActing(l, { engine: v.provider, ...(o.inworldModel ? { inworldModel: o.inworldModel } : {}) });
+
 function planOne(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
   // The performance plan (if any) is compiled into the direction here; the saved line is never changed.
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
@@ -53,8 +57,11 @@ function planOne(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciati
 }
 
 /** What is sent for this line and voice. Beats in "cues" mode that cannot be sent (pace, pause, emphasis on other engines) are listed in `notSent`. */
-export function plan(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
-  const p = planOne(saved, voice, model, dict, opts);
+export function plan(original: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
+  const { line: saved, render } = acted(original, voice, opts);
+  const p0 = planOne(saved, voice, model, dict, opts);
+  // What the director's words asked for and this engine cannot do is listed, so it is never presented as generated.
+  const p: Plan = render?.notSent.length ? { ...p0, notSent: [...(p0.notSent ?? []), ...render.notSent] } : p0;
   if (hasBeats(saved) && !isAssembled(saved)) {
     const extra = cueText(saved, voice.provider === "inworld").notSent;
     if (extra.length) return { ...p, notSent: [...(p.notSent ?? []), ...extra] };
@@ -63,15 +70,17 @@ export function plan(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunc
 }
 
 /** The requests that making this line will take: one, or one per phrase when the line is assembled from beats. */
-export function requestsFor(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[], opts: PlanOptions = {}): Plan[] {
-  if (!isAssembled(saved)) return [plan(saved, voice, model, dict, opts)];
+export function requestsFor(original: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[], opts: PlanOptions = {}): Plan[] {
+  if (!isAssembled(acted(original, voice, opts).line)) return [plan(original, voice, model, dict, opts)];
+  const saved = acted(original, voice, opts).line;
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
   return assemblePlan(line).map((st) => planOne({ ...line, text: voice.provider === "inworld" && st.emphasis ? emphasise(st.line.text) : st.line.text, direction: st.line.direction, beats: undefined, performance: undefined }, voice, model, dict, { ...opts, variation: undefined }));
 }
 
-export async function makeTake(projectId: string, saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+export async function makeTake(projectId: string, original: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const saved = acted(original, voice, opts).line;
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
-  const p = plan(saved, voice, model, dict, opts);
+  const p = plan(original, voice, model, dict, opts);
   const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: line.direction.speed, instructions: p.instructions, quality, model: p.modelId });
   const id = "t-" + uid();
   const ext = out.mime === "audio/wav" ? "wav" : "mp3";
@@ -135,7 +144,8 @@ export async function makeSound(projectId: string, prompt: string, seconds: numb
  * and pace, and the owner's pause is left after it. It works with any voice but costs a request per phrase, and the joins
  * can sound different from one continuous read.
  */
-export async function makeBeatTake(projectId: string, saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+export async function makeBeatTake(projectId: string, original: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const { line: saved, render } = acted(original, voice, opts);
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
   const steps = assemblePlan(line);
   const pieces: Float32Array[] = [];
@@ -187,6 +197,7 @@ export async function makeBeatTake(projectId: string, saved: Line, voice: VoiceE
       modelId: first!.modelId,
       assembled: steps.length,
       parts,
+      ...(render?.notSent.length ? { notSent: render.notSent } : {}),
       chars,
       sha256,
       appVersion: APP_VERSION,
@@ -203,7 +214,8 @@ export async function makeBeatTake(projectId: string, saved: Line, voice: VoiceE
  * Remakes one phrase of a take that was made phrase by phrase, and joins it back between the untouched rest. One request.
  * The original take is never changed: this returns a new take that says which phrase was remade and from which take.
  */
-export async function remakeBeat(projectId: string, saved: Line, from: Take, index: number, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+export async function remakeBeat(projectId: string, original: Line, from: Take, index: number, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const saved = acted(original, voice, opts).line;
   const parts = from.provenance?.parts;
   if (!parts?.[index]) throw new Error("This take has no phrase timings, so one phrase cannot be remade. Make the line again.");
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
