@@ -408,6 +408,44 @@ export const LOOKS: Record<string, Look> = {
   global_highland_traveller_001: m("indigenous"), global_court_official_001: m("east_asian"), global_andean_elder_001: m("indigenous"), global_storyteller_001: m("indigenous"),
   global_festival_dancer_001: f("latino"), global_tea_master_001: m("east_asian"), global_desert_nomad_001: m("middle_eastern"), global_market_matriarch_001: f("black"),
   global_village_elder_001: f("black"), global_village_weaver_001: f("east_asian"),
+  everyday_silver_beard_001: m("black"),
+  everyday_glasses_elder_001: m("black"),
+  everyday_glasses_beard_001: m("black"),
+  everyday_locs_smile_001: m("black"),
+  everyday_suit_glasses_001: m("black"),
+  everyday_hoops_001: f("black"),
+  everyday_braids_001: f("black"),
+  everyday_afro_001: f("black"),
+  everyday_headwrap_001: f("black"),
+  everyday_boy_001: m("black"),
+  everyday_boy_grin_001: m("black"),
+  everyday_girl_puffs_001: f("black"),
+  everyday_asian_man_001: m("east_asian"),
+  everyday_asian_hoodie_001: m("east_asian"),
+  everyday_asian_slick_001: m("east_asian"),
+  everyday_asian_woman_001: f("east_asian"),
+  everyday_asian_blazer_001: f("east_asian"),
+  everyday_asian_long_001: f("east_asian"),
+  everyday_asian_teen_001: m("east_asian"),
+  everyday_asian_girl_001: f("east_asian"),
+  everyday_asian_teen_girl_001: f("east_asian"),
+  everyday_asian_gran_001: f("east_asian"),
+  everyday_asian_straw_hat_001: m("east_asian"),
+  everyday_indian_woman_001: f("south_asian"),
+  everyday_indian_woman_2_001: f("south_asian"),
+  everyday_sikh_man_001: m("south_asian"),
+  everyday_arab_man_001: m("middle_eastern"),
+  everyday_latina_girl_001: f("latino"),
+  everyday_latina_woman_001: f("latino"),
+  everyday_latino_hat_001: m("latino"),
+  everyday_white_glasses_woman_001: f("white"),
+  everyday_white_curly_woman_001: f("white"),
+  everyday_white_woman_001: f("white"),
+  everyday_white_grey_man_001: m("white"),
+  everyday_white_man_001: m("white"),
+  everyday_white_man_jacket_001: m("white"),
+  everyday_white_boy_001: m("white"),
+  everyday_boy_cap_001: m("white"),
 };
 
 const seedHash = (s: string) => {
@@ -447,18 +485,60 @@ const AGE_FIT: Record<VoiceAge, Age[]> = {
 };
 
 /**
- * A steady built-in portrait for a voice with no chosen picture. It never crosses gender. It uses the stated age and
- * heritage when a portrait fits; when none does it loosens age first, then heritage, but never gender. A voice that states
- * nothing gets any adult human portrait, and children only appear for a voice that says it is a child.
+ * Which portraits may stand in for a voice by default: ordinary people in everyday dress. Costume portraits (a pharaoh, a
+ * knight, a vampire, a robot) are never chosen automatically, because a narrator or a casual voice should not look like one.
+ * They stay available in the browser for the owner to choose.
+ */
+const PLAIN_GLOBAL = new Set(["global_andean_elder_001", "global_tea_master_001", "global_market_matriarch_001", "global_village_elder_001", "global_village_weaver_001"]);
+export const isPlainFace = (a: Pick<AvatarEntry, "id" | "tier">): boolean => a.id.startsWith("everyday_") || (a.tier !== "preview" && a.id.startsWith("contemporary_")) || PLAIN_GLOBAL.has(a.id);
+
+/** Portraits that can stand in for a stated heritage. Black and East Asian are strict: no other portrait is ever used for them. */
+const HERITAGE_FIT: Record<Heritage, Heritage[]> = {
+  black: ["black"],
+  east_asian: ["east_asian"],
+  south_asian: ["south_asian"],
+  middle_eastern: ["middle_eastern", "south_asian"],
+  latino: ["latino", "white", "middle_eastern"],
+  indigenous: ["indigenous", "latino"],
+  white: ["white", "latino", "middle_eastern"],
+};
+
+/**
+ * Genders of the local (Piper) voices, which come with none. From the voice model cards as remembered by the person who
+ * built the library, not verified by ear; a voice not listed gets any adult portrait.
+ */
+const PIPER_GENDER: Record<string, "f" | "m"> = {
+  alan: "m", alba: "f", jenny_dioco: "f", northern_english_male: "m", cori: "f", lessac: "f", amy: "f", joe: "m", john: "m", kristin: "f", bryce: "m", kusal: "m", ryan: "m",
+  claude: "m", ald: "m", kareem: "m", daniela: "f", davefx: "m", carlfm: "m", siwis: "f", tom: "m", thorsten: "m", eva_k: "f", faber: "m", edresson: "m",
+  priyamvada: "f", rohan: "m", pratham: "m", kss: "f", huayan: "f", chaowen: "f", xiao_ya: "f", meera: "f", arjun: "m", maya: "f", venkatesh: "m",
+};
+/** "m", "f" or undefined, for a Piper voice key such as "en_GB-alan-low" or a name such as "Alan". */
+export function pipergender(keyOrName: string): "m" | "f" | undefined {
+  const k = keyOrName.toLowerCase();
+  const mid = k.includes("-") ? k.split("-")[1]! : k;
+  return PIPER_GENDER[mid] ?? PIPER_GENDER[k.replace(/\s+/g, "_")];
+}
+
+/**
+ * A steady built-in portrait for a voice with no chosen picture. It never crosses gender and only uses everyday portraits.
+ * It uses the stated age and heritage when a portrait fits; when none does it loosens age first, then heritage within the
+ * fitting groups, but never gender. A voice that states nothing gets any adult, and children only appear for a voice that
+ * says it is a child.
  */
 export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string): AvatarEntry | null {
   if (!manifest) return null;
   const want = readVoice(gender, hint);
-  const humans = manifest.avatars.filter((a) => a.tier !== "preview" && (LOOKS[a.id]?.g ?? "n") !== "n");
+  const known = manifest.avatars.filter((a) => (LOOKS[a.id]?.g ?? "n") !== "n");
+  const plain = known.filter(isPlainFace);
+  const humans = plain.length ? plain : known;
   const byGender = want.g ? humans.filter((a) => LOOKS[a.id]!.g === want.g) : humans;
   const adult = (a: AvatarEntry) => a.age_category !== "child" && a.age_category !== "teen";
   const ageOk = (a: AvatarEntry) => (want.age ? AGE_FIT[want.age].includes(a.age_category) : adult(a));
-  const heritageOk = (a: AvatarEntry) => !want.h || LOOKS[a.id]!.h === want.h;
+  const heritageOk = (a: AvatarEntry) => {
+    if (!want.h) return true;
+    const h = LOOKS[a.id]!.h;
+    return !!h && HERITAGE_FIT[want.h].includes(h);
+  };
   const tiers = [
     byGender.filter((a) => ageOk(a) && heritageOk(a)),
     byGender.filter((a) => heritageOk(a) && (want.age === "child" ? !adult(a) : adult(a))),

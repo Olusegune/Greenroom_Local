@@ -1,3 +1,4 @@
+import { pipergender } from "../avatarLibrary";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl } from "../api";
 import { useApp } from "../ctx";
@@ -90,7 +91,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
 
       <div className="chips" role="group" aria-label="Accent filter">{accents.map((a) => <button key={a} className="chip" aria-pressed={accent === a} onClick={() => setAccent(a)}>{a}</button>)}</div>
       <div className="shelf-grid">{shown.map((r) => <article className="shelf-voice" key={r.key}>
-        <Avatar seed={r.key} size={54} hint={`${r.accent} ${r.language}`} />
+        <Avatar seed={r.key} size={54} gender={pipergender(r.key) === "f" ? "female" : pipergender(r.key) === "m" ? "male" : undefined} hint={`${r.accent} ${r.language}`} />
         <div className="shelf-info"><strong>{r.name}</strong><span>{r.accent} · {r.language}</span><small>{r.use} · {r.mb} MB</small></div>
         <div className="shelf-actions">
           <button className="sm" disabled={busy === r.key} onClick={() => void preview(r)} aria-label={`${playing === r.key ? "Pause" : paused === r.key ? "Resume" : "Hear"} ${r.name}`}>{playing === r.key ? "Pause" : paused === r.key ? "Resume" : "Hear"}</button>

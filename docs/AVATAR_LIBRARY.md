@@ -112,3 +112,13 @@ Left out on purpose:
 - **One unsettling wet-haired child**, as too close to a well-known horror image.
 
 Many near-identical variations of the same face (for example eight similar Egyptian elders) were reduced to one or two.
+
+## Automatic faces (version 0.8.3)
+
+A voice or character with no chosen avatar shows a built-in portrait, not a cartoon. The pick is steady for a voice and never saved. Rules (all in `app/src/avatarLibrary.ts`, covered by tests):
+
+- Only **everyday** portraits are used (the contemporary masters, five global ones and the 38 "everyday" previews added from the owner's 512 px earlier batches). Costume portraits (pharaoh, knight, vampire, robot and so on) are never chosen automatically; they remain in the browser.
+- Gender is never crossed. It is read from the voice's gender field, then its description, and for the local Piper voices from a name table (from the model cards as remembered, **not verified by ear**).
+- Age: a child's portrait only for a voice that says it is a child. Heritage: used when the voice states it (Black and East Asian are strict, others allow close groups). When nothing fits, age loosens first, then heritage within the allowed groups, never gender.
+- What each portrait shows (gender, heritage) was judged by eye by the person who built the library and lives in `LOOKS`, apart from the manifest; a portrait still carries no voice, accent or personality.
+- The 38 added previews are 512 px images cut to 256 px. They count in the browser as previews, not toward the 100.

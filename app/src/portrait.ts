@@ -4,6 +4,7 @@
 // the prompt asks for a person who is not real and resembles nobody.
 
 import { hash, lookFor } from "./avatar";
+import { pipergender } from "./avatarLibrary";
 import type { VoiceEntry } from "./types";
 
 /** The seed a voice's drawn face uses everywhere, so a picture can be found for the same voice on every screen. */
@@ -18,7 +19,8 @@ export function syncPortraits(library: (Pick<VoiceEntry, "id" | "name" | "portra
   hints.clear();
   for (const v of library) {
     if (v.portrait && v.portrait.startsWith("data:image/")) pictures.set(voiceSeed(v), v.portrait);
-    hints.set(voiceSeed(v), [v.gender, v.accent, v.language, v.notes].filter(Boolean).join(" "));
+    const pg = v.gender ? undefined : v.id ? pipergender(v.id) : undefined;
+    hints.set(voiceSeed(v), [v.gender || (pg === "f" ? "female" : pg === "m" ? "male" : ""), v.accent, v.language, v.notes].filter(Boolean).join(" "));
   }
 }
 

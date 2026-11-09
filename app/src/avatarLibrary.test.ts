@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { addCustom, autoAvatar, LOOKS, readVoice, COLLECTIONS, type AvatarManifest, assignAvatar, emptyStore, expressionFor, faceFor, facets, filterAvatars, migrateStore, progress, RECENT_MAX, removeCustom, suggestAvatars, toggleFavorite, touchRecent, validateManifest, type CustomAvatar } from "./avatarLibrary";
+import { addCustom, autoAvatar, isPlainFace, pipergender, LOOKS, readVoice, COLLECTIONS, type AvatarManifest, assignAvatar, emptyStore, expressionFor, faceFor, facets, filterAvatars, migrateStore, progress, RECENT_MAX, removeCustom, suggestAvatars, toggleFavorite, touchRecent, validateManifest, type CustomAvatar } from "./avatarLibrary";
 
 const PUB = join(__dirname, "..", "public", "avatars");
 const MASTERS = join(__dirname, "..", "..", "avatars", "masters");
@@ -263,14 +263,14 @@ describe("automatic faces", () => {
     expect(autoAvatar(m, "voice-1Alex", "Male")!.id).toBe(a.id);
     for (let i = 0; i < 60; i++) {
       expect(["ancient_queen_001"].includes(autoAvatar(m, "m" + i, "male")!.id)).toBe(false);
-      expect(autoAvatar(m, "f" + i, "Female")!.tier).toBe("master");
+      expect(isPlainFace(autoAvatar(m, "f" + i, "Female")!)).toBe(true);
     }
   });
-  it("never picks a preview or a creature, and spreads voices across many faces", () => {
+  it("never picks a costume or a creature, and spreads voices across many faces", () => {
     const ids = new Set<string>();
     for (let i = 0; i < 300; i++) {
       const e = autoAvatar(m, "seed" + i, i % 2 ? "male" : "female")!;
-      expect(e.tier).toBe("master");
+      expect(isPlainFace(e)).toBe(true);
       expect(e.id).not.toMatch(/bear_chef|little_robot|fox_scout|baby_dragon|beastman/);
       ids.add(e.id);
     }
@@ -305,5 +305,21 @@ describe("automatic faces fit the voice", () => {
   it("every human portrait has a recorded look, and creatures are never used", () => {
     for (const a of list.filter((x) => x.tier !== "preview")) expect(LOOKS[a.id], a.id).toBeDefined();
     for (let i = 0; i < 200; i++) expect(LOOKS[pick("z" + i, i % 3 ? "male" : "").id]!.g).not.toBe("n");
+  });
+});
+
+describe("local voices and costumes", () => {
+  const mf = { version: 1, target: 100, count: list.length, collections: [...COLLECTIONS], avatars: list } as unknown as AvatarManifest;
+  it("reads Piper voice genders from the key or the name", () => {
+    expect(pipergender("en_GB-alan-low")).toBe("m");
+    expect(pipergender("Amy")).toBe("f");
+    expect(pipergender("es_MX-claude-high")).toBe("m");
+    expect(pipergender("xx-unknown-low")).toBeUndefined();
+  });
+  it("a narrator is never shown as a pharaoh, a knight or a monster", () => {
+    for (let i = 0; i < 300; i++) {
+      const e = autoAvatar(mf, "c" + i, "Male", "A deep, compassionate male voice, mid-40s")!;
+      expect(e.id).not.toMatch(/ancient_|medieval_|renaissance_|horror_|fantasy_|scifi_|cyberpunk_|stylized_|western_|historical_|victorian_|edwardian_/);
+    }
   });
 });
