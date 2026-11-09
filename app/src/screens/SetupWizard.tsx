@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, inApp, type PiperVoice } from "../api";
-import { genderWord } from "../avatarLibrary";
 import { useApp } from "../ctx";
+import { execStep } from "../setupExec";
 import { CHATTERBOX_MODEL_ID, planSetup, runSetup, summarize, type SetupStep, type StepResult } from "../setupPlan";
 import type { HardwareProfile, InstallState } from "../models";
 import { Note } from "../ui";
@@ -14,6 +14,8 @@ export default function SetupWizard({ profile, onChanged }: { profile: HardwareP
   const { confirmSpend, toast, library, saveLibrary } = useApp();
   const [open, setOpen] = useState(false);
   const [withChatterbox, setWithChatterbox] = useState(false);
+  const [withKokoro, setWithKokoro] = useState(false);
+  const [kokoro, setKokoro] = useState({ runtime: false, model: false });
   const [piperInstalled, setPiperInstalled] = useState(false);
   const [piperVoices, setPiperVoices] = useState<string[]>([]);
   const [catalog, setCatalog] = useState<PiperVoice[]>([]);
@@ -26,7 +28,8 @@ export default function SetupWizard({ profile, onChanged }: { profile: HardwareP
   const stopRef = useRef(false);
 
   const refresh = async () => {
-    const [p, c, r, m] = await Promise.all([api.piperStatus().catch(() => null), api.piperCatalog().catch(() => [] as PiperVoice[]), api.chatterboxRuntimeStatus().catch(() => null), api.modelStates([CHATTERBOX_MODEL_ID]).catch(() => [])]);
+    const [p, c, r, m, k] = await Promise.all([api.piperStatus().catch(() => null), api.piperCatalog().catch(() => [] as PiperVoice[]), api.chatterboxRuntimeStatus().catch(() => null), api.modelStates([CHATTERBOX_MODEL_ID]).catch(() => []), api.kokoroRuntimeStatus().catch(() => null)]);
+    setKokoro({ runtime: k?.installed ?? false, model: k?.modelReady ?? false });
     if (p) { setPiperInstalled(p.installed); setPiperVoices(p.voices); }
     setCatalog(c);
     setCbRuntime(r?.installed ?? false);
@@ -40,28 +43,11 @@ export default function SetupWizard({ profile, onChanged }: { profile: HardwareP
     return () => stop?.();
   }, []);
 
+  const libraryKokoro = useMemo(() => library.filter((v) => v.provider === "kokoro").map((v) => v.id), [library]);
   const libraryKeys = useMemo(() => library.filter((v) => v.provider === "piper").map((v) => v.id), [library]);
-  const plan = useMemo(() => planSetup({ hardware: profile, piperInstalled, piperVoices, libraryVoices: libraryKeys, chatterboxRuntime: cbRuntime, chatterboxModel: cbModel, withChatterbox, catalog }), [profile, piperInstalled, piperVoices, libraryKeys, cbRuntime, cbModel, withChatterbox, catalog]);
+  const plan = useMemo(() => planSetup({ hardware: profile, piperInstalled, piperVoices, libraryVoices: libraryKeys, chatterboxRuntime: cbRuntime, chatterboxModel: cbModel, withChatterbox, withKokoro, kokoroRuntime: kokoro.runtime, kokoroModel: kokoro.model, libraryKokoro, catalog }), [profile, piperInstalled, piperVoices, libraryKeys, cbRuntime, cbModel, withChatterbox, withKokoro, kokoro, libraryKokoro, catalog]);
 
-  const exec = async (s: SetupStep) => {
-    if (s.kind === "piper") {
-      await api.piperInstall();
-      const st = await api.piperStatus();
-      if (!st.installed) throw new Error("Piper could not be verified after downloading.");
-    } else if (s.kind === "voice" && s.key) {
-      const st = await api.piperStatus();
-      if (!st.voices.includes(s.key)) await api.piperInstallVoice(s.key);
-      const meta = catalog.find((c) => c.key === s.key);
-      saveLibrary((l) => (l.some((x) => x.id === s.key && x.provider === "piper") ? l : [...l, { id: s.key!, name: meta?.name ?? s.label, provider: "piper", source: "library", language: meta?.language ?? "English", accent: meta?.country ?? "", gender: genderWord(s.key!), notes: "Added by Set up my PC", createdAt: new Date().toISOString() }]));
-    } else if (s.kind === "chatterbox-runtime") {
-      const st = await api.chatterboxRuntimeInstall();
-      if (!st.installed) throw new Error(st.detail || "The Chatterbox runtime did not install.");
-    } else if (s.kind === "chatterbox-model") {
-      setPercent(0);
-      const r = await api.modelInstall(CHATTERBOX_MODEL_ID);
-      if (r.state !== "installed") throw new Error(r.error || "The Chatterbox model files did not finish downloading.");
-    }
-  };
+  const exec = (s: SetupStep) => { if (s.kind === "chatterbox-model") setPercent(0); return execStep(s, { catalog, saveLibrary }); };
 
   const start = async () => {
     if (!plan.steps.length) return;
@@ -89,10 +75,11 @@ export default function SetupWizard({ profile, onChanged }: { profile: HardwareP
       <div className="row wrap"><strong>Set up my PC</strong><span className="muted small">{profile.tier} PC · {profile.memoryGb} GB memory</span><button className="sm ghost" disabled={running} onClick={() => { setOpen(false); setResults([]); }}>Close</button></div>
       {!finished && !running && (
         <>
-          <p className="small">Installs the free local voices so previews, drafts and the Agent Studio work without internet or credits. No terminal needed.</p>
+          <p className="small">Installs free local voices so previews, drafts and the Agent Studio work without internet or credits. No terminal needed.</p>
           {plan.alreadyDone.length > 0 && <p className="muted small">Already set up: {plan.alreadyDone.join(", ")}.</p>}
           <label className="row small"><input type="checkbox" checked={withChatterbox} onChange={(e) => setWithChatterbox(e.target.checked)} /> Also set up Chatterbox (adds Re-voice; several GB and several minutes)</label>
           <p className="muted small">{plan.chatterboxNote}</p>
+          <label className="row small"><input type="checkbox" checked={withKokoro} onChange={(e) => setWithKokoro(e.target.checked)} /> Also set up Kokoro (small, fast English voices; about 2 GB and several minutes; needs internet once)</label>
           {plan.steps.length === 0 ? <Note>Everything you chose is already set up.</Note> : (
             <ul className="stack small">{plan.steps.map((s) => <li key={s.id}><strong>{s.label}</strong> <span className="muted">{s.sizeMb === undefined ? "several GB" : s.sizeMb === 0 ? "no download" : fmt(s.sizeMb)}</span><br /><span className="muted">{s.why}</span></li>)}</ul>
           )}

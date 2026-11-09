@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PIPER_ENGINE_MB, planSetup, runSetup, STARTER_VOICES, summarize, type SetupInput, type SetupStep } from "./setupPlan";
+import { KOKORO_VOICES, PIPER_ENGINE_MB, planKokoro, planSetup, runSetup, STARTER_VOICES, summarize, type SetupInput, type SetupStep } from "./setupPlan";
 
 const base: SetupInput = { hardware: { tier: "standard", memoryGb: 16 }, piperInstalled: false, piperVoices: [], libraryVoices: [], chatterboxRuntime: false, chatterboxModel: "available", withChatterbox: false };
 
@@ -38,6 +38,26 @@ describe("planSetup", () => {
     expect(small.chatterboxNote).toContain("4 GB");
     expect(planSetup(base).chatterboxAdvisable).toBe(true);
   });
+});
+
+describe("Kokoro steps", () => {
+  it("are absent unless chosen", () => { expect(planSetup(base).steps.some((s) => s.kind.startsWith("kokoro"))).toBe(false); });
+  it("run runtime, then model, then voices, each waiting on the one before", () => {
+    const p = planKokoro({ kokoroRuntime: false, kokoroModel: false, libraryKokoro: [] });
+    expect(p.steps.map((s) => s.kind)).toEqual(["kokoro-runtime", "kokoro-model", "kokoro-voices"]);
+    expect(p.steps[1]!.needs).toBe("kokoro-runtime");
+    expect(p.steps[2]!.needs).toBe("kokoro-model");
+    expect(p.steps.every((s) => !s.kind.startsWith("chatterbox") && s.kind !== "piper" && s.kind !== "voice")).toBe(true);
+  });
+  it("skip what is done and add only the missing voices", () => {
+    const some = KOKORO_VOICES.slice(0, 2).map((v) => v.id);
+    const p = planKokoro({ kokoroRuntime: true, kokoroModel: true, libraryKokoro: some });
+    expect(p.steps.map((s) => s.kind)).toEqual(["kokoro-voices"]);
+    expect(p.steps[0]!.needs).toBeUndefined();
+    expect(p.steps[0]!.label).toContain(String(KOKORO_VOICES.length - 2));
+    expect(planKokoro({ kokoroRuntime: true, kokoroModel: true, libraryKokoro: KOKORO_VOICES.map((v) => v.id) }).steps).toEqual([]);
+  });
+  it("only ever lists voice names Kokoro accepts", () => { for (const v of KOKORO_VOICES) expect(v.id).toMatch(/^[ab][fm]_[a-z]+$/); });
 });
 
 describe("runSetup", () => {

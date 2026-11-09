@@ -31,7 +31,7 @@ export function pickStandIn(want: StandInWant, library: VoiceEntry[]): VoiceEntr
     if (want.age && v.age === want.age) score += 3;
     if (want.accent && v.accent && v.accent.toLowerCase() === want.accent.toLowerCase()) score += 2;
     // A plain engine with no research-only licence note is the safer default.
-    if (v.provider === "piper" || v.provider === "chatterbox") score += 0.5;
+    if (v.provider === "piper" || v.provider === "chatterbox" || v.provider === "kokoro") score += 0.5;
     if (score > bestScore) { best = v; bestScore = score; }
   }
   return best;

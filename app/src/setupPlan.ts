@@ -3,7 +3,7 @@ import { MODEL_CATALOG, type HardwareProfile, type InstallState } from "./models
 /** One thing the setup wizard installs. */
 export interface SetupStep {
   id: string;
-  kind: "piper" | "voice" | "chatterbox-runtime" | "chatterbox-model";
+  kind: "piper" | "voice" | "chatterbox-runtime" | "chatterbox-model" | "kokoro-runtime" | "kokoro-model" | "kokoro-voices";
   label: string;
   why: string;
   /** Known download size in MB, or undefined when the size is not known in advance. */
@@ -25,6 +25,12 @@ export interface SetupInput {
   chatterboxModel: InstallState;
   /** The owner ticked "Also set up Chatterbox". */
   withChatterbox: boolean;
+  /** The owner ticked "Also set up Kokoro". */
+  withKokoro?: boolean;
+  kokoroRuntime?: boolean;
+  kokoroModel?: boolean;
+  /** Kokoro voice ids already in the voice library. */
+  libraryKokoro?: string[];
   /** The Piper catalogue's own sizes, which win over the estimates below. */
   catalog?: { key: string; sizeMb: number }[];
 }
@@ -46,6 +52,13 @@ export interface SetupPlan {
 export const STARTER_VOICES: { key: string; label: string; sizeMb: number }[] = [
   { key: "en_GB-alan-medium", label: "Alan (British, male)", sizeMb: 63 },
   { key: "en_US-amy-medium", label: "Amy (American, female)", sizeMb: 63 },
+];
+/** Kokoro voices added to the library once Kokoro works. Names are from the Kokoro model's own voice list (hexgrad/Kokoro-82M, VOICES.md). */
+export const KOKORO_VOICES: { id: string; name: string; gender: "female" | "male"; accent: "American" | "British" }[] = [
+  { id: "af_heart", name: "Heart (American, female)", gender: "female", accent: "American" },
+  { id: "am_michael", name: "Michael (American, male)", gender: "male", accent: "American" },
+  { id: "bf_emma", name: "Emma (British, female)", gender: "female", accent: "British" },
+  { id: "bm_george", name: "George (British, male)", gender: "male", accent: "British" },
 ];
 export const PIPER_ENGINE_MB = 22;
 export const CHATTERBOX_MODEL_ID = "chatterbox-multilingual-v3";
@@ -75,6 +88,13 @@ export function planSetup(i: SetupInput): SetupPlan {
     if (i.chatterboxModel === "installed") done.push("Chatterbox model files"); else steps.push({ id: "chatterbox-model", kind: "chatterbox-model", label: "Chatterbox model files", why: "The local voice and Re-voice (turn your own recording into a character's voice).", sizeMb: Math.round((model?.sizeGb ?? 3.2) * 1000) });
   }
 
+  if (i.withKokoro) {
+    if (i.kokoroRuntime) done.push("Kokoro runtime"); else steps.push({ id: "kokoro-runtime", kind: "kokoro-runtime", label: "Kokoro runtime", why: "A private Python environment for Kokoro (about 2 GB, several minutes)." });
+    if (i.kokoroModel) done.push("Kokoro model"); else steps.push({ id: "kokoro-model", kind: "kokoro-model", label: "Kokoro model and test line", why: "Downloads the Kokoro model (about 315 MB) and speaks one short line to prove it works. Needs internet this once.", sizeMb: 315, needs: i.kokoroRuntime ? undefined : "kokoro-runtime" });
+    const missing = KOKORO_VOICES.filter((v) => !(i.libraryKokoro ?? []).includes(v.id));
+    if (!missing.length) done.push("Kokoro voices"); else steps.push({ id: "kokoro-voices", kind: "kokoro-voices", label: "Kokoro voices (" + missing.length + ")", why: "Adds ready-made English voices to your voice library. No download.", sizeMb: 0, needs: i.kokoroModel ? undefined : "kokoro-model" });
+  }
+
   return {
     steps,
     alreadyDone: done,
@@ -83,6 +103,11 @@ export function planSetup(i: SetupInput): SetupPlan {
     chatterboxAdvisable: advisable,
     chatterboxNote: advisable ? "Adds Re-voice and a local voice that can speak English with the Chatterbox default voice." : `This PC reports ${i.hardware.memoryGb} GB of memory. Chatterbox wants at least ${CHATTERBOX_MIN_MEMORY_GB} GB and may be very slow or fail here, so it is off unless you choose it.`,
   };
+}
+
+/** Only the Kokoro steps, for the Kokoro card in Model Center. */
+export function planKokoro(i: { kokoroRuntime: boolean; kokoroModel: boolean; libraryKokoro: string[] }): SetupPlan {
+  return planSetup({ hardware: { tier: "standard", memoryGb: 16 }, piperInstalled: true, piperVoices: STARTER_VOICES.map((v) => v.key), libraryVoices: STARTER_VOICES.map((v) => v.key), chatterboxRuntime: true, chatterboxModel: "installed", withChatterbox: false, withKokoro: true, ...i });
 }
 
 export type StepStatus = "waiting" | "running" | "done" | "failed" | "skipped";

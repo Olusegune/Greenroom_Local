@@ -64,7 +64,7 @@ export interface Provenance {
 export interface Take {
   id: string;
   at: string;
-  model: "eleven_v4" | "eleven_v3" | "voicekiller" | "inworld" | "kie" | "piper" | "local" | "chatterbox" | "wazobia";
+  model: "eleven_v4" | "eleven_v3" | "voicekiller" | "inworld" | "kie" | "piper" | "local" | "chatterbox" | "kokoro" | "wazobia";
   ext: "mp3" | "wav";
   voiceId: string;
   /** Exactly what was sent, tags included, so a take can always be explained. */

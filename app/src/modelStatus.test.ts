@@ -7,11 +7,14 @@ const m = (id: string) => MODEL_CATALOG.find((x) => x.id === id)!;
 
 describe("model status", () => {
   it("never calls a model Ready unless Greenroom can use it", () => {
-    for (const k of ["kokoro-82m", "qwen3-tts-17b"]) {
-      const s = modelStatus(m(k), "installed", true, hw);
-      expect(s.status, k).toBe("installed");
-      expect(s.detail).toMatch(/no route/);
-    }
+    const q = modelStatus(m("qwen3-tts-17b"), "installed", true, hw);
+    expect(q.status).toBe("installed");
+    expect(q.detail).toMatch(/no route/);
+    // Kokoro has a route but has never run on a real install: it is Installed, not Ready, until someone has heard it work.
+    const k = modelStatus(m("kokoro-82m"), "installed", true, hw);
+    expect(k.status).toBe("installed");
+    expect(k.detail).toMatch(/not marked Ready/);
+    expect(modelStatus(m("kokoro-82m"), "available", true, hw).status).toBe("download-required");
     expect(modelStatus(m("chatterbox-multilingual-v3"), "installed", true, hw).status).toBe("ready");
     expect(modelStatus(m("director-qwen3-4b"), "installed", false, hw).status).toBe("ready");
     for (const k of ["stable-audio-open-small", "ace-step-v1"]) {

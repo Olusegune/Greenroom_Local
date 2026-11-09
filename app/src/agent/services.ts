@@ -46,7 +46,7 @@ export function executors(env: Env): Executors {
     },
 
     async cast() {
-      const lib = env.library().filter((v) => !env.localOnly || ["piper", "chatterbox", "wazobia", "local"].includes(v.provider));
+      const lib = env.library().filter((v) => !env.localOnly || ["piper", "chatterbox", "kokoro", "wazobia", "local"].includes(v.provider));
       const ready = env.ready();
       const all = env.presets ?? STARTER_PRESETS;
       const made: { character: string; voice: string; preset: string }[] = [];
@@ -69,7 +69,7 @@ export function executors(env: Env): Executors {
     async audition() {
       const p = env.project();
       const all = env.presets ?? STARTER_PRESETS;
-      const lib = env.library().filter((v) => !env.localOnly || ["piper", "chatterbox", "wazobia", "local"].includes(v.provider));
+      const lib = env.library().filter((v) => !env.localOnly || ["piper", "chatterbox", "kokoro", "wazobia", "local"].includes(v.provider));
       const ready = env.ready();
       const rows = speaking().map((c) => {
         const dna = c.dna;
@@ -77,7 +77,7 @@ export function executors(env: Env): Executors {
         const voices = (preset ? voicesFor(preset, lib, ready) : lib.filter((v) => ready.includes(v.provider))).slice(0, 4);
         const first = p.lines.find((l) => l.characterId === c.id && l.text.trim());
         const line = preset && voices[0] ? auditionPlan(preset, voices[0]).text : (first?.text ?? "").slice(0, 120);
-        return { character: c.name, preset: preset?.name ?? null, line, voices: voices.map((v) => ({ id: v.id, name: v.name, engine: v.provider, cloud: !["piper", "chatterbox", "wazobia", "local"].includes(v.provider) })) };
+        return { character: c.name, preset: preset?.name ?? null, line, voices: voices.map((v) => ({ id: v.id, name: v.name, engine: v.provider, cloud: !["piper", "chatterbox", "kokoro", "wazobia", "local"].includes(v.provider) })) };
       });
       return { output: { candidates: rows, note: "Nothing was generated. Press Play on a voice to hear it; cloud voices ask before they spend." } };
     },

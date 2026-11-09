@@ -172,6 +172,7 @@ fn make_clip(root: &std::path::Path, models: &std::path::Path, req: ClipReq) -> 
         "piper" => local::piper_speak(root, &voice, text, req.speed.unwrap_or(1.0), &local::RealRunner),
         "local" => local::server_speak(&server_cfg(root), text, &voice, req.speed.unwrap_or(1.0)),
         "chatterbox" => chatterbox_speak(root, models, text, &voice),
+        "kokoro" => kokoro_speak(root, text, &voice, req.speed.unwrap_or(1.0)),
         "wazobia" => wazobia_speak(root, models, text, &voice, req.language.as_deref().unwrap_or("en")),
         "inworld" => Ok(inworld_client()?.speak(text, &voice, req.model.as_deref().unwrap_or("inworld-tts-2"), inworld::SpeechOpts { rate: req.speed, delivery: req.delivery.as_deref(), language: req.language.as_deref() })?.audio),
         p @ ("voicekiller" | "voicekiller-clone") => voicekiller_client()?.speak(text, &voice, req.instructions.as_deref(), p == "voicekiller-clone"),
@@ -238,6 +239,7 @@ struct ChatterboxRuntimeStatus {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Debug)]
 struct LocalRuntimeStatus { installed: bool, model_ready: bool, detail: String }
 
 fn managed_runtime_status(root: &std::path::Path, name: &str, import_check: &str) -> LocalRuntimeStatus {
@@ -263,9 +265,9 @@ fn setup_managed_runtime(root: &std::path::Path, name: &str, package: &str, impo
 }
 
 #[tauri::command]
-async fn kokoro_runtime_status(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || Ok(managed_runtime_status(&docs, "kokoro", "from kokoro import KPipeline; import torch"))).await }
+async fn kokoro_runtime_status(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || Ok(kokoro_status(&docs))).await }
 #[tauri::command]
-async fn kokoro_runtime_install(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || setup_managed_runtime(&docs, "kokoro", "kokoro==0.9.4", "from kokoro import KPipeline; import torch")).await }
+async fn kokoro_runtime_install(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || { setup_managed_runtime(&docs, "kokoro", "kokoro==0.9.4", "from kokoro import KPipeline; import torch")?; Ok(kokoro_status(&docs)) }).await }
 #[tauri::command]
 async fn qwen_runtime_status(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || Ok(managed_runtime_status(&docs, "qwen", "from qwen_tts import Qwen3TTS; import torch"))).await }
 #[tauri::command]
@@ -416,6 +418,60 @@ fn chatterbox_run(root: &std::path::Path, text: &str, model: &std::path::Path, e
     if !output.status.success() || !output.stdout.starts_with(b"RIFF") { return Err("Chatterbox could not generate this line. Check that its runtime and model files are intact.".into()); }
     Ok(output.stdout)
 }
+
+// ---- Kokoro (local speech) ---------------------------------------------------------------------------------------
+
+/// Kokoro voice names are a language letter, a gender letter, an underscore and a lower-case name (af_heart, bm_george).
+/// Anything else is refused before a process starts, because Kokoro would treat a path-like name as a file to load.
+fn kokoro_voice_ok(v: &str) -> bool {
+    let b = v.as_bytes();
+    b.len() >= 4 && b.len() <= 24 && b[1] != b'_' && b[2] == b'_' && matches!(b[0], b'a' | b'b' | b'e' | b'f' | b'h' | b'i' | b'j' | b'p' | b'z') && matches!(b[1], b'f' | b'm') && b[3..].iter().all(|c| c.is_ascii_lowercase())
+}
+
+fn kokoro_dir(root: &std::path::Path) -> PathBuf { root.join("runtime").join("kokoro-managed") }
+fn kokoro_python(root: &std::path::Path) -> PathBuf { kokoro_dir(root).join("python.exe") }
+fn kokoro_weights_marker(root: &std::path::Path) -> PathBuf { kokoro_dir(root).join("weights-ok") }
+
+fn kokoro_speak(root: &std::path::Path, text: &str, voice: &str, speed: f64) -> Result<Vec<u8>, String> {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    static GENERATION: Mutex<()> = Mutex::new(());
+    if !kokoro_voice_ok(voice) { return Err("That Kokoro voice name is not valid.".into()); }
+    if text.chars().count() > 2000 { return Err("Kokoro supports up to 2,000 characters per line.".into()); }
+    let python = kokoro_python(root);
+    if !python.is_file() { return Err("The Kokoro runtime is not installed on this computer yet. Install it in Model Center.".into()); }
+    let _guard = GENERATION.lock().map_err(|_| "Kokoro is unavailable. Restart Greenroom and try again.")?;
+    let mut cmd = Command::new(python);
+    cmd.args(["-c", include_str!("../../../runtime/kokoro_once.py")]).env("HF_HOME", kokoro_dir(root).join("hf")).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
+    #[cfg(windows)] { use std::os::windows::process::CommandExt; cmd.creation_flags(0x08000000); }
+    let mut child = cmd.spawn().map_err(|_| "Could not start the Kokoro runtime.")?;
+    let input = serde_json::json!({"text": text, "voice": voice, "speed": speed.clamp(0.5, 2.0)});
+    child.stdin.take().ok_or("Could not send text to Kokoro.")?.write_all(input.to_string().as_bytes()).map_err(|_| "Could not send text to Kokoro.")?;
+    let output = child.wait_with_output().map_err(|_| "Kokoro stopped unexpectedly.")?;
+    if !output.status.success() || !output.stdout.starts_with(b"RIFF") { return Err("Kokoro could not generate this line. If this is the first run, check your internet connection (it downloads its model once) and try Set up again.".into()); }
+    Ok(output.stdout)
+}
+
+/// One short line through Kokoro. The first run downloads the model weights and language data, so this is the download step
+/// and also the proof that the whole chain works. It writes a marker only when real audio came back.
+fn kokoro_prefetch_blocking(root: &std::path::Path) -> Result<LocalRuntimeStatus, String> {
+    let installed = managed_runtime_status(root, "kokoro", "from kokoro import KPipeline; import torch").installed;
+    if !installed { return Err("Install the Kokoro runtime first.".into()); }
+    let audio = kokoro_speak(root, "Hello. This is a test of the local voice.", "af_heart", 1.0)?;
+    if audio.len() < 2000 { return Err("Kokoro returned almost no audio. Try Set up again.".into()); }
+    crate::store::atomic_write(&kokoro_weights_marker(root), b"af_heart")?;
+    Ok(kokoro_status(root))
+}
+
+fn kokoro_status(root: &std::path::Path) -> LocalRuntimeStatus {
+    let mut s = managed_runtime_status(root, "kokoro", "from kokoro import KPipeline; import torch");
+    s.model_ready = s.installed && kokoro_weights_marker(root).is_file();
+    s.detail = if s.model_ready { "Kokoro is ready: runtime installed and model downloaded.".into() } else if s.installed { "Runtime installed. Download the Kokoro model to enable speech.".into() } else { "Install the Kokoro runtime to enable local speech.".into() };
+    s
+}
+
+#[tauri::command]
+async fn kokoro_prefetch(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || kokoro_prefetch_blocking(&docs)).await }
 
 // ---- Portraits ------------------------------------------------------------------------------------------------
 
@@ -1710,11 +1766,54 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
+            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
         ])
         .build(tauri::generate_context!())
         .expect("error while building Greenroom")
         .run(|_app, event| { if let tauri::RunEvent::Exit = event { director_shutdown(); } });
+}
+
+#[cfg(test)]
+mod kokoro_tests {
+    use super::*;
+    #[test]
+    fn voice_names_are_checked_before_any_process_starts() {
+        for ok in ["af_heart", "am_michael", "bf_emma", "bm_george", "ef_dora"] { assert!(kokoro_voice_ok(ok), "{ok}"); }
+        for bad in ["", "af", "../evil", "af_heart.pt", "AF_heart", "xf_heart", "af-heart", "a_f_heart", "af_he art", "C:\\x\\af_a", "af_"] { assert!(!kokoro_voice_ok(bad), "{bad}"); }
+        let tmp = std::env::temp_dir();
+        assert!(kokoro_speak(&tmp, "hello", "../evil", 1.0).unwrap_err().contains("not valid"));
+        assert!(kokoro_speak(&tmp, "hello", "af_heart", 1.0).unwrap_err().contains("not installed"));
+        assert!(kokoro_speak(&tmp, &"x".repeat(2001), "af_heart", 1.0).unwrap_err().contains("2,000"));
+    }
+    /// A real install and a real spoken line. Downloads about 2 GB, so it only runs when asked:
+    /// GREENROOM_REAL_ROOT=<data folder> GREENROOM_REAL_OUT=<folder for the wavs> cargo test real_kokoro -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    fn real_kokoro_install_and_speak() {
+        let root = PathBuf::from(std::env::var("GREENROOM_REAL_ROOT").expect("GREENROOM_REAL_ROOT"));
+        let out = PathBuf::from(std::env::var("GREENROOM_REAL_OUT").expect("GREENROOM_REAL_OUT"));
+        std::fs::create_dir_all(&out).unwrap();
+        let t = std::time::Instant::now();
+        setup_managed_runtime(&root, "kokoro", "kokoro==0.9.4", "from kokoro import KPipeline; import torch").expect("runtime install");
+        println!("runtime installed in {:?}", t.elapsed());
+        let s = kokoro_prefetch_blocking(&root).expect("prefetch");
+        println!("prefetch done in {:?}: {s:?}", t.elapsed());
+        assert!(s.model_ready);
+        for v in ["af_heart", "am_michael", "bf_emma", "bm_george"] {
+            let wav = kokoro_speak(&root, "Good evening. I do hope you are well. Your soul is overdue.", v, 1.0).expect(v);
+            assert!(wav.starts_with(b"RIFF"));
+            std::fs::write(out.join(format!("kokoro-{v}.wav")), &wav).unwrap();
+            println!("{v}: {} bytes", wav.len());
+        }
+    }
+
+    #[test]
+    fn prefetch_needs_the_runtime_and_status_is_honest_without_it() {
+        let tmp = std::env::temp_dir().join("greenroom-kokoro-test-none");
+        assert!(kokoro_prefetch_blocking(&tmp).unwrap_err().contains("runtime"));
+        let s = kokoro_status(&tmp);
+        assert!(!s.installed && !s.model_ready);
+    }
 }
 
 #[cfg(test)]

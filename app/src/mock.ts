@@ -28,6 +28,7 @@ const keys = { elevenlabs: true, kie: true, voicekiller: true, inworld: true, hu
 const projects = new Map<string, Project>();
 const takes = new Map<string, { audioB64: string; mime: string }>();
 let library: VoiceEntry[] = [];
+const demoKokoro = { runtime: false, model: false };
 let casts: SavedCast[] = [];
 let sheetJson = "{}";
 const versions = new Map<string, { id: string; at: string; label: string; json: string }[]>();
@@ -202,8 +203,9 @@ export const mock: Api = {
   chatterboxReady: async () => demoEngine.on,
   chatterboxRuntimeStatus: async () => ({ installed: demoEngine.on, modelReady: false, detail: demoEngine.on ? "Runtime ready." : "Install the local runtime, then download the model files." }),
   chatterboxRuntimeInstall: async () => (await wait(1000), (demoEngine.on = true), { installed: true, modelReady: false, detail: "Runtime ready. Download Chatterbox model files to enable speech." }),
-  kokoroRuntimeStatus: async () => ({ installed: false, modelReady: false, detail: "Install the managed Kokoro runtime to enable local speech." }),
-  kokoroRuntimeInstall: async () => (await wait(800), { installed: true, modelReady: false, detail: "Kokoro runtime ready. Model weights load on first use." }),
+  kokoroRuntimeStatus: async () => ({ installed: demoKokoro.runtime, modelReady: demoKokoro.model, detail: demoKokoro.model ? "Kokoro is ready: runtime installed and model downloaded." : demoKokoro.runtime ? "Runtime installed. Download the Kokoro model to enable speech." : "Install the Kokoro runtime to enable local speech." }),
+  kokoroRuntimeInstall: async () => (await wait(800), (demoKokoro.runtime = true), { installed: true, modelReady: demoKokoro.model, detail: "Runtime installed. Download the Kokoro model to enable speech." }),
+  kokoroPrefetch: async () => { if (!demoKokoro.runtime) throw new Error("Install the Kokoro runtime first."); await wait(800); demoKokoro.model = true; return { installed: true, modelReady: true, detail: "Kokoro is ready: runtime installed and model downloaded." }; },
   qwenRuntimeStatus: async () => ({ installed: false, modelReady: false, detail: "Install the managed Qwen3-TTS runtime to enable local speech." }),
   qwenRuntimeInstall: async () => (await wait(800), { installed: true, modelReady: false, detail: "Qwen3-TTS runtime ready. Model weights load on first use." }),
   voiceConvert: async () => { await wait(1500); return { audioB64: tone(4, 330), mime: "audio/wav", ms: 1500 }; },

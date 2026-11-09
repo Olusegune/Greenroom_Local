@@ -10,7 +10,7 @@ export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid
 export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean; inworld: boolean; huggingface: boolean; openai: boolean; gemini: boolean };
 export type ScriptFile = { name: string; format: "text" | "fountain" | "word" | "pdf"; text: string; truncated: boolean };
 export type LlmModels = { openai: { models: string[]; default: string }; gemini: { models: string[]; default: string } };
-export type Provider = "eleven-v4" | "eleven-tts" | "eleven-sfx" | "voicekiller" | "voicekiller-clone" | "inworld" | "kie-tts" | "kie-dialogue" | "kie-sfx" | "piper" | "local" | "chatterbox" | "wazobia" | "local-sfx";
+export type Provider = "eleven-v4" | "eleven-tts" | "eleven-sfx" | "voicekiller" | "voicekiller-clone" | "inworld" | "kie-tts" | "kie-dialogue" | "kie-sfx" | "piper" | "local" | "chatterbox" | "kokoro" | "wazobia" | "local-sfx";
 
 export interface ClipOut {
   audioB64: string;
@@ -235,6 +235,8 @@ const real = {
   // The Kokoro and Qwen installers are kept for when their speech routes exist; Model Center hides their buttons until then.
   kokoroRuntimeStatus: () => call<LocalRuntimeStatus>("kokoro_runtime_status"),
   kokoroRuntimeInstall: () => call<LocalRuntimeStatus>("kokoro_runtime_install"),
+  /** Runs one short line through Kokoro: downloads the model on first use and proves the chain works. */
+  kokoroPrefetch: () => call<LocalRuntimeStatus>("kokoro_prefetch"),
   qwenRuntimeStatus: () => call<LocalRuntimeStatus>("qwen_runtime_status"),
   qwenRuntimeInstall: () => call<LocalRuntimeStatus>("qwen_runtime_install"),
   voiceConvert: (req: { sourceB64: string; sourceExt: string; targetB64: string; targetExt: string }) => call<ClipOut>("voice_convert", { req }),
