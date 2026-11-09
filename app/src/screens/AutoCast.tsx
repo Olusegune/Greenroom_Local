@@ -1,3 +1,4 @@
+import { genderWord } from "../avatarLibrary";
 import { useState } from "react";
 import { api } from "../api";
 import { describePlan, planCast, type CastPlan } from "../autocast";
@@ -30,7 +31,7 @@ export default function AutoCast({ characters }: { characters: Character[] }) {
       const added: VoiceEntry[] = [];
       for (const s of plan.suggestions) {
         if (!status.voices.includes(s.role.key)) await api.piperInstallVoice(s.role.key);
-        added.push({ id: s.role.key, name: `${s.role.name} (${s.role.accent})`, provider: "piper", source: "library", language: s.role.language, accent: s.role.accent, gender: "", notes: s.role.use, createdAt: new Date().toISOString() });
+        added.push({ id: s.role.key, name: `${s.role.name} (${s.role.accent})`, provider: "piper", source: "library", language: s.role.language, accent: s.role.accent, gender: genderWord(s.role.key), notes: s.role.use, createdAt: new Date().toISOString() });
       }
       saveLibrary((l) => [...l, ...added.filter((a) => !l.some((x) => x.id === a.id && x.provider === a.provider))]);
       const assign = { ...plan.assign };

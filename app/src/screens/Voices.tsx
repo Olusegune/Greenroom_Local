@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl, type DesignPreview, type PiperVoice } from "../api";
 import { useApp } from "../ctx";
 import { ENGINES, ENGINE_ORDER, type Engine } from "../engines";
-import { AvatarButton } from "./AvatarButton";
+import { AvatarButton, VoiceLooks } from "./AvatarButton";
+import { ageBand, genderWord } from "../avatarLibrary";
 import { inworldCache, inworldFor, kieFor, piperFor, voicekillerFor, type Found } from "../finder";
 import { Flag } from "../flags";
 import { Folder, Globe, Person, Pin, Plus, Star, Trash } from "../icons";
@@ -96,7 +97,7 @@ function Mine({ goFind }: { goFind: () => void }) {
         saveLibrary((l) => {
           const fresh = mine.filter((m) => !l.some((x) => x.id === m.id && x.provider === "elevenlabs"));
           added = fresh.length;
-          return [...l, ...fresh.map((m): VoiceEntry => ({ id: m.id, name: m.name, provider: "elevenlabs", source: "account", language: m.language, accent: m.accent, gender: m.gender, notes: m.description, previewUrl: m.previewUrl ?? undefined, createdAt: now() }))];
+          return [...l, ...fresh.map((m): VoiceEntry => ({ id: m.id, name: m.name, provider: "elevenlabs", source: "account", language: m.language, accent: m.accent, gender: m.gender, age: ageBand(m.age), notes: m.description, previewUrl: m.previewUrl ?? undefined, createdAt: now() }))];
         });
         toast(added ? `Added ${added} voices from your ElevenLabs account.` : "Nothing new in your ElevenLabs account.");
       } catch (e) {
@@ -201,6 +202,7 @@ function Mine({ goFind }: { goFind: () => void }) {
                 </summary>
                 <div className="stack">
                   <input type="text" aria-label={`Notes for ${v.name}`} placeholder="Notes, for example: good for Ada's older sister" value={v.notes} onChange={(e) => patch(v.id, v.provider, { notes: e.target.value })} />
+                  <VoiceLooks v={v} onChange={(p) => patch(v.id, v.provider, p)} />
                   <RightsEditor v={v} onChange={(p) => patch(v.id, v.provider, p)} />
                   <div className="row wrap">
                     <span className="spacer" />
@@ -280,7 +282,7 @@ function LocalVoiceShelf() {
       const status = await api.piperStatus();
       if (!status.installed) await api.piperInstall();
       if (!status.voices.includes(v.key)) await api.piperInstallVoice(v.key);
-      add({ id: v.key, name: v.name, provider: "piper", source: "library", language: v.language, accent: v.country, gender: "" });
+      add({ id: v.key, name: v.name, provider: "piper", source: "library", language: v.language, accent: v.country, gender: genderWord(v.key) });
     } catch (e) { toast((e as Error).message, true); }
     finally { setBusy(""); }
   };

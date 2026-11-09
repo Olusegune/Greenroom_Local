@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { autoAvatar, isPlainFace, LOOKS, readVoice, validateManifest, type AvatarEntry, type AvatarManifest } from "./avatarLibrary";
+import { ageBand, autoAvatar, genderWord, isPlainFace, LOOKS, readVoice, validateManifest, type AvatarEntry, type AvatarManifest } from "./avatarLibrary";
 
 // These tests run against the real library on disk, so a portrait added with a wrong or missing description is caught here.
 const check = validateManifest(JSON.parse(readFileSync(join(__dirname, "..", "public", "avatars", "manifest.json"), "utf8")));
@@ -227,7 +227,44 @@ describe("steadiness and coverage", () => {
 });
 
 /** Combinations with no everyday portrait yet. Shrinks as portraits are added; update it when it does. */
-const EXPECTED_GAPS: string[] = [
-  "m/south_asian/child", "m/south_asian/elderly", "m/middle_eastern/child", "m/middle_eastern/elderly", "m/latino/child", "m/latino/elderly",
-  "f/south_asian/elderly", "f/middle_eastern/child", "f/middle_eastern/elderly", "f/latino/elderly",
-];
+const EXPECTED_GAPS: string[] = [];
+
+describe("what the owner or the voice service states outranks the description", () => {
+  const withMeta = (gender: string, hint: string, meta: { age?: "child" | "teen" | "young" | "mid" | "old"; heritage?: "black" | "white" | "east_asian" | "south_asian" | "middle_eastern" | "latino" | "indigenous" }) =>
+    seeds.map((s) => autoAvatar(manifest, s, gender, hint, meta)!);
+  it("Chloe, a female voice set to a young Black girl, gets a Black girl", () => {
+    for (const a of withMeta("Female", "Happy Chloe EN American", { age: "child", heritage: "black" })) {
+      expect(LOOKS[a.id], a.id).toMatchObject({ g: "f", h: "black" });
+      expect(childish(a), a.id).toBe(true);
+    }
+  });
+  it("a stated heritage and age beat the words in the description", () => {
+    for (const a of withMeta("Male", "British narrator", { age: "old", heritage: "south_asian" })) {
+      expect(LOOKS[a.id]).toMatchObject({ g: "m", h: "south_asian" });
+      expect(["older_adult", "elderly"]).toContain(a.age_category);
+    }
+  });
+  it("a voice that states no age is never given an elderly or a child's face", () => {
+    for (const g of ["Male", "Female", ""]) for (const hint of ["", "Nigerian", "American", "Hindi"]) for (const a of faces(hint, g)) expect(["young_adult", "adult", "middle_aged"], `${g}/${hint} -> ${a.id}`).toContain(a.age_category);
+  });
+  it("every combination of gender, heritage and age has a face of exactly that kind", () => {
+    const bands = { child: ["child", "teen"], young: ["teen", "young_adult", "adult"], mid: ["adult", "middle_aged", "older_adult"], old: ["older_adult", "elderly"] } as const;
+    for (const g of ["Male", "Female"]) for (const h of ["black", "white", "east_asian", "south_asian", "middle_eastern", "latino"] as const) for (const age of ["child", "mid", "old"] as const) {
+      for (const a of withMeta(g, "", { age, heritage: h })) {
+        expect(LOOKS[a.id], `${g}/${h}/${age} -> ${a.id}`).toMatchObject({ g: g === "Male" ? "m" : "f", h });
+        expect(bands[age], `${g}/${h}/${age} -> ${a.id}`).toContain(a.age_category);
+      }
+    }
+  });
+  it("reads ElevenLabs age labels and Piper genders", () => {
+    expect(ageBand("young")).toBe("young");
+    expect(ageBand("middle_aged")).toBe("mid");
+    expect(ageBand("Middle-Aged")).toBe("mid");
+    expect(ageBand("old")).toBe("old");
+    expect(ageBand("")).toBeUndefined();
+    expect(ageBand("odd")).toBeUndefined();
+    expect(genderWord("en_GB-alan-low")).toBe("Male");
+    expect(genderWord("en_GB-alba-medium")).toBe("Female");
+    expect(genderWord("zz-nobody-low")).toBe("");
+  });
+});

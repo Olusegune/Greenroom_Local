@@ -141,3 +141,13 @@ What was wrong, found by the owner and by review:
 - 26 more portraits from the owner's "Others" folder (which is the same set as the zip): horned demons, a goblin, elves, robots, aliens, a dragon, spirits, an alchemist, a pirate and others. Left out: those resembling franchise characters (blue horned monsters, swamp creatures, a boy wizard with round glasses, an evil queen, a firefighter with text on her helmet).
 
 Known gaps, listed by a test so they cannot be hidden: no everyday portrait yet of a South Asian, Middle Eastern or Latino male child or elder; a South Asian, Middle Eastern or Latina female elder; a Middle Eastern girl. A voice in one of these groups gets the nearest fit (same gender and age group, other heritage) until portraits are added. "m/f" for the portraits' gender and their heritage were judged by eye by the person who built the library and may be wrong in places.
+
+## Version 0.8.7: voices carry gender, age and heritage
+
+The owner asked that voices have age, gender and so on, so pictures are allocated from that and not guessed. Now:
+
+- Each voice has **Gender**, **Age** and **Heritage** fields. Press **More** on a voice card (or press the voice's face) and set "Who is this voice?". They are used only to choose the automatic picture, and they outrank anything guessed from the description. Changing them changes the picture at once; nothing else about the voice changes.
+- **ElevenLabs age labels** (young, middle_aged, old) are read from the account and the shared library and stored as the voice's age. The local (Piper) voices are given a gender when added, from a name table (from the voice model cards as remembered, not verified by ear).
+- A voice that states **no age** gets a young-adult, adult or middle-aged face, never an elderly one or a child. Before, an unstated voice could get anyone (a "Happy Chloe" voice got an old woman).
+- 12 more portraits from the owner's "mideastern" folder fill the remaining gaps: Middle Eastern and South Asian boys and a Middle Eastern girl, elders of both genders in several heritages, and two adult men. Every combination of gender (2) x heritage (6) x age (child, adult, elderly) now has an everyday portrait, and a test checks all 36 combinations.
+- No Southeast Asian portraits were in that folder: the East Asian group has the existing ones (Chinese, Japanese, Korean, Filipino-looking); more would help.

@@ -479,6 +479,18 @@ export const LOOKS: Record<string, Look> = {
   everyday_silver_bun_woman_001: f("white"),
   everyday_grey_suit_woman_001: f("white"),
   everyday_curly_elder_001: m("white"),
+  everyday_freckled_boy_001: m("latino"),
+  everyday_taupe_hijab_gran_001: f("middle_eastern"),
+  everyday_green_boy_001: m("middle_eastern"),
+  everyday_teal_polo_boy_001: m("south_asian"),
+  everyday_lavender_girl_001: f("middle_eastern"),
+  everyday_grey_beard_grandpa_001: m("south_asian"),
+  everyday_brown_jacket_grandpa_001: m("latino"),
+  everyday_grey_bun_gran_001: f("latino"),
+  everyday_moustache_gentleman_001: m("middle_eastern"),
+  everyday_purple_cardigan_gran_001: f("south_asian"),
+  everyday_navy_shirt_man_001: m("south_asian"),
+  everyday_stubble_man_001: m("middle_eastern"),
   horror_horned_gentleman_001: m("white"),
   horror_goblin_scribe_001: m(),
   horror_horned_lady_001: f("white"),
@@ -632,6 +644,45 @@ export function pipergender(keyOrName: string): "m" | "f" | undefined {
   return PIPER_GENDER[mid] ?? PIPER_GENDER[k.replace(/\s+/g, "_")];
 }
 
+/** What the owner (or ElevenLabs) says about a voice. Used only to choose the picture, and it outranks the description. */
+export interface VoiceMeta {
+  age?: VoiceAge;
+  heritage?: Heritage;
+}
+
+const UNSTATED_AGE: Age[] = ["young_adult", "adult", "middle_aged"];
+
+/** ElevenLabs age labels (young, middle_aged, old) as a band; anything else is "not stated". */
+export function ageBand(label: string | undefined): VoiceAge | undefined {
+  const l = (label ?? "").toLowerCase().replace(/[- ]/g, "_");
+  return l === "young" ? "young" : l === "middle_aged" || l === "middle" ? "mid" : l === "old" || l === "elderly" || l === "senior" ? "old" : l === "child" ? "child" : l === "teen" || l === "teenager" ? "teen" : undefined;
+}
+
+/** "Female", "Male" or "" for a Piper voice key or name, so the library stores a gender for local voices. */
+export function genderWord(keyOrName: string): string {
+  const g = pipergender(keyOrName);
+  return g === "f" ? "Female" : g === "m" ? "Male" : "";
+}
+
+export const AGE_CHOICES: { value: VoiceAge | ""; label: string }[] = [
+  { value: "", label: "Not stated" },
+  { value: "child", label: "Child" },
+  { value: "teen", label: "Teenager" },
+  { value: "young", label: "Young adult" },
+  { value: "mid", label: "Adult / middle-aged" },
+  { value: "old", label: "Older / elderly" },
+];
+export const HERITAGE_CHOICES: { value: Heritage | ""; label: string }[] = [
+  { value: "", label: "Not stated" },
+  { value: "black", label: "Black / African" },
+  { value: "white", label: "White / European" },
+  { value: "east_asian", label: "East or Southeast Asian" },
+  { value: "south_asian", label: "South Asian" },
+  { value: "middle_eastern", label: "Middle Eastern / North African" },
+  { value: "latino", label: "Latino / Hispanic" },
+  { value: "indigenous", label: "Indigenous" },
+];
+
 const isChildish = (a: Pick<AvatarEntry, "age_category">) => a.age_category === "child" || a.age_category === "teen";
 
 /**
@@ -640,9 +691,12 @@ const isChildish = (a: Pick<AvatarEntry, "age_category">) => a.age_category === 
  * matched exactly and only dropped when no portrait of that gender and age exists. A creature or story role (a dragon, a robot,
  * a pharaoh) gets the matching portrait; everything else gets an ordinary person in everyday dress.
  */
-export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string): AvatarEntry | null {
+export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string, meta?: VoiceMeta): AvatarEntry | null {
   if (!manifest) return null;
   const want = readVoice(gender, hint);
+  // what the owner or the voice service states about the voice outranks anything guessed from its description
+  if (meta?.age) want.age = meta.age;
+  if (meta?.heritage) want.h = meta.heritage;
   const known = manifest.avatars.filter((a) => LOOKS[a.id]);
   const pick = (pool: AvatarEntry[]) => pool[seedHash(seed) % pool.length]!;
   if (want.story) {
@@ -656,7 +710,8 @@ export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender
   // childhood is a hard rule: a child voice only ever gets a child or teen portrait, anyone else never does
   const byLife = byGender.filter((a) => (wantsChild ? isChildish(a) : !isChildish(a) || want.age === "teen"));
   const life = byLife.length ? byLife : byGender;
-  const ageOk = (a: AvatarEntry) => (want.age ? AGE_FIT[want.age].includes(a.age_category) : true);
+  // a voice that states no age is not given an elderly face: it gets a young adult, adult or middle-aged one
+  const ageOk = (a: AvatarEntry) => (want.age ? AGE_FIT[want.age].includes(a.age_category) : UNSTATED_AGE.includes(a.age_category));
   const heritageOk = (a: AvatarEntry) => !want.h || LOOKS[a.id]!.h === want.h;
   const tiers = [life.filter((a) => ageOk(a) && heritageOk(a)), life.filter(heritageOk), life.filter(ageOk), life];
   const pool = tiers.find((t) => t.length) ?? [];

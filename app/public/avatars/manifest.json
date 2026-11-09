@@ -1,8 +1,8 @@
 {
   "version": 1,
   "target": 100,
-  "count": 229,
-  "masters": 160,
+  "count": 241,
+  "masters": 172,
   "previews": 69,
   "collections": [
     "contemporary_everyday",
@@ -7589,6 +7589,398 @@
         "card": "cards/western_pirate_001.webp",
         "card_small": "cards256/western_pirate_001.webp",
         "thumbnail": "thumbs/western_pirate_001.webp"
+      }
+    },
+    {
+      "id": "everyday_freckled_boy_001",
+      "name": "The Freckled Boy",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "bright blue hooded top",
+      "tags": [
+        "everyday",
+        "curly hair",
+        "freckles",
+        "smiling"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_freckled_boy_001.png",
+        "card": "cards/everyday_freckled_boy_001.webp",
+        "card_small": "cards256/everyday_freckled_boy_001.webp",
+        "thumbnail": "thumbs/everyday_freckled_boy_001.webp"
+      }
+    },
+    {
+      "id": "everyday_taupe_hijab_gran_001",
+      "name": "The Grandmother in a Taupe Hijab",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "taupe embroidered hijab and green cardigan",
+      "tags": [
+        "everyday",
+        "kind",
+        "wise"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_taupe_hijab_gran_001.png",
+        "card": "cards/everyday_taupe_hijab_gran_001.webp",
+        "card_small": "cards256/everyday_taupe_hijab_gran_001.webp",
+        "thumbnail": "thumbs/everyday_taupe_hijab_gran_001.webp"
+      }
+    },
+    {
+      "id": "everyday_green_boy_001",
+      "name": "The Boy in a Green Sweatshirt",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "green sweatshirt",
+      "tags": [
+        "everyday",
+        "curly hair",
+        "grinning"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_green_boy_001.png",
+        "card": "cards/everyday_green_boy_001.webp",
+        "card_small": "cards256/everyday_green_boy_001.webp",
+        "thumbnail": "thumbs/everyday_green_boy_001.webp"
+      }
+    },
+    {
+      "id": "everyday_teal_polo_boy_001",
+      "name": "The Boy in a Teal Polo",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "teal polo shirt",
+      "tags": [
+        "everyday",
+        "black hair",
+        "smiling"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_teal_polo_boy_001.png",
+        "card": "cards/everyday_teal_polo_boy_001.webp",
+        "card_small": "cards256/everyday_teal_polo_boy_001.webp",
+        "thumbnail": "thumbs/everyday_teal_polo_boy_001.webp"
+      }
+    },
+    {
+      "id": "everyday_lavender_girl_001",
+      "name": "The Girl with Long Waves",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "coral jumper and a hair clip",
+      "tags": [
+        "everyday",
+        "long wavy hair",
+        "shy smile"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_lavender_girl_001.png",
+        "card": "cards/everyday_lavender_girl_001.webp",
+        "card_small": "cards256/everyday_lavender_girl_001.webp",
+        "thumbnail": "thumbs/everyday_lavender_girl_001.webp"
+      }
+    },
+    {
+      "id": "everyday_grey_beard_grandpa_001",
+      "name": "The Grandfather in Glasses",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "tan cardigan over a blue shirt",
+      "tags": [
+        "everyday",
+        "white beard",
+        "glasses",
+        "kind"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_grey_beard_grandpa_001.png",
+        "card": "cards/everyday_grey_beard_grandpa_001.webp",
+        "card_small": "cards256/everyday_grey_beard_grandpa_001.webp",
+        "thumbnail": "thumbs/everyday_grey_beard_grandpa_001.webp"
+      }
+    },
+    {
+      "id": "everyday_brown_jacket_grandpa_001",
+      "name": "The Grandfather in a Brown Jacket",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "brown jacket and checked shirt",
+      "tags": [
+        "everyday",
+        "grey hair",
+        "moustache",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_brown_jacket_grandpa_001.png",
+        "card": "cards/everyday_brown_jacket_grandpa_001.webp",
+        "card_small": "cards256/everyday_brown_jacket_grandpa_001.webp",
+        "thumbnail": "thumbs/everyday_brown_jacket_grandpa_001.webp"
+      }
+    },
+    {
+      "id": "everyday_grey_bun_gran_001",
+      "name": "The Grandmother with a Grey Bun",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "patterned cardigan and cream blouse",
+      "tags": [
+        "everyday",
+        "grey bun",
+        "earrings",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_grey_bun_gran_001.png",
+        "card": "cards/everyday_grey_bun_gran_001.webp",
+        "card_small": "cards256/everyday_grey_bun_gran_001.webp",
+        "thumbnail": "thumbs/everyday_grey_bun_gran_001.webp"
+      }
+    },
+    {
+      "id": "everyday_moustache_gentleman_001",
+      "name": "The Elderly Gentleman",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "brown cardigan over a cream shirt",
+      "tags": [
+        "everyday",
+        "grey hair",
+        "moustache",
+        "kind"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_moustache_gentleman_001.png",
+        "card": "cards/everyday_moustache_gentleman_001.webp",
+        "card_small": "cards256/everyday_moustache_gentleman_001.webp",
+        "thumbnail": "thumbs/everyday_moustache_gentleman_001.webp"
+      }
+    },
+    {
+      "id": "everyday_purple_cardigan_gran_001",
+      "name": "The Grandmother in a Purple Cardigan",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "purple cardigan and lace blouse",
+      "tags": [
+        "everyday",
+        "glasses",
+        "grey hair",
+        "smiling"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_purple_cardigan_gran_001.png",
+        "card": "cards/everyday_purple_cardigan_gran_001.webp",
+        "card_small": "cards256/everyday_purple_cardigan_gran_001.webp",
+        "thumbnail": "thumbs/everyday_purple_cardigan_gran_001.webp"
+      }
+    },
+    {
+      "id": "everyday_navy_shirt_man_001",
+      "name": "The Man in a Navy Shirt",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "navy shirt",
+      "tags": [
+        "everyday",
+        "short beard",
+        "black hair",
+        "composed"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_navy_shirt_man_001.png",
+        "card": "cards/everyday_navy_shirt_man_001.webp",
+        "card_small": "cards256/everyday_navy_shirt_man_001.webp",
+        "thumbnail": "thumbs/everyday_navy_shirt_man_001.webp"
+      }
+    },
+    {
+      "id": "everyday_stubble_man_001",
+      "name": "The Man with Stubble",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "blue shirt",
+      "tags": [
+        "everyday",
+        "dark curly hair",
+        "stubble",
+        "friendly"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1254 px PNG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_stubble_man_001.png",
+        "card": "cards/everyday_stubble_man_001.webp",
+        "card_small": "cards256/everyday_stubble_man_001.webp",
+        "thumbnail": "thumbs/everyday_stubble_man_001.webp"
       }
     }
   ]

@@ -1,4 +1,4 @@
-import { pipergender } from "../avatarLibrary";
+import { genderWord, pipergender } from "../avatarLibrary";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl } from "../api";
 import { useApp } from "../ctx";
@@ -44,7 +44,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
       const status = await api.piperStatus();
       if (!status.installed) await api.piperInstall();
       if (!status.voices.includes(baseKey(r.key))) await api.piperInstallVoice(r.key);
-      saveLibrary((l) => (l.some((v) => v.provider === "piper" && v.id === r.key) ? l : [...l, { id: r.key, name: `${r.name} (${r.accent})`, provider: "piper", source: "library", language: r.language, accent: r.accent, gender: "", notes: r.use, createdAt: new Date().toISOString() }]));
+      saveLibrary((l) => (l.some((v) => v.provider === "piper" && v.id === r.key) ? l : [...l, { id: r.key, name: `${r.name} (${r.accent})`, provider: "piper", source: "library", language: r.language, accent: r.accent, gender: genderWord(r.key), notes: r.use, createdAt: new Date().toISOString() }]));
       toast(`${r.name} added to your library.`);
     } catch (e) { toast((e as Error).message, true); } finally { setBusy(""); }
   };
@@ -63,7 +63,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
         const b = baseKey(r.key);
         if (!done.has(b)) { await api.piperInstallVoice(r.key); done.add(b); }
       }
-      saveLibrary((l) => [...l, ...roles.filter((r) => !l.some((v) => v.provider === "piper" && v.id === r.key)).map((r) => ({ id: r.key, name: `${r.name} (${r.accent})`, provider: "piper" as const, source: "library" as const, language: r.language, accent: r.accent, gender: "", notes: r.use, createdAt: new Date().toISOString() }))]);
+      saveLibrary((l) => [...l, ...roles.filter((r) => !l.some((v) => v.provider === "piper" && v.id === r.key)).map((r) => ({ id: r.key, name: `${r.name} (${r.accent})`, provider: "piper" as const, source: "library" as const, language: r.language, accent: r.accent, gender: genderWord(r.key), notes: r.use, createdAt: new Date().toISOString() }))]);
       toast(`${pk.name} pack added: ${roles.length} voices.`);
     } catch (e) { toast((e as Error).message, true); } finally { setBusy(""); }
   };

@@ -42,6 +42,8 @@ pub struct VoiceInfo {
     pub accent: String,
     pub language: String,
     pub gender: String,
+    /// The age label ElevenLabs gives a voice (young, middle_aged, old), when it has one.
+    pub age: String,
     pub description: String,
     pub category: String,
     pub preview_url: Option<String>,
@@ -124,6 +126,7 @@ impl Client {
                     accent: s(&l["accent"]),
                     language,
                     gender: s(&l["gender"]),
+                    age: s(&l["age"]),
                     description: if x["description"].is_string() { s(&x["description"]) } else { s(&l["descriptive"]) },
                     category: s(&x["category"]),
                     preview_url: x["preview_url"].as_str().map(str::to_string),
@@ -153,6 +156,7 @@ impl Client {
                     accent: s(&x["accent"]),
                     language: s(&x["language"]),
                     gender: s(&x["gender"]),
+                    age: s(&x["age"]),
                     description: [s(&x["descriptive"]), s(&x["use_case"])].into_iter().filter(|p| !p.is_empty()).collect::<Vec<_>>().join(", "),
                     category: s(&x["category"]),
                     preview_url: x["preview_url"].as_str().map(str::to_string),
@@ -398,19 +402,21 @@ mod tests {
     fn lists_my_voices_and_the_shared_library() {
         let f = start(Box::new(|h| {
             if h.path.starts_with("/v2/voices") {
-                (200, json!({"voices":[{"voice_id":"abc","name":"Ada","category":"cloned","labels":{"accent":"nigerian","gender":"female","language":"en"},"preview_url":"https://x.example.com/a.mp3"},{"voice_id":"bad id!","name":"x"}]}).to_string().into_bytes())
+                (200, json!({"voices":[{"voice_id":"abc","name":"Ada","category":"cloned","labels":{"accent":"nigerian","gender":"female","language":"en","age":"young"},"preview_url":"https://x.example.com/a.mp3"},{"voice_id":"bad id!","name":"x"}]}).to_string().into_bytes())
             } else {
-                (200, json!({"has_more":true,"voices":[{"voice_id":"v9","public_owner_id":"own1","name":"Tunde","accent":"nigerian","language":"en","gender":"male","descriptive":"calm","use_case":"narration","category":"professional","preview_url":null}]}).to_string().into_bytes())
+                (200, json!({"has_more":true,"voices":[{"voice_id":"v9","public_owner_id":"own1","name":"Tunde","accent":"nigerian","language":"en","gender":"male","age":"old","descriptive":"calm","use_case":"narration","category":"professional","preview_url":null}]}).to_string().into_bytes())
             }
         }));
         let c = Client::new(&f.base, "K");
         let mine = c.my_voices().unwrap();
         assert_eq!(mine.len(), 1);
         assert_eq!((mine[0].name.as_str(), mine[0].accent.as_str(), mine[0].language.as_str()), ("Ada", "nigerian", "en"));
+        assert_eq!(mine[0].age, "young");
         let (shared, more) = c.shared_voices("deep voice", "en", "nigerian", "", 2).unwrap();
         assert!(more);
         assert_eq!(shared[0].owner.as_deref(), Some("own1"));
         assert_eq!(shared[0].description, "calm, narration");
+        assert_eq!(shared[0].age, "old");
         let path = f.hits.lock().unwrap()[1].path.clone();
         assert!(path.contains("search=deep%20voice") && path.contains("language=en") && path.contains("accent=nigerian") && path.contains("page=2") && !path.contains("gender"));
     }

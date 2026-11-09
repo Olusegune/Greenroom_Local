@@ -4,6 +4,7 @@ import { api } from "../api";
 import { Avatar } from "../avatar";
 import { useApp } from "../ctx";
 import { portraitPrompt, toPortrait, validPortrait } from "../portrait";
+import { AGE_CHOICES, HERITAGE_CHOICES } from "../avatarLibrary";
 import type { VoiceEntry } from "../types";
 
 /** A voice's face. Press it to give the voice a real picture: choose a file, or describe one and have an image model make it. */
@@ -17,6 +18,45 @@ export function AvatarButton({ voice, seed, gender, size = 44, role = "" }: { vo
       </button>
       {open && createPortal(<PortraitDialog voice={voice} seed={seed} gender={gender} role={role} onClose={() => setOpen(false)} />, document.body)}
     </>
+  );
+}
+
+/** Gender, age and heritage of the person a voice is meant to be. Only used to choose its automatic picture. */
+export function VoiceLooks({ v, onChange }: { v: VoiceEntry; onChange: (p: Partial<VoiceEntry>) => void }) {
+  const g = /^f/i.test(v.gender) ? "Female" : /^m/i.test(v.gender) ? "Male" : /neutral/i.test(v.gender) ? "Neutral" : "";
+  return (
+    <fieldset className="row wrap" style={{ border: 0, padding: 0, margin: 0, gap: 8 }}>
+      <legend className="muted small">Who is this voice? Used only to pick its picture.</legend>
+      <label className="field" style={{ minWidth: 120 }}>
+        Gender
+        <select aria-label={`Gender of ${v.name}`} value={g} onChange={(e) => onChange({ gender: e.target.value })}>
+          <option value="">Not stated</option>
+          <option>Female</option>
+          <option>Male</option>
+          <option>Neutral</option>
+        </select>
+      </label>
+      <label className="field" style={{ minWidth: 150 }}>
+        Age
+        <select aria-label={`Age of ${v.name}`} value={v.age ?? ""} onChange={(e) => onChange({ age: (e.target.value || undefined) as VoiceEntry["age"] })}>
+          {AGE_CHOICES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field" style={{ minWidth: 190 }}>
+        Heritage
+        <select aria-label={`Heritage of ${v.name}`} value={v.heritage ?? ""} onChange={(e) => onChange({ heritage: (e.target.value || undefined) as VoiceEntry["heritage"] })}>
+          {HERITAGE_CHOICES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </label>
+    </fieldset>
   );
 }
 
@@ -83,6 +123,7 @@ function PortraitDialog({ voice, seed, gender, role, onClose }: { voice: VoiceEn
                 </button>
               )}
             </div>
+            <VoiceLooks v={voice} onChange={(p) => saveLibrary((l) => l.map((x) => (x.id === voice.id && x.provider === voice.provider ? { ...x, ...p } : x)))} />
             <p className="muted small">The picture is cut to a square and kept small with the voice. A fictional person is asked for, not a likeness of anyone real. Use only pictures you have the right to use.</p>
           </div>
         </div>

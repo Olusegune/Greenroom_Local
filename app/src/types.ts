@@ -269,6 +269,10 @@ export interface VoiceEntry {
   language: string;
   accent: string;
   gender: string;
+  /** How old the voice sounds, used only to choose a matching picture. Absent means not stated. */
+  age?: "child" | "teen" | "young" | "mid" | "old";
+  /** The look of the person the voice is meant to be, used only to choose a matching picture. Absent means not stated. */
+  heritage?: "black" | "white" | "east_asian" | "south_asian" | "middle_eastern" | "latino" | "indigenous";
   notes: string;
   previewUrl?: string;
   /** A real picture for this voice (a small square JPEG as a data address), shown instead of the drawn face. */
@@ -287,6 +291,8 @@ export interface VoiceInfo {
   accent: string;
   language: string;
   gender: string;
+  /** ElevenLabs age label: young, middle_aged or old. */
+  age?: string;
   description: string;
   category: string;
   previewUrl?: string | null;

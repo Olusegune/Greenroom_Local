@@ -4,7 +4,7 @@
 // the prompt asks for a person who is not real and resembles nobody.
 
 import { hash, lookFor } from "./avatar";
-import { pipergender } from "./avatarLibrary";
+import { pipergender, type VoiceMeta } from "./avatarLibrary";
 import type { VoiceEntry } from "./types";
 
 /** The seed a voice's drawn face uses everywhere, so a picture can be found for the same voice on every screen. */
@@ -12,13 +12,16 @@ export const voiceSeed = (v: Pick<VoiceEntry, "id" | "name">): string => v.id + 
 
 const pictures = new Map<string, string>();
 const hints = new Map<string, string>();
+const metas = new Map<string, VoiceMeta>();
 
 /** Rebuilds the lookup from the library. Cheap, and called whenever the library changes. */
-export function syncPortraits(library: (Pick<VoiceEntry, "id" | "name" | "portrait"> & Partial<Pick<VoiceEntry, "gender" | "accent" | "language" | "notes">>)[]): void {
+export function syncPortraits(library: (Pick<VoiceEntry, "id" | "name" | "portrait"> & Partial<Pick<VoiceEntry, "gender" | "accent" | "language" | "notes" | "age" | "heritage">>)[]): void {
   pictures.clear();
   hints.clear();
+  metas.clear();
   for (const v of library) {
     if (v.portrait && v.portrait.startsWith("data:image/")) pictures.set(voiceSeed(v), v.portrait);
+    if (v.age || v.heritage) metas.set(voiceSeed(v), { age: v.age, heritage: v.heritage });
     const pg = v.gender ? undefined : v.id ? pipergender(v.id) : undefined;
     hints.set(voiceSeed(v), [v.gender || (pg === "f" ? "female" : pg === "m" ? "male" : ""), v.accent, v.language, v.notes].filter(Boolean).join(" "));
   }
@@ -26,6 +29,8 @@ export function syncPortraits(library: (Pick<VoiceEntry, "id" | "name" | "portra
 
 /** What a voice says about itself (accent, notes), used to pick an automatic face that fits it. */
 export const hintFor = (seed: string): string | undefined => hints.get(seed);
+/** The age and heritage the owner (or ElevenLabs) gave a voice, if any. */
+export const metaFor = (seed: string): VoiceMeta | undefined => metas.get(seed);
 
 export const portraitFor = (seed: string): string | undefined => pictures.get(seed);
 
