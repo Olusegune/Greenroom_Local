@@ -1,6 +1,6 @@
 [package]
 name = "greenroom-local"
-version = "0.8.4"
+version = "0.8.5"
 description = "Greenroom Local: private, accent-aware AI voice performances"
 edition = "2021"
 publish = false

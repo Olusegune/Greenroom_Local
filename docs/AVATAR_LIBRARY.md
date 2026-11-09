@@ -126,3 +126,7 @@ A voice or character with no chosen avatar shows a built-in portrait, not a cart
 ### Version 0.8.4: 34 more everyday portraits
 
 The owner supplied 51 more 1024 px images (folder "Greenroom Avatar Images Vs 2 - 22101221"). 34 everyday portraits were added as full-resolution masters (15 Black men and 7 Black women of different ages, 9 children, 3 other adults), giving 134 full-resolution portraits (the 100 target is met and passed). Left out: the horned demon, devil and mad-scientist fantasy characters, a black-and-white fedora portrait, a rider on a horse, a chief in full regalia, and a Scottish warrior. They remain on the owner's disk and can be added. The pharaoh/priest-type costume portraits are still never chosen automatically (see Automatic faces).
+
+### Version 0.8.5: 10 women, preview tier
+
+The owner supplied 12 images of women in a folder "Women" at 1376 x 768 (not square). The largest square is 768 px, which is below the 1024 px a master needs and is never enlarged, so 10 were added as **preview-tier** portraits (a 768 px square cut from the middle, reduced to 256 px). Left out: a horned demon and a Victorian velvet-collar lady (not everyday). Five of the ten are Black women. If you can supply the same portraits at 1024 x 1024 or larger (or a wider-framed 1:1 version), they can become full masters.

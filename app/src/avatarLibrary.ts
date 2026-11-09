@@ -480,6 +480,16 @@ export const LOOKS: Record<string, Look> = {
   everyday_silver_bun_woman_001: f("white"),
   everyday_grey_suit_woman_001: f("white"),
   everyday_curly_elder_001: m("white"),
+  everyday_khaki_jacket_woman_001: f(),
+  everyday_podcast_locs_001: f("black"),
+  everyday_saree_microphone_001: f("south_asian"),
+  everyday_embroidered_blouse_001: f("latino"),
+  everyday_glasses_blazer_woman_001: f("east_asian"),
+  everyday_green_cardigan_woman_001: f("east_asian"),
+  everyday_leather_jacket_woman_001: f("black"),
+  everyday_hijab_reporter_001: f("black"),
+  everyday_green_blazer_woman_001: f("black"),
+  everyday_blue_gele_woman_001: f("black"),
 };
 
 const seedHash = (s: string) => {

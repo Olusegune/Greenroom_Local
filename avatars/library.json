@@ -5962,6 +5962,337 @@
         "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
       },
       "tier": "master"
+    },
+    {
+      "id": "everyday_khaki_jacket_woman_001",
+      "name": "The Woman in a Khaki Jacket",
+      "tier": "preview",
+      "source": "everyday_khaki_jacket_woman_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "khaki field jacket with a shoulder strap",
+      "tags": [
+        "everyday",
+        "curly hair",
+        "journalist"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_podcast_locs_001",
+      "name": "The Podcast Host",
+      "tier": "preview",
+      "source": "everyday_podcast_locs_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "everyday",
+      "clothing": "bright patterned headwrap and shirt",
+      "tags": [
+        "everyday",
+        "locs",
+        "microphone",
+        "smiling"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_saree_microphone_001",
+      "name": "The Woman in a Saree",
+      "tier": "preview",
+      "source": "everyday_saree_microphone_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "red and gold saree and gold earrings",
+      "tags": [
+        "everyday",
+        "microphone",
+        "speaking"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_embroidered_blouse_001",
+      "name": "The Woman in an Embroidered Blouse",
+      "tier": "preview",
+      "source": "everyday_embroidered_blouse_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "everyday",
+      "clothing": "white blouse with bright flower embroidery",
+      "tags": [
+        "everyday",
+        "wavy hair",
+        "gesturing"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_glasses_blazer_woman_001",
+      "name": "The Woman in Wire Glasses",
+      "tier": "preview",
+      "source": "everyday_glasses_blazer_woman_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "everyday",
+      "clothing": "grey blazer and pale blue shirt",
+      "tags": [
+        "everyday",
+        "glasses",
+        "straight hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_green_cardigan_woman_001",
+      "name": "The Woman in a Green Cardigan",
+      "tier": "preview",
+      "source": "everyday_green_cardigan_woman_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "everyday",
+      "clothing": "sage cardigan and cream blouse",
+      "tags": [
+        "everyday",
+        "black hair",
+        "gentle"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_leather_jacket_woman_001",
+      "name": "The Woman in a Burgundy Jacket",
+      "tier": "preview",
+      "source": "everyday_leather_jacket_woman_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "burgundy leather jacket and black top",
+      "tags": [
+        "everyday",
+        "short curls",
+        "expressive"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_hijab_reporter_001",
+      "name": "The Reporter in a Burgundy Hijab",
+      "tier": "preview",
+      "source": "everyday_hijab_reporter_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "everyday",
+      "clothing": "burgundy hijab and navy blazer",
+      "tags": [
+        "everyday",
+        "calm",
+        "news"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_green_blazer_woman_001",
+      "name": "The Woman in a Green Blazer",
+      "tier": "preview",
+      "source": "everyday_green_blazer_woman_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "emerald blazer and cream blouse",
+      "tags": [
+        "everyday",
+        "short natural hair",
+        "confident"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
+    },
+    {
+      "id": "everyday_blue_gele_woman_001",
+      "name": "The Elder in a Blue Head-tie",
+      "tier": "preview",
+      "source": "everyday_blue_gele_woman_001.png",
+      "crop": [
+        304,
+        0,
+        1072,
+        768
+      ],
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "everyday",
+      "clothing": "indigo head-tie and striped top",
+      "tags": [
+        "everyday",
+        "dignified",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered 1376 x 768; a 768 px square was cut from the middle and reduced to 256 px (never enlarged), so it is a preview-tier picture."
+      }
     }
   ]
 }
