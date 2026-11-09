@@ -26,7 +26,7 @@ export function CharacterFace({ character, voice, size = 44, emotion, editable =
   const face = currentFace(character?.avatarId, emotion ? expressionFor(emotion) : undefined);
   const src = face ? (size >= 96 ? face.card : size >= 48 ? face.small : face.thumb) : null;
   const seed = (voice?.id ?? character?.id ?? "x") + (voice?.name ?? character?.name ?? "");
-  const inner = src ? <img className="avatar" src={src} alt={character?.name ?? ""} width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} /> : <Avatar seed={seed} gender={voice?.gender} size={size} />;
+  const inner = src ? <img className="avatar" src={src} alt={character?.name ?? ""} width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} /> : <Avatar seed={seed} gender={voice?.gender} size={size} hint={`${character?.name ?? ""} ${character?.language ?? ""}`} />;
   if (!character || !editable) return inner;
   return (
     <>

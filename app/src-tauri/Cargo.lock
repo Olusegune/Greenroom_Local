@@ -1384,7 +1384,7 @@ dependencies = [
 
 [[package]]
 name = "greenroom-local"
-version = "0.8.5"
+version = "0.8.6"
 dependencies = [
  "base64 0.22.1",
  "keyring",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "target": 100,
-  "count": 204,
-  "masters": 134,
-  "previews": 70,
+  "count": 229,
+  "masters": 160,
+  "previews": 69,
   "collections": [
     "contemporary_everyday",
     "ancient_civilizations",
@@ -4661,36 +4661,6 @@
       }
     },
     {
-      "id": "everyday_asian_slick_001",
-      "name": "The Man with Swept Hair",
-      "tier": "preview",
-      "collection": "contemporary_everyday",
-      "period": "contemporary",
-      "genre": [
-        "drama"
-      ],
-      "style": "cinematic_realism",
-      "age_category": "young_adult",
-      "archetype": "everyday",
-      "clothing": "dark jacket",
-      "tags": [
-        "everyday",
-        "swept hair",
-        "calm"
-      ],
-      "license": {
-        "type": "owner_supplied",
-        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
-        "generator": "not recorded",
-        "commercial_use": "confirmed",
-        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. From the owner's zip of earlier batches; 512 px, used only as a preview-tier picture (never upscaled)."
-      },
-      "assets": {
-        "card_small": "cards256/everyday_asian_slick_001.webp",
-        "thumbnail": "thumbs/everyday_asian_slick_001.webp"
-      }
-    },
-    {
       "id": "everyday_asian_woman_001",
       "name": "The Woman with Long Hair",
       "tier": "preview",
@@ -6767,6 +6737,858 @@
       "assets": {
         "card_small": "cards256/everyday_blue_gele_woman_001.webp",
         "thumbnail": "thumbs/everyday_blue_gele_woman_001.webp"
+      }
+    },
+    {
+      "id": "horror_horned_gentleman_001",
+      "name": "The Horned Gentleman",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "demon",
+      "clothing": "black waistcoat and cravat, grey curved horns",
+      "tags": [
+        "devil",
+        "demon",
+        "horns",
+        "pale"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/horror_horned_gentleman_001.png",
+        "card": "cards/horror_horned_gentleman_001.webp",
+        "card_small": "cards256/horror_horned_gentleman_001.webp",
+        "thumbnail": "thumbs/horror_horned_gentleman_001.webp"
+      }
+    },
+    {
+      "id": "horror_goblin_scribe_001",
+      "name": "The Goblin Scribe",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror",
+        "fantasy"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "goblin",
+      "clothing": "dark suit, writing in a ledger, green glowing eyes",
+      "tags": [
+        "goblin",
+        "pointed ears",
+        "library"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/horror_goblin_scribe_001.png",
+        "card": "cards/horror_goblin_scribe_001.webp",
+        "card_small": "cards256/horror_goblin_scribe_001.webp",
+        "thumbnail": "thumbs/horror_goblin_scribe_001.webp"
+      }
+    },
+    {
+      "id": "horror_horned_lady_001",
+      "name": "The Horned Lady",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "demon",
+      "clothing": "black lace gown with a ruby brooch, curled horns",
+      "tags": [
+        "demon",
+        "horns",
+        "gothic",
+        "purple"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/horror_horned_lady_001.png",
+        "card": "cards/horror_horned_lady_001.webp",
+        "card_small": "cards256/horror_horned_lady_001.webp",
+        "thumbnail": "thumbs/horror_horned_lady_001.webp"
+      }
+    },
+    {
+      "id": "horror_horned_young_man_001",
+      "name": "The Horned Charmer",
+      "collection": "horror_supernatural",
+      "period": "modern_horror",
+      "genre": [
+        "horror"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "demon",
+      "clothing": "burgundy three-piece suit, small horns",
+      "tags": [
+        "devil",
+        "horns",
+        "smiling"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/horror_horned_young_man_001.png",
+        "card": "cards/horror_horned_young_man_001.webp",
+        "card_small": "cards256/horror_horned_young_man_001.webp",
+        "thumbnail": "thumbs/horror_horned_young_man_001.webp"
+      }
+    },
+    {
+      "id": "horror_horned_hermit_001",
+      "name": "The Horned Hermit",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "demon",
+      "clothing": "ragged robes, long grey hair, grey horns",
+      "tags": [
+        "demon",
+        "old",
+        "candlelit"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/horror_horned_hermit_001.png",
+        "card": "cards/horror_horned_hermit_001.webp",
+        "card_small": "cards256/horror_horned_hermit_001.webp",
+        "thumbnail": "thumbs/horror_horned_hermit_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_ram_horned_brute_001",
+      "name": "The Ram-Horned Brute",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "creature",
+      "clothing": "dark uniform jacket, large ram horns",
+      "tags": [
+        "ogre",
+        "horns",
+        "brute",
+        "fierce"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/fantasy_ram_horned_brute_001.png",
+        "card": "cards/fantasy_ram_horned_brute_001.webp",
+        "card_small": "cards256/fantasy_ram_horned_brute_001.webp",
+        "thumbnail": "thumbs/fantasy_ram_horned_brute_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_mad_alchemist_001",
+      "name": "The Mad Alchemist",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "comedy"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "alchemist",
+      "clothing": "scorched coat and goggles, holding a potion",
+      "tags": [
+        "alchemist",
+        "laughing",
+        "wild white hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/fantasy_mad_alchemist_001.png",
+        "card": "cards/fantasy_mad_alchemist_001.webp",
+        "card_small": "cards256/fantasy_mad_alchemist_001.webp",
+        "thumbnail": "thumbs/fantasy_mad_alchemist_001.webp"
+      }
+    },
+    {
+      "id": "horror_grey_demon_001",
+      "name": "The Grey Demon",
+      "collection": "horror_supernatural",
+      "period": "modern_horror",
+      "genre": [
+        "horror"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "demon",
+      "clothing": "black robe with a chain collar, long horns",
+      "tags": [
+        "demon",
+        "grey skin",
+        "horns"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/horror_grey_demon_001.png",
+        "card": "cards/horror_grey_demon_001.webp",
+        "card_small": "cards256/horror_grey_demon_001.webp",
+        "thumbnail": "thumbs/horror_grey_demon_001.webp"
+      }
+    },
+    {
+      "id": "western_highland_warrior_001",
+      "name": "The Highland Warrior",
+      "collection": "medieval_renaissance",
+      "period": "medieval",
+      "genre": [
+        "historical",
+        "action"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "warrior",
+      "clothing": "dark green tartan cloak and leather armour",
+      "tags": [
+        "red beard",
+        "scarred",
+        "highlander"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/western_highland_warrior_001.png",
+        "card": "cards/western_highland_warrior_001.webp",
+        "card_small": "cards256/western_highland_warrior_001.webp",
+        "thumbnail": "thumbs/western_highland_warrior_001.webp"
+      }
+    },
+    {
+      "id": "victorian_clockwork_tinkerer_001",
+      "name": "The Clockwork Tinkerer",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "steampunk"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "inventor",
+      "clothing": "waistcoat and bow tie in a workshop, holding a brass device",
+      "tags": [
+        "wild white hair",
+        "glasses",
+        "inventor"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/victorian_clockwork_tinkerer_001.png",
+        "card": "cards/victorian_clockwork_tinkerer_001.webp",
+        "card_small": "cards256/victorian_clockwork_tinkerer_001.webp",
+        "thumbnail": "thumbs/victorian_clockwork_tinkerer_001.webp"
+      }
+    },
+    {
+      "id": "victorian_admiral_001",
+      "name": "The Admiral",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "officer",
+      "clothing": "navy dress coat with gold epaulettes and medals",
+      "tags": [
+        "white beard",
+        "commanding"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/victorian_admiral_001.png",
+        "card": "cards/victorian_admiral_001.webp",
+        "card_small": "cards256/victorian_admiral_001.webp",
+        "thumbnail": "thumbs/victorian_admiral_001.webp"
+      }
+    },
+    {
+      "id": "scifi_green_alien_001",
+      "name": "The Green Alien",
+      "collection": "science_fiction_cyberpunk",
+      "period": "space_opera",
+      "genre": [
+        "science_fiction",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "alien",
+      "clothing": "purple and orange space jacket with a glowing chest light",
+      "tags": [
+        "alien",
+        "antennae",
+        "friendly"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/scifi_green_alien_001.png",
+        "card": "cards/scifi_green_alien_001.webp",
+        "card_small": "cards256/scifi_green_alien_001.webp",
+        "thumbnail": "thumbs/scifi_green_alien_001.webp"
+      }
+    },
+    {
+      "id": "scifi_silver_alien_001",
+      "name": "The Silver Alien",
+      "collection": "science_fiction_cyberpunk",
+      "period": "far_future",
+      "genre": [
+        "science_fiction",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "alien",
+      "clothing": "white high-collared suit with a glowing line",
+      "tags": [
+        "alien",
+        "big eyes",
+        "calm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/scifi_silver_alien_001.png",
+        "card": "cards/scifi_silver_alien_001.webp",
+        "card_small": "cards256/scifi_silver_alien_001.webp",
+        "thumbnail": "thumbs/scifi_silver_alien_001.webp"
+      }
+    },
+    {
+      "id": "stylized_white_robot_001",
+      "name": "The Helper Robot",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "robot",
+      "clothing": "white body with headphones and blue glowing eyes",
+      "tags": [
+        "robot",
+        "friendly",
+        "headphones"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/stylized_white_robot_001.png",
+        "card": "cards/stylized_white_robot_001.webp",
+        "card_small": "cards256/stylized_white_robot_001.webp",
+        "thumbnail": "thumbs/stylized_white_robot_001.webp"
+      }
+    },
+    {
+      "id": "stylized_orange_robot_001",
+      "name": "The Visor Robot",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "robot",
+      "clothing": "white body with orange headphones and a dark visor",
+      "tags": [
+        "robot",
+        "cheerful",
+        "headphones"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/stylized_orange_robot_001.png",
+        "card": "cards/stylized_orange_robot_001.webp",
+        "card_small": "cards256/stylized_orange_robot_001.webp",
+        "thumbnail": "thumbs/stylized_orange_robot_001.webp"
+      }
+    },
+    {
+      "id": "horror_teal_spirit_001",
+      "name": "The Teal Spirit",
+      "collection": "horror_supernatural",
+      "period": "folk_horror",
+      "genre": [
+        "horror",
+        "fantasy"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "ghost",
+      "clothing": "translucent drifting robes of teal smoke",
+      "tags": [
+        "ghost",
+        "spirit",
+        "glowing eyes"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/horror_teal_spirit_001.png",
+        "card": "cards/horror_teal_spirit_001.webp",
+        "card_small": "cards256/horror_teal_spirit_001.webp",
+        "thumbnail": "thumbs/horror_teal_spirit_001.webp"
+      }
+    },
+    {
+      "id": "horror_blue_spirit_001",
+      "name": "The Blue Spirit",
+      "collection": "horror_supernatural",
+      "period": "folk_horror",
+      "genre": [
+        "horror",
+        "fantasy"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "ghost",
+      "clothing": "translucent robes of blue smoke",
+      "tags": [
+        "ghost",
+        "spirit",
+        "stern"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/horror_blue_spirit_001.png",
+        "card": "cards/horror_blue_spirit_001.webp",
+        "card_small": "cards256/horror_blue_spirit_001.webp",
+        "thumbnail": "thumbs/horror_blue_spirit_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_elf_forest_001",
+      "name": "The Forest Elf",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "young_adult",
+      "archetype": "elf",
+      "clothing": "green hood and leather straps with a tree emblem",
+      "tags": [
+        "elf",
+        "curls",
+        "pointed ears"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/fantasy_elf_forest_001.png",
+        "card": "cards/fantasy_elf_forest_001.webp",
+        "card_small": "cards256/fantasy_elf_forest_001.webp",
+        "thumbnail": "thumbs/fantasy_elf_forest_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_elf_queen_001",
+      "name": "The Elf Queen",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "young_adult",
+      "archetype": "elf",
+      "clothing": "teal cloak and gold circlet with a blue gem",
+      "tags": [
+        "elf",
+        "braids",
+        "pointed ears",
+        "regal"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/fantasy_elf_queen_001.png",
+        "card": "cards/fantasy_elf_queen_001.webp",
+        "card_small": "cards256/fantasy_elf_queen_001.webp",
+        "thumbnail": "thumbs/fantasy_elf_queen_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_teal_dragon_001",
+      "name": "The Teal Dragon",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "dragon",
+      "clothing": "teal and orange scales with fins and horns",
+      "tags": [
+        "dragon",
+        "friendly",
+        "big eyes"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/fantasy_teal_dragon_001.png",
+        "card": "cards/fantasy_teal_dragon_001.webp",
+        "card_small": "cards256/fantasy_teal_dragon_001.webp",
+        "thumbnail": "thumbs/fantasy_teal_dragon_001.webp"
+      }
+    },
+    {
+      "id": "fantasy_purple_goblin_001",
+      "name": "The Purple Goblin",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "animation"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "goblin",
+      "clothing": "studded leather vest with a ring earring",
+      "tags": [
+        "goblin",
+        "horns",
+        "grinning"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/fantasy_purple_goblin_001.png",
+        "card": "cards/fantasy_purple_goblin_001.webp",
+        "card_small": "cards256/fantasy_purple_goblin_001.webp",
+        "thumbnail": "thumbs/fantasy_purple_goblin_001.webp"
+      }
+    },
+    {
+      "id": "stylized_astronaut_woman_001",
+      "name": "The Astronaut",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "young_adult",
+      "archetype": "astronaut",
+      "clothing": "white and orange space suit",
+      "tags": [
+        "curly hair",
+        "smiling"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/stylized_astronaut_woman_001.png",
+        "card": "cards/stylized_astronaut_woman_001.webp",
+        "card_small": "cards256/stylized_astronaut_woman_001.webp",
+        "thumbnail": "thumbs/stylized_astronaut_woman_001.webp"
+      }
+    },
+    {
+      "id": "stylized_turban_grandpa_001",
+      "name": "The Turbaned Grandfather",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "elderly",
+      "archetype": "elder",
+      "clothing": "maroon turban and cream tunic",
+      "tags": [
+        "white beard",
+        "glasses",
+        "kind"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/stylized_turban_grandpa_001.png",
+        "card": "cards/stylized_turban_grandpa_001.webp",
+        "card_small": "cards256/stylized_turban_grandpa_001.webp",
+        "thumbnail": "thumbs/stylized_turban_grandpa_001.webp"
+      }
+    },
+    {
+      "id": "stylized_glasses_woman_001",
+      "name": "The Woman in Teal",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "young_adult",
+      "archetype": "everyday",
+      "clothing": "teal hoodie and round glasses",
+      "tags": [
+        "short hair",
+        "smiling"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/stylized_glasses_woman_001.png",
+        "card": "cards/stylized_glasses_woman_001.webp",
+        "card_small": "cards256/stylized_glasses_woman_001.webp",
+        "thumbnail": "thumbs/stylized_glasses_woman_001.webp"
+      }
+    },
+    {
+      "id": "stylized_curly_girl_001",
+      "name": "The Girl in a Hoodie",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "child",
+      "archetype": "youth",
+      "clothing": "colourful hooded jacket with hair puffs",
+      "tags": [
+        "curly hair",
+        "scrunchies",
+        "smiling"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/stylized_curly_girl_001.png",
+        "card": "cards/stylized_curly_girl_001.webp",
+        "card_small": "cards256/stylized_curly_girl_001.webp",
+        "thumbnail": "thumbs/stylized_curly_girl_001.webp"
+      }
+    },
+    {
+      "id": "western_pirate_001",
+      "name": "The Pirate",
+      "collection": "western_historical",
+      "period": "18th_century",
+      "genre": [
+        "adventure",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "pirate",
+      "clothing": "red bandana, eye patch and a stained apron",
+      "tags": [
+        "eye patch",
+        "beard",
+        "weathered"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP or a 1254 px JPEG; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/western_pirate_001.png",
+        "card": "cards/western_pirate_001.webp",
+        "card_small": "cards256/western_pirate_001.webp",
+        "thumbnail": "thumbs/western_pirate_001.webp"
       }
     }
   ]

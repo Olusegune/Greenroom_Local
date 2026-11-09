@@ -422,7 +422,6 @@ export const LOOKS: Record<string, Look> = {
   everyday_girl_puffs_001: f("black"),
   everyday_asian_man_001: m("east_asian"),
   everyday_asian_hoodie_001: m("east_asian"),
-  everyday_asian_slick_001: m("east_asian"),
   everyday_asian_woman_001: f("east_asian"),
   everyday_asian_blazer_001: f("east_asian"),
   everyday_asian_long_001: f("east_asian"),
@@ -480,7 +479,33 @@ export const LOOKS: Record<string, Look> = {
   everyday_silver_bun_woman_001: f("white"),
   everyday_grey_suit_woman_001: f("white"),
   everyday_curly_elder_001: m("white"),
-  everyday_khaki_jacket_woman_001: f(),
+  horror_horned_gentleman_001: m("white"),
+  horror_goblin_scribe_001: m(),
+  horror_horned_lady_001: f("white"),
+  horror_horned_young_man_001: m(),
+  horror_horned_hermit_001: m(),
+  fantasy_ram_horned_brute_001: m(),
+  fantasy_mad_alchemist_001: m("white"),
+  horror_grey_demon_001: m(),
+  western_highland_warrior_001: m("white"),
+  victorian_clockwork_tinkerer_001: m("white"),
+  victorian_admiral_001: m("white"),
+  scifi_green_alien_001: NONE,
+  scifi_silver_alien_001: NONE,
+  stylized_white_robot_001: NONE,
+  stylized_orange_robot_001: NONE,
+  horror_teal_spirit_001: f(),
+  horror_blue_spirit_001: f(),
+  fantasy_elf_forest_001: f("black"),
+  fantasy_elf_queen_001: f("black"),
+  fantasy_teal_dragon_001: NONE,
+  fantasy_purple_goblin_001: m(),
+  stylized_astronaut_woman_001: f("south_asian"),
+  stylized_turban_grandpa_001: m("south_asian"),
+  stylized_glasses_woman_001: f("east_asian"),
+  stylized_curly_girl_001: f("black"),
+  western_pirate_001: m("white"),
+  everyday_khaki_jacket_woman_001: f("middle_eastern"),
   everyday_podcast_locs_001: f("black"),
   everyday_saree_microphone_001: f("south_asian"),
   everyday_embroidered_blouse_001: f("latino"),
@@ -498,31 +523,86 @@ const seedHash = (s: string) => {
   return h >>> 0;
 };
 
-export type VoiceAge = "child" | "young" | "mid" | "old";
+export type VoiceAge = "child" | "teen" | "young" | "mid" | "old";
 
-/** Gender, age and heritage a voice states about itself, read from its fields and description. Anything not stated is left open. */
-export function readVoice(gender: string | undefined, hint: string | undefined): { g?: "m" | "f"; age?: VoiceAge; h?: Heritage } {
+export interface VoiceReading {
+  g?: "m" | "f";
+  age?: VoiceAge;
+  h?: Heritage;
+  /** Set when the text names a creature, a robot or a story role (a dragon, a pharaoh, a pirate) that has a matching portrait. */
+  story?: string[];
+}
+
+/**
+ * Creatures and story roles a voice or character can be described as, and the portraits that show them. The first row that
+ * matches wins. A role that needs a gender the portraits lack (a male wizard) simply finds nothing and the everyday faces are used.
+ */
+const STORY: [RegExp, string[]][] = [
+  [/\b(robots?|androids?|automaton|cyborg|machine voice|synthetic voice)\b/, ["stylized_little_robot_001", "scifi_android_001", "stylized_white_robot_001", "stylized_orange_robot_001"]],
+  [/\b(aliens?|extraterrestrial|martian)\b/, ["scifi_ambassador_001", "scifi_green_alien_001", "scifi_silver_alien_001"]],
+  [/\bdragons?\b/, ["stylized_baby_dragon_001", "fantasy_dragon_knight_001", "fantasy_teal_dragon_001"]],
+  [/\b(goblins?|gnome)\b/, ["horror_goblin_scribe_001", "fantasy_purple_goblin_001"]],
+  [/\b(demons?|devils?|imp|fiend|satan|lucifer|horned)\b/, ["horror_horned_gentleman_001", "horror_horned_lady_001", "horror_horned_young_man_001", "horror_horned_hermit_001", "horror_grey_demon_001"]],
+  [/\b(monsters?|ogres?|orcs?|trolls?|beastman|brute|gargoyle|minotaur)\b/, ["fantasy_horned_beastman_001", "fantasy_ram_horned_brute_001", "horror_ghoul_001"]],
+  [/\b(vampire|nosferatu)\b/, ["horror_count_001"]],
+  [/\b(zombie|undead|ghoul|ghost|spectre|specter|wraith|banshee|haunted)\b/, ["horror_ghoul_001", "horror_veiled_mourner_001", "horror_pale_archivist_001", "horror_teal_spirit_001", "horror_blue_spirit_001"]],
+  [/\b(elf|elves|elven|elvish|fae|fairy|sprite)\b/, ["fantasy_elven_scout_001", "fantasy_woodland_ranger_001", "fantasy_elf_forest_001", "fantasy_elf_queen_001"]],
+  [/\b(dwarf|dwarven)\b/, ["fantasy_dwarf_smith_001"]],
+  [/\b(dryad|nymph|tree spirit|forest spirit)\b/, ["fantasy_dryad_001", "fantasy_druid_001"]],
+  [/\b(witch|sorceress|sorcerer|wizard|mage|enchantress)\b/, ["fantasy_sorceress_001", "fantasy_druid_001"]],
+  [/\b(fox|bear|talking animal)\b/, ["stylized_fox_scout_001", "stylized_bear_chef_001"]],
+  [/\b(pharaoh|egyptian|ancient egypt)\b/, ["ancient_pharaoh_001", "ancient_priest_001", "ancient_queen_001", "ancient_scribe_001"]],
+  [/\b(roman|centurion|senator|caesar|gladiator)\b/, ["ancient_centurion_001", "ancient_senator_001"]],
+  [/\b(viking|norse|valkyrie|shieldmaiden)\b/, ["fantasy_shieldmaiden_001"]],
+  [/\b(pirate|privateer|buccaneer|sea captain)\b/, ["historical_privateer_001", "western_pirate_001"]],
+  [/\b(cowboy|sheriff|outlaw|gunslinger|prospector|frontier)\b/, ["western_sheriff_001", "western_gambler_001", "western_prospector_001", "western_rancher_001", "western_frontier_scout_001", "western_homesteader_001"]],
+  [/\b(knight|man-at-arms|medieval)\b/, ["medieval_man_at_arms_001", "medieval_man_in_mail_001", "medieval_blacksmith_001"]],
+  [/\b(jester|court fool)\b/, ["medieval_jester_001"]],
+  [/\b(nun|abbess)\b/, ["medieval_abbess_001"]],
+  [/\b(priest|exorcist)\b/, ["horror_exorcist_001"]],
+  [/\b(hacker|cyberpunk|netrunner)\b/, ["cyberpunk_tinkerer_001", "cyberpunk_net_courier_001", "cyberpunk_operative_001"]],
+  [/\b(astronaut|cosmonaut|space cadet)\b/, ["stylized_space_cadet_001", "stylized_astronaut_woman_001"]],
+  [/\b(alchemist|inventor|tinkerer|mad scientist)\b/, ["fantasy_mad_alchemist_001", "victorian_clockwork_tinkerer_001", "victorian_steam_engineer_001", "victorian_clockwork_gentleman_001"]],
+  [/\b(highland|highlander|clansman)\b/, ["western_highland_warrior_001"]],
+  [/\b(admiral|naval officer)\b/, ["victorian_admiral_001"]],
+  [/\b(victorian|steampunk)\b/, ["victorian_patriarch_001", "victorian_governess_001", "victorian_steam_engineer_001", "victorian_physician_001", "victorian_dowager_001"]],
+];
+
+/** Gender, age, heritage and any story role a voice or character states about itself. Anything not stated is left open. */
+export function readVoice(gender: string | undefined, hint: string | undefined): VoiceReading {
   const t = ` ${gender ?? ""} ${hint ?? ""} `.toLowerCase();
   let g: "m" | "f" | undefined;
-  if (/\b(female|woman|women|girl|lady|she|her|feminine|mother|grandmother|actress)\b/.test(t)) g = "f";
-  else if (/\b(male|man|men|boy|guy|he|his|masculine|father|grandfather|baritone)\b/.test(t)) g = "m";
+  const field = (gender ?? "").trim().toLowerCase();
+  if (/^(f|female|woman)$/.test(field)) g = "f";
+  else if (/^(m|male|man)$/.test(field)) g = "m";
+  else if (/\b(female|woman|women|girl|girls|lady|she|her|hers|feminine|mother|mum|mom|grandmother|granny|gran|aunt|auntie|sister|daughter|wife|queen|princess|actress|schoolgirl|heroine|girlfriend)\b/.test(t)) g = "f";
+  else if (/\b(male|man|men|boy|boys|guy|he|his|him|masculine|father|dad|grandfather|grandpa|uncle|brother|son|husband|king|prince|baritone|schoolboy|gentleman)\b/.test(t)) g = "m";
   let age: VoiceAge | undefined;
-  if (/\b(child|kid|kids|little (boy|girl)|boy|toddler|pre-?teen|young girl)\b/.test(t)) age = "child";
-  else if (/\b(elderly|old|senior|aged|grand(father|mother|pa|ma)|70s|80s|60s|seventies|eighties|sixties)\b/.test(t)) age = "old";
-  else if (/\b(young|teen|teenage|youth|early[- ]?20s|20s|twenties)\b/.test(t)) age = "young";
+  const num = /\b(\d{1,2})[- ]?(?:years?[- ]old|yo|y\/o|yrs?)\b/.exec(t) ?? /\bage[d ]*(\d{1,2})\b/.exec(t);
+  if (num) {
+    const n = Number(num[1]);
+    age = n < 13 ? "child" : n < 20 ? "teen" : n < 36 ? "young" : n < 60 ? "mid" : "old";
+  } else if (/\b(child|children|kid|kids|childlike|child-like|little (boy|girl)|young (boy|girl)|toddler|pre-?teen|tween|infant|baby|youngster|schoolchild)\b/.test(t)) age = "child";
+  else if (/\b(teen|teens|teenage|teenager|adolescent|youth|youthful|high[- ]school)\b/.test(t)) age = "teen";
+  else if (/\b(boy|girl)\b/.test(t) && !/\b(bff|girlfriend|girl next door|good girl|girl power|tomboy)\b/.test(t)) age = "child";
+  else if (/\b(elderly|old|older|senior|aged|grandfather|grandmother|grandpa|granny|gran|70s|80s|60s|seventies|eighties|sixties|retired)\b/.test(t) && !/\bold[- ](school|fashioned|time)\b/.test(t)) age = "old";
+  else if (/\b(young|early[- ]?20s|20s|twenties|early[- ]?30s|millennial|gen[- ]?z)\b/.test(t)) age = "young";
   else if (/\b(middle[- ]aged|mature|40s|50s|mid[- ]?40s|late 40s|forties|fifties|30s|thirties)\b/.test(t)) age = "mid";
   let h: Heritage | undefined;
-  if (/(nigeri|african|ghana|kenya|south africa|jamaic|caribbean|\bblack\b|haiti|ethiop|swahili|congo|zulu|yoruba|igbo|hausa|uganda|tanzan|senegal|cameroon)/.test(t)) h = "black";
-  else if (/(\bindian\b|pakistan|bengal|hindi|tamil|sri lank|nepal|punjab|urdu|south asian)/.test(t)) h = "south_asian";
-  else if (/(chinese|japan|korean|filipino|tagalog|vietnam|\bthai\b|mandarin|cantonese|indonesia|malay|east asian|\basian\b)/.test(t)) h = "east_asian";
-  else if (/(arab|egypt|iran|persian|turk|middle east|lebanon|saudi|moroc|algeria|israel|hebrew|farsi)/.test(t)) h = "middle_eastern";
-  else if (/(mexic|spanish|latin|brazil|portugu|colomb|argentin|cuban|hispanic)/.test(t)) h = "latino";
-  else if (/(\bwhite\b|caucasian|european|swedish|norwegian|german|russian|polish)/.test(t)) h = "white";
-  return { g, age, h };
+  if (/(nigeri|african|ghana|kenya|south africa|jamaic|caribbean|\bblack\b|haiti|ethiop|swahili|congo|zulu|yoruba|igbo|hausa|uganda|tanzan|senegal|cameroon|twi\b|amharic|pidgin|bahamas|trinidad)/.test(t)) h = "black";
+  else if (/(\bindian\b|india\b|pakistan|bengal|hindi|tamil|telugu|malayalam|marathi|gujarati|punjab|urdu|nepal|sri lank|south asian)/.test(t)) h = "south_asian";
+  else if (/(chinese|china\b|japan|korean|korea\b|filipino|philippin|tagalog|taglish|vietnam|\bthai\b|thailand|mandarin|cantonese|indonesia|malay\b|east asian|\basian\b)/.test(t)) h = "east_asian";
+  else if (/(arab|jordan|egypt|iran|persian|farsi|turk|middle east|lebanon|saudi|moroc|algeria|israel|hebrew|syria|iraq|emirat)/.test(t)) h = "middle_eastern";
+  else if (/(castilian|received[- ]pronunciation|\bspain\b|great britain|united kingdom|\buk\b|british|england|english accent|scottish|scotland|irish|ireland|welsh|wales|australia|new zealand|canad|american|united states|\busa\b|northern english|german|french|italian|russian|polish|dutch|swedish|norwegian|danish|finnish|greek|ukrainian|european|caucasian|\bwhite\b)/.test(t)) h = "white";
+  else if (/(mexic|spanish|latin|brazil|portugu|colomb|argentin|cuban|hispanic|chile|peru)/.test(t)) h = "latino";
+  let story: string[] | undefined;
+  for (const [re, ids] of STORY) if (re.test(t)) { story = ids; break; }
+  return { g, age, h, story };
 }
 
 const AGE_FIT: Record<VoiceAge, Age[]> = {
   child: ["child", "teen"],
+  teen: ["teen", "young_adult"],
   young: ["teen", "young_adult", "adult"],
   mid: ["adult", "middle_aged", "older_adult"],
   old: ["older_adult", "elderly"],
@@ -530,22 +610,11 @@ const AGE_FIT: Record<VoiceAge, Age[]> = {
 
 /**
  * Which portraits may stand in for a voice by default: ordinary people in everyday dress. Costume portraits (a pharaoh, a
- * knight, a vampire, a robot) are never chosen automatically, because a narrator or a casual voice should not look like one.
- * They stay available in the browser for the owner to choose.
+ * knight, a vampire, a robot) are only chosen when the voice or character is described as one (see STORY). They stay
+ * available in the browser for the owner to choose.
  */
 const PLAIN_GLOBAL = new Set(["global_andean_elder_001", "global_tea_master_001", "global_market_matriarch_001", "global_village_elder_001", "global_village_weaver_001"]);
 export const isPlainFace = (a: Pick<AvatarEntry, "id" | "tier">): boolean => a.id.startsWith("everyday_") || (a.tier !== "preview" && a.id.startsWith("contemporary_")) || PLAIN_GLOBAL.has(a.id);
-
-/** Portraits that can stand in for a stated heritage. Black and East Asian are strict: no other portrait is ever used for them. */
-const HERITAGE_FIT: Record<Heritage, Heritage[]> = {
-  black: ["black"],
-  east_asian: ["east_asian"],
-  south_asian: ["south_asian"],
-  middle_eastern: ["middle_eastern", "south_asian"],
-  latino: ["latino", "white", "middle_eastern"],
-  indigenous: ["indigenous", "latino"],
-  white: ["white", "latino", "middle_eastern"],
-};
 
 /**
  * Genders of the local (Piper) voices, which come with none. From the voice model cards as remembered by the person who
@@ -563,33 +632,33 @@ export function pipergender(keyOrName: string): "m" | "f" | undefined {
   return PIPER_GENDER[mid] ?? PIPER_GENDER[k.replace(/\s+/g, "_")];
 }
 
+const isChildish = (a: Pick<AvatarEntry, "age_category">) => a.age_category === "child" || a.age_category === "teen";
+
 /**
- * A steady built-in portrait for a voice with no chosen picture. It never crosses gender and only uses everyday portraits.
- * It uses the stated age and heritage when a portrait fits; when none does it loosens age first, then heritage within the
- * fitting groups, but never gender. A voice that states nothing gets any adult, and children only appear for a voice that
- * says it is a child.
+ * A steady built-in portrait for a voice or character with no chosen picture. Hard rules, never relaxed: the gender is never
+ * crossed when it is known, and a child's portrait goes only to a child and an adult's only to an adult. A stated heritage is
+ * matched exactly and only dropped when no portrait of that gender and age exists. A creature or story role (a dragon, a robot,
+ * a pharaoh) gets the matching portrait; everything else gets an ordinary person in everyday dress.
  */
 export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string): AvatarEntry | null {
   if (!manifest) return null;
   const want = readVoice(gender, hint);
-  const known = manifest.avatars.filter((a) => (LOOKS[a.id]?.g ?? "n") !== "n");
-  const plain = known.filter(isPlainFace);
-  const humans = plain.length ? plain : known;
-  const byGender = want.g ? humans.filter((a) => LOOKS[a.id]!.g === want.g) : humans;
-  const adult = (a: AvatarEntry) => a.age_category !== "child" && a.age_category !== "teen";
-  const ageOk = (a: AvatarEntry) => (want.age ? AGE_FIT[want.age].includes(a.age_category) : adult(a));
-  const heritageOk = (a: AvatarEntry) => {
-    if (!want.h) return true;
-    const h = LOOKS[a.id]!.h;
-    return !!h && HERITAGE_FIT[want.h].includes(h);
-  };
-  const tiers = [
-    byGender.filter((a) => ageOk(a) && heritageOk(a)),
-    byGender.filter((a) => heritageOk(a) && (want.age === "child" ? !adult(a) : adult(a))),
-    byGender.filter(heritageOk),
-    byGender.filter(ageOk),
-    byGender,
-  ];
+  const known = manifest.avatars.filter((a) => LOOKS[a.id]);
+  const pick = (pool: AvatarEntry[]) => pool[seedHash(seed) % pool.length]!;
+  if (want.story) {
+    const roleFaces = known.filter((a) => want.story!.includes(a.id) && (!want.g || LOOKS[a.id]!.g === "n" || LOOKS[a.id]!.g === want.g));
+    if (roleFaces.length) return pick(roleFaces);
+  }
+  const plain = known.filter((a) => isPlainFace(a) && LOOKS[a.id]!.g !== "n");
+  const base = plain.length ? plain : known.filter((a) => LOOKS[a.id]!.g !== "n");
+  const byGender = want.g ? base.filter((a) => LOOKS[a.id]!.g === want.g) : base;
+  const wantsChild = want.age === "child";
+  // childhood is a hard rule: a child voice only ever gets a child or teen portrait, anyone else never does
+  const byLife = byGender.filter((a) => (wantsChild ? isChildish(a) : !isChildish(a) || want.age === "teen"));
+  const life = byLife.length ? byLife : byGender;
+  const ageOk = (a: AvatarEntry) => (want.age ? AGE_FIT[want.age].includes(a.age_category) : true);
+  const heritageOk = (a: AvatarEntry) => !want.h || LOOKS[a.id]!.h === want.h;
+  const tiers = [life.filter((a) => ageOk(a) && heritageOk(a)), life.filter(heritageOk), life.filter(ageOk), life];
   const pool = tiers.find((t) => t.length) ?? [];
-  return pool.length ? pool[seedHash(seed) % pool.length]! : null;
+  return pool.length ? pick(pool) : null;
 }
