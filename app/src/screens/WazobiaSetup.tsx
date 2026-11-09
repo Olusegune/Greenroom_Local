@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, type ChatterboxRuntimeStatus } from "../api";
 import { useApp } from "../ctx";
+import SetupCheck from "./SetupCheck";
 import { installHint, nextStep, STEP_LABEL, TOKEN_PAGE, WAZOBIA_DOWNLOAD_GB, WAZOBIA_LANGUAGES, WAZOBIA_PAGE, wazobiaVoiceEntry, type WazobiaLanguage } from "../wazobia";
 
 const open = (url: string) => { void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl(url)).catch(() => window.open(url, "_blank", "noopener")); };
@@ -73,6 +74,7 @@ export default function WazobiaSetup({ installed, percent, onState }: { installe
         <button className="sm" onClick={() => open(WAZOBIA_PAGE)}>Model page ↗</button>
       </div>}
       {error && <p role="alert" className="error small">{error}</p>}
+      {error && <SetupCheck engine="wazobia" label="Find out why it failed" />}
     </div>
   );
 }

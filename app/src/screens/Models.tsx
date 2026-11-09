@@ -6,6 +6,7 @@ import WazobiaSetup from "./WazobiaSetup";
 import AcestepSetup from "./AcestepSetup";
 import SfxSetup from "./SfxSetup";
 import SetupWizard from "./SetupWizard";
+import SetupCheck from "./SetupCheck";
 import LocalEngineSetup from "./LocalEngineSetup";
 import DirectorSetup from "./DirectorSetup";
 import { CardArt } from "../cardArt";
@@ -94,6 +95,7 @@ export default function Models() {
         <div className="row wrap">{piperInstalled ? <button className="primary" onClick={() => go("voices")}>Browse local voices</button> : <button className="primary" disabled={piperBusy} onClick={() => void installPiper()}>{piperBusy ? "Installing Piper…" : "Install Piper"}</button>}<button onClick={() => go("voices")}>Voice library</button></div>
       </div>
       <SetupWizard profile={profile} onChanged={refreshAll} />
+      <SetupCheck />
       <p className="muted small">{suggested.length} packages suit this computer. Model cards open in your browser so you can review licences, hardware requirements and provider-specific download terms before downloading.</p>
 
       {GROUPS.map((group) => {

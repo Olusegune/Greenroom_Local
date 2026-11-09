@@ -12,6 +12,7 @@ mod managed_python;
 mod mux;
 mod net;
 mod script_import;
+mod setup_check;
 mod store;
 mod video;
 mod voicekiller;
@@ -61,8 +62,14 @@ fn voicekiller_client() -> Result<voicekiller::Client, String> {
     Ok(voicekiller::Client::new(voicekiller::BASE, &get_key("voicekiller")?, &get_key("voicekiller-userid")?))
 }
 
+static DOCS_ROOT: Mutex<Option<PathBuf>> = Mutex::new(None);
+
 fn root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
-    Ok(app.path().document_dir().map_err(|_| "Could not find your Documents folder.".to_string())?.join("Greenroom Local"))
+    let r = app.path().document_dir().map_err(|_| "Could not find your Documents folder.".to_string())?.join("Greenroom Local");
+    if let Ok(mut g) = DOCS_ROOT.lock() {
+        *g = Some(r.clone());
+    }
+    Ok(r)
 }
 
 fn b64(bytes: &[u8]) -> String {
@@ -310,10 +317,41 @@ fn hidden_command(program: impl AsRef<std::ffi::OsStr>) -> std::process::Command
 }
 
 fn run_setup_command(program: &str, args: &[&str], label: &str) -> Result<(), String> {
-    let output = hidden_command(program).args(args).output().map_err(|_| format!("Could not start {label}."))?;
-    if output.status.success() { return Ok(()); }
-    let detail = String::from_utf8_lossy(&output.stderr).replace(['\r', '\n'], " ");
-    Err(format!("{label} did not finish. {}", detail.chars().take(240).collect::<String>()))
+    let docs = DOCS_ROOT.lock().ok().and_then(|g| g.clone());
+    let mut full: Vec<String> = args.iter().map(|a| a.to_string()).collect();
+    // pip: more patience for slow connections, and the person's own proxy (pip --isolated would otherwise ignore it)
+    if let Some(i) = full.iter().position(|a| a == "install") {
+        if i > 0 && full[i - 1] == "pip" {
+            let mut extra: Vec<String> = vec!["--retries".into(), "5".into(), "--timeout".into(), "60".into()];
+            if let Some(p) = ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"].iter().find_map(|k| std::env::var(k).ok().filter(|v| !v.trim().is_empty())) {
+                extra.push("--proxy".into());
+                extra.push(p);
+            }
+            for (n, e) in extra.into_iter().enumerate() {
+                full.insert(i + 1 + n, e);
+            }
+        }
+    }
+    let mut last = String::new();
+    for attempt in 1..=3u32 {
+        let output = hidden_command(program).args(&full).output().map_err(|_| format!("Could not start {label}."))?;
+        let text = format!("{}\n{}", String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr));
+        if let Some(d) = &docs {
+            let clipped: String = text.chars().rev().take(20_000).collect::<Vec<_>>().into_iter().rev().collect();
+            let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|t| t.as_secs()).unwrap_or(0);
+            setup_check::append_log(d, &format!("\n=== {label} (attempt {attempt}, {}, time {now}) ===\n{clipped}\n", if output.status.success() { "ok" } else { "FAILED" }));
+        }
+        if output.status.success() {
+            return Ok(());
+        }
+        last = text;
+        if attempt < 3 && setup_check::looks_temporary(&last) {
+            std::thread::sleep(std::time::Duration::from_secs(4));
+            continue;
+        }
+        break;
+    }
+    Err(format!("{label} did not finish. {} (Press \"Check my setup\" to see the likely cause.)", setup_check::why(&last)))
 }
 
 fn setup_chatterbox_runtime(root: &std::path::Path, models: &std::path::Path) -> Result<ChatterboxRuntimeStatus, String> {
@@ -928,6 +966,77 @@ async fn script_open(path: String) -> Result<ScriptFile, String> {
         let got = script_import::read_script(&p)?;
         let name: String = p.file_name().and_then(|n| n.to_str()).unwrap_or("script").chars().filter(|c| !c.is_control()).take(120).collect();
         Ok(ScriptFile { name, format: got.format.to_string(), text: got.text, truncated: got.truncated })
+    })
+    .await
+}
+
+/// Looks for the usual reasons an engine does not install: space, the internet addresses the installers use, and (for gated models) the Hugging Face account.
+#[tauri::command]
+async fn setup_check(app: tauri::AppHandle, engine: String) -> Result<Vec<setup_check::CheckItem>, String> {
+    let docs = root(&app)?;
+    blocking(move || {
+        let need = match engine.as_str() {
+            "wazobia" => 9,
+            "acestep" => 10,
+            "qwen" | "chatterbox" | "sfx" => 7,
+            "kokoro" => 4,
+            _ => 3,
+        };
+        let runtime = matches!(engine.as_str(), "wazobia" | "chatterbox" | "kokoro" | "qwen" | "acestep" | "sfx" | "all");
+        let net_fix = "Check your internet connection. A firewall, antivirus or work network can block it: allow Greenroom, or try another network.";
+        let mut targets: Vec<(&str, &str)> = vec![("Hugging Face (models)", "https://huggingface.co/")];
+        if runtime {
+            targets.extend([("python.org (the private Python)", "https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip"), ("pypi.org (Python packages)", "https://pypi.org/simple/pip/"), ("files.pythonhosted.org (package files)", "https://files.pythonhosted.org/"), ("download.pytorch.org (PyTorch)", "https://download.pytorch.org/whl/cpu/")]);
+        }
+        let mut out = vec![setup_check::path_check(&docs), setup_check::disk_check(&docs, need)];
+        let nets: Vec<setup_check::CheckItem> = std::thread::scope(|sc| {
+            let hs: Vec<_> = targets.iter().map(|(n, u)| sc.spawn(move || setup_check::reach(n, u, net_fix))).collect();
+            hs.into_iter().filter_map(|h| h.join().ok()).collect()
+        });
+        out.extend(nets);
+        if engine == "wazobia" {
+            match get_key("huggingface") {
+                Err(_) => out.push(setup_check::CheckItem { name: "Hugging Face token".into(), ok: false, detail: "no token saved".into(), fix: "Paste a Hugging Face read token (huggingface.co/settings/tokens) in the WazobiaVoice card.".into() }),
+                Ok(token) => {
+                    let m = wazobia_manifest();
+                    let agent = net::agent();
+                    let tree = format!("https://huggingface.co/api/models/{}/tree/{}?recursive=true", m.repo, m.revision);
+                    let who = agent.get("https://huggingface.co/api/whoami-v2").set("Authorization", &format!("Bearer {token}")).call();
+                    out.push(match who {
+                        Ok(_) => setup_check::CheckItem { name: "Hugging Face token".into(), ok: true, detail: "accepted".into(), fix: String::new() },
+                        Err(ureq::Error::Status(c, _)) => setup_check::CheckItem { name: "Hugging Face token".into(), ok: false, detail: format!("Hugging Face answered {c}"), fix: "The saved token was not accepted. Make a new READ token at huggingface.co/settings/tokens and paste it again.".into() },
+                        Err(_) => setup_check::CheckItem { name: "Hugging Face token".into(), ok: false, detail: "could not check".into(), fix: net_fix.into() },
+                    });
+                    let gate = agent.get(&tree).set("Authorization", &format!("Bearer {token}")).call();
+                    out.push(match gate {
+                        Ok(r) => {
+                            let listed = net::read_json(r, 4 << 20).ok().and_then(|v| v.as_array().map(|a| a.iter().any(|x| x["path"].as_str() == m.files.first().map(|f| f.path)))).unwrap_or(false);
+                            let first = m.files.first().map(|f| format!("https://huggingface.co/{}/resolve/{}/{}", m.repo, m.revision, f.path));
+                            let access = first.map(|u| agent.head(&u).set("Authorization", &format!("Bearer {token}")).call().is_ok()).unwrap_or(false);
+                            if listed && access {
+                                setup_check::CheckItem { name: "WazobiaVoice terms".into(), ok: true, detail: "this account can download the model".into(), fix: String::new() }
+                            } else {
+                                setup_check::CheckItem { name: "WazobiaVoice terms".into(), ok: false, detail: "this account cannot download the files yet".into(), fix: "Open huggingface.co/Axiveri/WazobiaVoice signed in to the SAME account as the token, press Agree and access repository, then try again.".into() }
+                            }
+                        }
+                        Err(ureq::Error::Status(c, _)) => setup_check::CheckItem { name: "WazobiaVoice terms".into(), ok: false, detail: format!("Hugging Face answered {c}"), fix: "Open huggingface.co/Axiveri/WazobiaVoice signed in to the SAME account as the token, press Agree and access repository, then try again.".into() },
+                        Err(_) => setup_check::CheckItem { name: "WazobiaVoice terms".into(), ok: false, detail: "could not check".into(), fix: net_fix.into() },
+                    });
+                }
+            }
+        }
+        Ok(out)
+    })
+    .await
+}
+
+/// Text to copy and send when an install fails: the machine, the checks, and the end of the setup log. It never contains a key.
+#[tauri::command]
+async fn setup_report(app: tauri::AppHandle) -> Result<String, String> {
+    let docs = root(&app)?;
+    blocking(move || {
+        let checks = vec![setup_check::path_check(&docs), setup_check::disk_check(&docs, 9), setup_check::reach("pypi.org", "https://pypi.org/simple/pip/", "Check your internet connection."), setup_check::reach("Hugging Face", "https://huggingface.co/", "Check your internet connection.")];
+        Ok(setup_check::report(env!("CARGO_PKG_VERSION"), &docs, &checks))
     })
     .await
 }
@@ -1830,7 +1939,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
-            save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
+            save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, setup_check, setup_report, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
             model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
         ])
         .build(tauri::generate_context!())

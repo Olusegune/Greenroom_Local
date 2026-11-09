@@ -24,6 +24,7 @@ import { assembledFor, makeBeatTake, makeSound, makeTake, modelLabel, plan, rema
 import { beatsFor, hasBeats, isAssembled } from "../beats";
 import { migrateReactions, reuse, saveReaction } from "../reactions";
 import ReVoiceDialog from "./ReVoiceDialog";
+import OwnAudioDialog from "./OwnAudioDialog";
 import { Pause, Play, Sparkle, Stop, Trash } from "../icons";
 import { parsePlayback, pausePlayback, playbackSnapshot, resumePlayback, stopPlayback, subscribePlayback, takeBuffer, takeUrl } from "../media";
 import { wordCount } from "../analysis";
@@ -637,6 +638,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
   const [menuOpen, setMenuOpen] = useState(false);
   const [editText, setEditText] = useState(false);
   const [revoice, setRevoice] = useState(false);
+  const [ownAudio, setOwnAudio] = useState<"own" | "take" | null>(null);
   const [compare, setCompare] = useState(false);
   const [snd, setSnd] = useState({ prompt: "", placement: "after" as "before" | "after", seconds: 2, loop: false, promptInfluence: 0.3 });
   const d = line.direction;
@@ -1036,6 +1038,27 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
                 role="menuitem"
                 onClick={() => {
                   setMenuOpen(false);
+                  setOwnAudio("own");
+                }}
+                title="Record or choose your own audio for this line and use it as it is"
+              >
+                Use my own audio…
+              </button>
+              <button
+                role="menuitem"
+                disabled={line.takes.length === 0}
+                onClick={() => {
+                  setMenuOpen(false);
+                  setOwnAudio("take");
+                }}
+                title="Add a laugh, sigh or gasp to this line's take, as a new take"
+              >
+                Add an expression to this take…
+              </button>
+              <button
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false);
                   setSoundOpen(true);
                 }}
               >
@@ -1045,6 +1068,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
           )}
         </div>
       </div>
+      {ownAudio && project && <OwnAudioDialog line={line} character={character} projectId={project.id} startWith={ownAudio} onClose={() => setOwnAudio(null)} onDone={(t) => patch((l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }))} />}
       {revoice && voice && project && <ReVoiceDialog line={line} character={character} voice={voice} projectId={project.id} onClose={() => setRevoice(false)} onDone={(t) => patch((l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }))} />}
       {soundOpen && (
         <div className="row wrap sound-form">

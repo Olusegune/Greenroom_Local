@@ -1,6 +1,8 @@
 # Handover note: Greenroom Local (for a Claude agent on another PC)
 
-Written 2026-11-09 at version **0.10.0**. Read this first, then `CLAUDE.md` (project rules), `DECISIONS.md` (D-1 to D-51) and `docs/SECURITY_REVIEW.md`. The owner is Victor Edun (git user "Victor Edun", GitHub account **Olusegune**). They do **not** use a terminal: everything is done in the app window, and what they receive is a built installer.
+> **UPDATE (0.12.4, 2026-11-09): the working branch is now `feat/agent-studio-presets`** (the other PC's 0.11 to 0.12.3 work, built on top of `feat/cinematic-engine-2`; use it, not the older branch below). **`runtime/qwen_once.py` has never been committed**: it is compiled into the app but hidden by `.gitignore` until now, so a fresh clone cannot build until it is added. The PC that built 0.12.3 must run `git add runtime/qwen_once.py runtime/kokoro_once.py .gitignore` (kokoro_once.py was recovered and committed already; pull first), commit and push. Details of what 0.12.4 changed are in `docs/QA_RESULTS.md` ("0.12.4"). Stage explicit paths when committing from the PC that holds the local Qwen placeholder.
+
+Written 2026-11-09 at version **0.10.0** (sections below describe 0.10.0; later work is in `docs/` and the git log). Read this first, then `CLAUDE.md` (project rules), `DECISIONS.md` (D-1 to D-51) and `docs/SECURITY_REVIEW.md`. The owner is Victor Edun (git user "Victor Edun", GitHub account **Olusegune**). They do **not** use a terminal: everything is done in the app window, and what they receive is a built installer.
 
 ## 1. Get the code (git)
 

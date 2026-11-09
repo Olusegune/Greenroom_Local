@@ -5,6 +5,7 @@ import { engineLabel } from "../engineCaps";
 import type { Engine, InworldModel } from "../engines";
 import { ACCENT_QUALITY, ACCENT_QUALITY_LABEL, compatibleEngines, duplicatePreset, exportPresets, filterPresets, GENRE_LABEL, GENRES, importPresets, readiness, STARTER_PRESETS, type AccentQuality, type Gender, type Genre, type VoicePreset } from "../presets";
 import { applyPreset, readyEnginesFrom, voicesFor } from "../presets/cast";
+import { FIT_LABEL, rankVoices } from "../presets/match";
 import { auditionPlan } from "../presets/audition";
 import AccentPanel from "./AccentPanel";
 import { addReview, buildAccentTests, earnedQuality, exportReviews, importReviews, loadReviews, saveReviews, type AccentReview } from "../presets/accentTests";
@@ -38,6 +39,7 @@ export default function Presets() {
   const [compare, setCompare] = useState<string[]>([]);
   const [casting, setCasting] = useState<string | null>(null);
   const [picked, setPicked] = useState<Record<string, string>>({});
+  const [standPicked, setStandPicked] = useState<Record<string, string>>({});
 
   const all = useMemo(() => [...STARTER_PRESETS, ...state.custom], [state.custom]);
   const { manifest, store: avatarStore } = useAvatars();
@@ -103,6 +105,9 @@ export default function Presets() {
       onCompare={() => toggleCompare(p.id)}
       onAudition={(v) => { update(markRecent(state, p.id)); return sample(v, auditionPlan(p, v, engines.inworldModel).text); }}
       standIn={pickStandIn({ gender: p.gender, language: p.language, age: ageBandOf(p.ageRange) }, library)}
+      localVoices={library.filter(isLocalVoice)}
+      standInId={standPicked[p.id]}
+      onStandIn={(id) => setStandPicked((s) => ({ ...s, [p.id]: id }))}
       localFirst={engines.localFirst === true}
       onAuditionLocal={(s) => { update(markRecent(state, p.id)); return sample(s, p.audition); }}
       inworldModel={engines.inworldModel}
@@ -221,13 +226,20 @@ function PresetFace({ src, name, size = 56 }: { src?: string; name: string; size
 }
 
 function PresetCard(props: {
-  test?: import("../presets/accentTests").AccentTest | undefined; reviews: AccentReview[]; onTest: () => void; inworldModel?: InworldModel | undefined; preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined;
+  test?: import("../presets/accentTests").AccentTest | undefined; reviews: AccentReview[]; onTest: () => void; inworldModel?: InworldModel | undefined; preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined; localVoices: VoiceEntry[]; standInId: string | undefined; onStandIn: (id: string) => void;
   onVoice: (id: string) => void; onFavorite: () => void; onCompare: () => void; onAudition: (v: VoiceEntry) => Promise<string>; standIn: VoiceEntry | null; localFirst: boolean; onAuditionLocal: (v: VoiceEntry) => Promise<string>; onCast: () => void; onDuplicate: () => void; onRemove: (() => void) | undefined; go: (t: "voices" | "models") => void;
 }) {
   const { preset: p, voices } = props;
   const st = statusOf(p, props.ready, props.libraryEngines);
   const r = readiness(p, props.ready, props.libraryEngines);
-  const chosen = voices.find((v) => v.id === props.voiceId) ?? voices[0];
+  const ranked = rankVoices(p, voices);
+  // the default is the voice that fits the preset best, never just the first one in the library
+  const chosen = (ranked.find((x) => x.voice.id === props.voiceId) ?? ranked[0])?.voice;
+  const chosenFit = ranked.find((x) => x.voice.id === chosen?.id);
+  const noFit = ranked.length > 0 && ranked[0]!.fit === "poor";
+  // the free preview runs on this PC: the best fitting local voice, or the one the owner picked
+  const localRanked = rankVoices(p, props.localVoices);
+  const standIn = props.localVoices.find((v) => v.id === props.standInId) ?? (localRanked[0] && localRanked[0].fit !== "poor" ? localRanked[0].voice : props.standIn);
   const engines = compatibleEngines(p);
   // The label a voice has earned from recorded reviews; without a review it is the label the preset shipped with.
   const quality = props.test && chosen ? earnedQuality(props.reviews, props.test.id, chosen.provider, chosen.name, p.accent.quality).quality : p.accent.quality;
@@ -253,15 +265,31 @@ function PresetCard(props: {
       {r.state === "ready" && voices.length > 0 && (
         <label className="small">Hear with
           <select value={chosen?.id ?? ""} onChange={(e) => props.onVoice(e.target.value)} aria-label={`Voice to hear ${p.name} with`}>
-            {voices.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+            {(["good", "partial", "poor"] as const).map((f) => {
+              const group = ranked.filter((x) => (f === "poor" ? x.fit === "poor" : x.fit === f));
+              return group.length ? <optgroup key={f} label={f === "poor" ? "Does not fit this preset (different gender, age or language)" : f === "good" ? "Fits this preset" : "Could fit (not enough is known)"}>{group.map((x) => <option key={x.voice.id} value={x.voice.id}>{x.voice.name}</option>)}</optgroup> : null;
+            })}
+          </select>
+        </label>
+      )}
+      {r.state === "ready" && chosen && chosenFit && (
+        <div className={chosenFit.fit === "poor" ? "small warn-text" : "muted small"} role="status">
+          {chosenFit.fit === "good" ? `${chosen.name} fits this preset.` : chosenFit.notes.length ? `${FIT_LABEL[chosenFit.fit]}: ${chosenFit.notes.join(" ")} It will play, but it will not sound like the character.` : `${chosen.name}: not enough is known about this voice to say if it fits.`}
+          {noFit ? " None of your voices fit this preset. Add a matching voice in Voices, or use the free preview." : ""}
+        </div>
+      )}
+      {r.state === "ready" && chosen && !isLocalVoice(chosen) && localRanked.length > 1 && (
+        <label className="small">Free preview voice
+          <select value={standIn?.id ?? ""} onChange={(e) => props.onStandIn(e.target.value)} aria-label={`Local voice for the free preview of ${p.name}`}>
+            {localRanked.map((x) => <option key={x.voice.id} value={x.voice.id}>{x.voice.name}{x.fit === "poor" ? " (different gender or age)" : ""}</option>)}
           </select>
         </label>
       )}
       <div className="row wrap preset-actions">
         {r.state === "ready" && chosen
-          ? (props.standIn && !isLocalVoice(chosen)
+          ? (standIn && !isLocalVoice(chosen)
             ? (<>
-              <PlayButton label={props.localFirst ? "Audition (free, on this PC)" : "Free preview on this PC"} get={() => props.onAuditionLocal(props.standIn!)} />
+              <PlayButton label={props.localFirst ? "Audition (free, on this PC)" : "Free preview on this PC"} get={() => props.onAuditionLocal(standIn!)} />
               <PlayButton label={props.localFirst ? "Hear the real voice (uses credits)" : "Audition"} get={() => props.onAudition(chosen)} />
             </>)
             : <PlayButton label="Audition" get={() => props.onAudition(chosen)} />)
@@ -278,7 +306,7 @@ function PresetCard(props: {
           </div>
         </details>
       </div>
-      {r.state === "ready" && chosen && props.standIn && !isLocalVoice(chosen) && <div className="muted small">The free preview is {props.standIn.name}, a plain read on this PC. It matches the preset's language, gender and age only; it does not sound like {chosen.name}.</div>}
+      {r.state === "ready" && chosen && standIn && !isLocalVoice(chosen) && <div className="muted small">The free preview is {standIn.name}, a plain read on this PC. It matches the preset's language, gender and age only; it does not sound like {chosen.name}.</div>}
       {r.state === "ready" && chosen && (() => {
         const a = auditionPlan(p, chosen, props.inworldModel);
         return <div className="muted small">{a.directed ? "The audition reads “" + p.audition + "” with this preset's acting direction." : "The audition reads “" + p.audition + "” as a plain read."} {a.notSent.length ? "Not sent: " + a.notSent.join("; ") + "." : ""} Cloud voices ask before they spend.</div>;
@@ -315,7 +343,8 @@ function CompareTable({ presets, ready, libraryEngines, onClose, faceOf }: { pre
 function CastPanel({ preset, face, characters, voices, hasProject, initialVoice, go, onClose, onApply }: { face?: string | undefined; preset: VoicePreset; characters: { id: string; name: string }[]; voices: VoiceEntry[]; hasProject: boolean; initialVoice: string | undefined; go: (t: "write" | "home" | "voices") => void; onClose: () => void; onApply: (characterId: string, voice: VoiceEntry | undefined, replace: boolean) => void }) {
   const { project } = useApp();
   const [who, setWho] = useState(characters[0]?.id ?? "");
-  const [voiceId, setVoiceId] = useState(initialVoice ?? "");
+  const ranked = rankVoices(preset, voices);
+  const [voiceId, setVoiceId] = useState(initialVoice ?? (ranked[0] && ranked[0].fit !== "poor" ? ranked[0].voice.id : ""));
   const [replace, setReplace] = useState(false);
   const voice = voices.find((v) => v.id === voiceId);
   const character = project?.characters.find((c) => c.id === who);
@@ -333,7 +362,7 @@ function CastPanel({ preset, face, characters, voices, hasProject, initialVoice,
             <label>Character<select value={who} onChange={(e) => setWho(e.target.value)}>{characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
             <label>Voice<select value={voiceId} onChange={(e) => setVoiceId(e.target.value)}>
               <option value="">Decide later</option>
-              {voices.map((v) => <option key={v.id} value={v.id}>{v.name} ({engineLabel(v.provider)})</option>)}
+              {ranked.map((x) => <option key={x.voice.id} value={x.voice.id}>{x.fit === "poor" ? "✗ " : x.fit === "good" ? "✓ " : ""}{x.voice.name} ({engineLabel(x.voice.provider)}){x.fit === "poor" ? " - does not fit" : ""}</option>)}
             </select></label>
             <label className="check"><input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} /> Replace what is already in the profile</label>
           </div>

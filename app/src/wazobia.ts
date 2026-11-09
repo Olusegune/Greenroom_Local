@@ -50,5 +50,6 @@ export function installHint(message: string): string {
   if (/accept|refused|terms/i.test(message)) return "Open the model page, press Agree and access repository while signed in to the same Hugging Face account, then try again.";
   if (/token|Add your/i.test(message)) return "Paste a Hugging Face read token above, then try again.";
   if (/connect|reach/i.test(message)) return "Check your internet connection. The download resumes where it stopped.";
+  if (/did not finish|could not start|verification|could not load/i.test(message)) return "Press \"Find out why it failed\" below to see the likely cause, then try again. Partly downloaded files are kept and checked before use.";
   return "Try again. Partly downloaded files are kept and checked before use.";
 }

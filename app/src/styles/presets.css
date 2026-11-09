@@ -61,3 +61,5 @@
 .accent-panel label { display: flex; flex-direction: column; gap: 4px; }
 .accent-panel label.criterion { flex-direction: row; align-items: center; }
 .accent-panel textarea, .accent-panel input[type=text] { width: 100%; }
+
+.warn-text { color: var(--warn, #ffd28a); }

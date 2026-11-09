@@ -20,6 +20,8 @@ models/
 !/runtime/chatterbox_vc_once.py
 !/runtime/acestep_once.py
 !/runtime/sfx_once.py
+!/runtime/kokoro_once.py
+!/runtime/qwen_once.py
 downloads/
 *.part
 

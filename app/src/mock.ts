@@ -27,7 +27,16 @@ let avatarsJson = "{}";
 const keys = { elevenlabs: true, kie: true, voicekiller: true, inworld: true, huggingface: false, openai: true, gemini: true } as Record<string, boolean>;
 const projects = new Map<string, Project>();
 const takes = new Map<string, { audioB64: string; mime: string }>();
-let library: VoiceEntry[] = [];
+/** A voice library for trying the screens in a browser: set localStorage "greenroom-demo-library" to a JSON list of voices and reload. Demo only; the real app never uses this file. */
+function demoLibrary(): VoiceEntry[] {
+  try {
+    const v = JSON.parse(window.localStorage.getItem("greenroom-demo-library") ?? "[]");
+    return Array.isArray(v) ? (v.slice(0, 200) as VoiceEntry[]) : [];
+  } catch {
+    return [];
+  }
+}
+let library: VoiceEntry[] = demoLibrary();
 const demoKokoro = { runtime: false, model: false };
 const demoQwen = { runtime: false, model: false };
 let casts: SavedCast[] = [];
@@ -216,6 +225,13 @@ export const mock: Api = {
   directorLocalComplete: async (s: string, user: string) => (s.includes("writing acting instructions") ? "Read in a low, shaky voice, anxious and full of self-doubt. Short breaths, trailing off at the end." : directorImpl(s, user)),
   pickScript: async () => "demo/The Late Delivery.fountain",
   scriptOpen: async (_path: string) => ({ name: "The Late Delivery.fountain", format: "fountain" as const, truncated: false, text: "Title: The Late Delivery\n\nINT. KITCHEN - DAY\n\nADA (60s, Nigerian) sits at the table, stern. She taps her watch. TUNDE, a young man in his twenties, bursts in out of breath.\n\nADA\n(annoyed)\nYou said ten o'clock. It is nearly noon.\n\nTUNDE\nI know, I know. The traffic on the bridge was impossible.\n\nINT. KITCHEN - LATER\n\nMAMA (V.O.)\nWho is making that noise?\n\nADA\nNobody, Mama.\n" }),
+  setupCheck: async (engine: string) => [
+    { name: "Folder path length", ok: true, detail: "40 characters", fix: "" },
+    { name: "Disk space", ok: true, detail: "120 GB free (about 7 GB needed)", fix: "" },
+    { name: "Hugging Face (models)", ok: true, detail: "reachable", fix: "" },
+    ...(engine === "wazobia" ? [{ name: "WazobiaVoice terms", ok: false, detail: "this account cannot download the files yet", fix: "Open huggingface.co/Axiveri/WazobiaVoice signed in to the SAME account as the token, press Agree and access repository, then try again." }] : []),
+  ],
+  setupReport: async () => "Greenroom Local (demo)\nNo setup log in the demo.",
   llmModels: async () => ({ openai: { models: ["gpt-6-astra", "gpt-6.1-sol", "gpt-6.1-terra", "gpt-6-luna"], default: "gpt-6.1-terra" }, gemini: { models: ["gemini-4-argon", "gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"], default: "gemini-3.6-flash" } }),
   directorComplete: async (s: string, user: string, _provider?: string, _model?: string) => (s.includes("writing acting instructions") ? "Read in a low, shaky voice, anxious and full of self-doubt. Short breaths, trailing off at the end." : directorImpl(s, user)),
   pickAudio: async () => "C:/Demo/Theme Music.wav",
