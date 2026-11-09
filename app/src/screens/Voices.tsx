@@ -284,7 +284,7 @@ function LocalVoiceShelf() {
     finally { setBusy(""); }
   };
   return <div className="local-shelf">
-    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Explore voices</h2><p className="muted">Preview a voice, save it to favorites, then add it for local use. Voice portraits are illustrations.</p></div><div className="row wrap"><button aria-pressed={onlyFavorites} onClick={() => setOnlyFavorites(!onlyFavorites)}>{onlyFavorites ? "★ Favorites" : "☆ Favorites"}</button><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div></div>
+    <div className="shelf-heading"><div><span className="eyebrow">THE LOCAL COLLECTION</span><h2>Explore voices</h2><p className="muted">Preview a voice, save it to favorites, then add it for local use. The pictures are only a default look and say nothing about the voice.</p></div><div className="row wrap"><button aria-pressed={onlyFavorites} onClick={() => setOnlyFavorites(!onlyFavorites)}>{onlyFavorites ? "★ Favorites" : "☆ Favorites"}</button><input type="search" aria-label="Search local voices" placeholder="Search language, region or name" value={query} onChange={(e) => setQuery(e.target.value)} /></div></div>
     {loading && <p className="muted">Loading local voice catalogue…</p>}
     {error && <Note>Could not load the voice catalogue: {error}. Check your connection or try Find a voice.</Note>}
     {!loading && !error && shown.length === 0 && <p className="muted">No voices match your search.</p>}

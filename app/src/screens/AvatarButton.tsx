@@ -28,7 +28,7 @@ function PortraitDialog({ voice, seed, gender, role, onClose }: { voice: VoiceEn
 
   const keep = (portrait: string | undefined) => {
     saveLibrary((l) => l.map((v) => (v.id === voice.id && v.provider === voice.provider ? { ...v, portrait } : v)));
-    toast(portrait ? `${voice.name} has a new picture.` : `${voice.name} is back to the drawn face.`);
+    toast(portrait ? `${voice.name} has a new picture.` : `${voice.name} is back to the automatic picture.`);
   };
   const choose = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -88,7 +88,7 @@ function PortraitDialog({ voice, seed, gender, role, onClose }: { voice: VoiceEn
         <div className="row end" style={{ marginTop: 16 }}>
           {voice.portrait && (
             <button className="danger" onClick={() => { keep(undefined); onClose(); }}>
-              Go back to the drawn face
+              Go back to the automatic picture
             </button>
           )}
           <button onClick={onClose}>Cancel</button>

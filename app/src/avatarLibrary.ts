@@ -365,3 +365,42 @@ export function progress(manifest: AvatarManifest | null): { have: number; previ
   const target = manifest?.target ?? BUILTIN_TARGET;
   return { have: masters.length, previews: (manifest?.avatars.length ?? 0) - masters.length, target, missing: Math.max(0, target - masters.length), perCollection: per };
 }
+
+// ---- Automatic faces ----
+// A voice or character with no chosen picture shows a built-in portrait instead of a drawn cartoon. The pick is steady (the
+// same voice always gets the same face) and is only a default: nothing is saved, and choosing an avatar replaces it.
+
+/** Built-in portraits whose subject is a woman or girl, used only to match a voice's stated gender. */
+const FEMALE_FACES = new Set([
+  "ancient_queen_001", "ancient_athenian_001", "ancient_oracle_001", "medieval_abbess_001", "renaissance_noblewoman_001", "renaissance_court_lady_001",
+  "victorian_governess_001", "edwardian_music_hall_star_001", "edwardian_suffragette_001", "victorian_dowager_001", "western_homesteader_001",
+  "historical_field_nurse_001", "fantasy_woodland_ranger_001", "fantasy_sorceress_001", "fantasy_druid_001", "fantasy_shieldmaiden_001", "fantasy_dryad_001",
+  "fantasy_elven_scout_001", "cyberpunk_net_courier_001", "scifi_station_director_001", "scifi_wasteland_mechanic_001", "scifi_android_001",
+  "horror_medium_001", "horror_veiled_mourner_001", "stylized_inventor_gran_001", "stylized_music_kid_001", "stylized_tea_grandma_001",
+  "global_festival_dancer_001", "global_market_matriarch_001", "global_village_elder_001", "global_village_weaver_001",
+]);
+/** Creatures, robots and portraits whose gender was not judged: never used as an automatic face for a gendered voice. */
+const UNSURE_FACES = new Set([
+  "stylized_bear_chef_001", "stylized_little_robot_001", "stylized_fox_scout_001", "stylized_baby_dragon_001", "fantasy_horned_beastman_001", "scifi_ambassador_001",
+  "stylized_space_cadet_001", "stylized_young_explorer_001", "horror_ghoul_001",
+  "scifi_runner_001", "contemporary_editor_001", "contemporary_entrepreneur_001", "contemporary_executive_001", "scifi_guardian_001", "contemporary_analyst_001",
+]);
+const CREATURE_FACES = new Set(["stylized_bear_chef_001", "stylized_little_robot_001", "stylized_fox_scout_001", "stylized_baby_dragon_001", "fantasy_horned_beastman_001", "scifi_ambassador_001"]);
+
+const seedHash = (s: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return h >>> 0;
+};
+
+/** A steady built-in portrait for a voice with no chosen picture. A male voice never gets a portrait of a woman and the reverse. */
+export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string): AvatarEntry | null {
+  if (!manifest) return null;
+  const g = (gender ?? "").toLowerCase();
+  const masters = manifest.avatars.filter((a) => a.tier !== "preview" && !CREATURE_FACES.has(a.id));
+  let pool = masters;
+  if (g.startsWith("f")) pool = masters.filter((a) => FEMALE_FACES.has(a.id));
+  else if (g.startsWith("m")) pool = masters.filter((a) => !FEMALE_FACES.has(a.id) && !UNSURE_FACES.has(a.id));
+  if (!pool.length) pool = masters;
+  return pool.length ? pool[seedHash(seed) % pool.length]! : null;
+}

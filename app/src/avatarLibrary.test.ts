@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { addCustom, assignAvatar, emptyStore, expressionFor, faceFor, facets, filterAvatars, migrateStore, progress, RECENT_MAX, removeCustom, suggestAvatars, toggleFavorite, touchRecent, validateManifest, type CustomAvatar } from "./avatarLibrary";
+import { addCustom, autoAvatar, COLLECTIONS, type AvatarManifest, assignAvatar, emptyStore, expressionFor, faceFor, facets, filterAvatars, migrateStore, progress, RECENT_MAX, removeCustom, suggestAvatars, toggleFavorite, touchRecent, validateManifest, type CustomAvatar } from "./avatarLibrary";
 
 const PUB = join(__dirname, "..", "public", "avatars");
 const MASTERS = join(__dirname, "..", "..", "avatars", "masters");
@@ -253,5 +253,28 @@ describe("avatar and voice are independent", () => {
   });
   it("an old character with no avatar still works", () => {
     expect(assignAvatar([{ id: "o", name: "Old", voiceId: "v" }], "zzz", "a")).toEqual([{ id: "o", name: "Old", voiceId: "v" }]);
+  });
+});
+
+describe("automatic faces", () => {
+  const m = { version: 1, target: 100, count: list.length, collections: [...COLLECTIONS], avatars: list } as unknown as AvatarManifest;
+  it("is steady for a voice and never swaps gender", () => {
+    const a = autoAvatar(m, "voice-1Alex", "Male")!;
+    expect(autoAvatar(m, "voice-1Alex", "Male")!.id).toBe(a.id);
+    for (let i = 0; i < 60; i++) {
+      expect(["ancient_queen_001"].includes(autoAvatar(m, "m" + i, "male")!.id)).toBe(false);
+      expect(autoAvatar(m, "f" + i, "Female")!.tier).toBe("master");
+    }
+  });
+  it("never picks a preview or a creature, and spreads voices across many faces", () => {
+    const ids = new Set<string>();
+    for (let i = 0; i < 300; i++) {
+      const e = autoAvatar(m, "seed" + i, i % 2 ? "male" : "female")!;
+      expect(e.tier).toBe("master");
+      expect(e.id).not.toMatch(/bear_chef|little_robot|fox_scout|baby_dragon|beastman/);
+      ids.add(e.id);
+    }
+    expect(ids.size).toBeGreaterThan(20);
+    expect(autoAvatar(null, "x", "male")).toBeNull();
   });
 });

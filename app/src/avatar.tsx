@@ -1,3 +1,5 @@
+import { autoAvatar } from "./avatarLibrary";
+import { useAvatars } from "./avatarState";
 import { portraitFor } from "./portrait";
 
 // Cute clay-style 3D portraits for voices and characters. They are drawn from a seed (the voice's id and name), so the same
@@ -116,7 +118,15 @@ function HairFront({ style, f, band }: { style: string; f: string; band: string 
 /** A round, soft 3D-style portrait. `size` is in pixels. */
 export function Avatar({ seed, gender, size = 64, label }: { seed: string; gender?: string; size?: number; label?: string }) {
   const photo = portraitFor(seed);
+  const { manifest } = useAvatars();
   if (photo) return <img className="avatar" src={photo} alt={label ?? ""} width={size} height={size} style={{ objectFit: "cover", borderRadius: "50%" }} />;
+  // No chosen picture: a steady built-in portrait (never saved; choosing an avatar replaces it). The drawn face is only the
+  // fallback while the library has not loaded or cannot be read.
+  const auto = autoAvatar(manifest, seed, gender);
+  if (auto) {
+    const p = size >= 96 ? auto.assets.card ?? auto.assets.card_small : size >= 48 ? auto.assets.card_small : auto.assets.thumbnail;
+    return <img className="avatar" src={`./avatars/${p}`} alt={label ?? ""} width={size} height={size} decoding="async" loading="lazy" style={{ objectFit: "cover", borderRadius: "50%" }} />;
+  }
   const t = traits(seed, lookFor(gender));
   const id = "av" + hash(seed).toString(36);
   const behind = t.style === "long" || t.style === "bob" || t.style === "bun";
