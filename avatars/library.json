@@ -1138,6 +1138,2658 @@
         "commercial_use": "confirmed",
         "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them."
       }
+    },
+    {
+      "id": "contemporary_traveler_001",
+      "name": "The Market Traveler",
+      "source": "contemporary_traveler_001.webp",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "adventurer",
+      "clothing": "bright patterned shirt with a woven bag strap",
+      "tags": [
+        "adventurer",
+        "market",
+        "traveler",
+        "smiling",
+        "travel",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_priest_001",
+      "name": "The High Priest",
+      "source": "ancient_priest_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_egypt",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "mentor",
+      "clothing": "white linen headdress with a broad blue and gold collar and an ankh",
+      "tags": [
+        "mentor",
+        "high",
+        "priest",
+        "grey beard",
+        "calm",
+        "temple"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_scribe_001",
+      "name": "The Scribe",
+      "source": "ancient_scribe_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_egypt",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "scholar",
+      "clothing": "linen tunic with a blue beaded collar, writing at a desk",
+      "tags": [
+        "scholar",
+        "scribe",
+        "papyrus",
+        "bald",
+        "focused"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_queen_001",
+      "name": "The Queen of the Nile",
+      "source": "ancient_queen_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_egypt",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "ruler",
+      "clothing": "gold diadem, beaded collar and a teal drape",
+      "tags": [
+        "ruler",
+        "queen",
+        "nile",
+        "braids",
+        "earrings",
+        "regal"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_pharaoh_001",
+      "name": "The Pharaoh",
+      "source": "ancient_pharaoh_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_egypt",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "ruler",
+      "clothing": "striped nemes headdress with a gold collar and sceptre",
+      "tags": [
+        "ruler",
+        "pharaoh",
+        "beard",
+        "stern",
+        "royal"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_athenian_001",
+      "name": "The Athenian",
+      "source": "ancient_athenian_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_greece",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "noble",
+      "clothing": "gold laurel wreath and a cream chiton with a purple edge",
+      "tags": [
+        "noble",
+        "athenian",
+        "curls",
+        "columns",
+        "earrings"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_senator_001",
+      "name": "The Senator",
+      "source": "ancient_senator_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_rome",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "statesman",
+      "clothing": "white toga with a purple stripe, holding a scroll",
+      "tags": [
+        "statesman",
+        "senator",
+        "grey hair",
+        "laurel banner",
+        "stern"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_centurion_001",
+      "name": "The Centurion",
+      "source": "ancient_centurion_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_rome",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "soldier",
+      "clothing": "crested bronze helmet, segmented armour and a red cloak",
+      "tags": [
+        "soldier",
+        "centurion",
+        "helmet",
+        "beard",
+        "commander"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_king_001",
+      "name": "The Mesopotamian King",
+      "source": "ancient_king_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_mesopotamia",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "ruler",
+      "clothing": "blue crown with a winged emblem and a purple and gold robe",
+      "tags": [
+        "ruler",
+        "mesopotamian",
+        "king",
+        "black beard",
+        "curls",
+        "royal"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_oracle_001",
+      "name": "The Oracle",
+      "source": "ancient_oracle_001.webp",
+      "collection": "ancient_civilizations",
+      "period": "ancient_greece",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "seer",
+      "clothing": "laurel wreath and a linen veil",
+      "tags": [
+        "seer",
+        "oracle",
+        "wise",
+        "white background",
+        "serene"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "ancient_philosopher_001",
+      "name": "The Philosopher",
+      "source": "ancient_philosopher_001.jpg",
+      "collection": "ancient_civilizations",
+      "period": "ancient_greece",
+      "genre": [
+        "historical",
+        "epic"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "scholar",
+      "clothing": "cream tunic with a blue cloak and brooch",
+      "tags": [
+        "scholar",
+        "philosopher",
+        "grey beard",
+        "curls",
+        "thoughtful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "medieval_man_in_mail_001",
+      "name": "The Mail-Clad Soldier",
+      "source": "medieval_man_in_mail_001.webp",
+      "collection": "medieval_renaissance",
+      "period": "medieval",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "soldier",
+      "clothing": "chainmail coif and a dark tunic",
+      "tags": [
+        "soldier",
+        "mail-clad",
+        "stone wall",
+        "weary",
+        "stubble"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "medieval_abbess_001",
+      "name": "The Abbess",
+      "source": "medieval_abbess_001.webp",
+      "collection": "medieval_renaissance",
+      "period": "medieval",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "cleric",
+      "clothing": "white wimple and a dark hood",
+      "tags": [
+        "cleric",
+        "abbess",
+        "candles",
+        "nun",
+        "gentle"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "medieval_blacksmith_001",
+      "name": "The Blacksmith",
+      "source": "medieval_blacksmith_001.webp",
+      "collection": "medieval_renaissance",
+      "period": "medieval",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "craftsman",
+      "clothing": "leather apron over a linen shirt",
+      "tags": [
+        "craftsman",
+        "blacksmith",
+        "forge",
+        "sparks",
+        "rugged"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "medieval_jester_001",
+      "name": "The Jester",
+      "source": "medieval_jester_001.webp",
+      "collection": "medieval_renaissance",
+      "period": "medieval",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "entertainer",
+      "clothing": "patchwork cap and a multicoloured tunic",
+      "tags": [
+        "entertainer",
+        "jester",
+        "grin",
+        "tavern",
+        "playful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "renaissance_noblewoman_001",
+      "name": "The Noblewoman",
+      "source": "renaissance_noblewoman_001.webp",
+      "collection": "medieval_renaissance",
+      "period": "renaissance",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "noble",
+      "clothing": "jewelled velvet cap and a fur-trimmed crimson gown",
+      "tags": [
+        "noble",
+        "noblewoman",
+        "gold chain",
+        "composed",
+        "green backdrop"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "renaissance_scholar_001",
+      "name": "The Scholar",
+      "source": "renaissance_scholar_001.webp",
+      "collection": "medieval_renaissance",
+      "period": "renaissance",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "scholar",
+      "clothing": "black cap and a plain black robe",
+      "tags": [
+        "scholar",
+        "library",
+        "books",
+        "quiet"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "medieval_man_at_arms_001",
+      "name": "The Man-at-Arms",
+      "source": "medieval_man_at_arms_001.webp",
+      "collection": "medieval_renaissance",
+      "period": "medieval",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "soldier",
+      "clothing": "steel breastplate with a leather collar",
+      "tags": [
+        "soldier",
+        "man-at-arms",
+        "grey beard",
+        "armour",
+        "battle-worn"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "medieval_squire_001",
+      "name": "The Squire",
+      "source": "medieval_squire_001.webp",
+      "collection": "medieval_renaissance",
+      "period": "medieval",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "teen",
+      "archetype": "youth",
+      "clothing": "laced leather vest over a linen shirt",
+      "tags": [
+        "youth",
+        "squire",
+        "castle wall",
+        "young",
+        "earnest"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "renaissance_court_lady_001",
+      "name": "The Court Lady",
+      "source": "renaissance_court_lady_001.jpg",
+      "collection": "medieval_renaissance",
+      "period": "renaissance",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "noble",
+      "clothing": "navy velvet gown with pearls and a small tiara",
+      "tags": [
+        "noble",
+        "court",
+        "lady",
+        "curls",
+        "sapphire",
+        "elegant"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "renaissance_navigator_001",
+      "name": "The Navigator",
+      "source": "renaissance_navigator_001.jpg",
+      "collection": "medieval_renaissance",
+      "period": "renaissance",
+      "genre": [
+        "historical",
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "explorer",
+      "clothing": "navy beret and ruff collar, holding an astrolabe",
+      "tags": [
+        "explorer",
+        "navigator",
+        "beard",
+        "chart",
+        "voyage"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "victorian_patriarch_001",
+      "name": "The Patriarch",
+      "source": "victorian_patriarch_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "authority",
+      "clothing": "black frock coat and cravat",
+      "tags": [
+        "authority",
+        "patriarch",
+        "panelled study",
+        "stern",
+        "grey hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "victorian_foreman_001",
+      "name": "The Foreman",
+      "source": "victorian_foreman_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "worker",
+      "clothing": "flat cap and a tweed jacket",
+      "tags": [
+        "worker",
+        "foreman",
+        "smoky",
+        "stubble",
+        "working class"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "victorian_governess_001",
+      "name": "The Governess",
+      "source": "victorian_governess_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "caregiver",
+      "clothing": "high-collared black dress with hair pinned back",
+      "tags": [
+        "caregiver",
+        "governess",
+        "composed",
+        "pale",
+        "serious"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "victorian_steam_engineer_001",
+      "name": "The Steam Engineer",
+      "source": "victorian_steam_engineer_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "inventor",
+      "clothing": "dark coat with a watch chain",
+      "tags": [
+        "inventor",
+        "steam",
+        "engineer",
+        "mutton chops",
+        "brass machines"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "edwardian_music_hall_star_001",
+      "name": "The Music-Hall Star",
+      "source": "edwardian_music_hall_star_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "edwardian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "entertainer",
+      "clothing": "sequinned gown with a feathered headdress and pearls",
+      "tags": [
+        "entertainer",
+        "music-hall",
+        "star",
+        "smiling",
+        "stage",
+        "curtain"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "edwardian_suffragette_001",
+      "name": "The Suffragette",
+      "source": "edwardian_suffragette_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "edwardian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "activist",
+      "clothing": "wide-brimmed hat and a purple, white and green sash",
+      "tags": [
+        "activist",
+        "suffragette",
+        "determined",
+        "studio",
+        "cream backdrop"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "victorian_street_urchin_001",
+      "name": "The Street Urchin",
+      "source": "victorian_street_urchin_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "youth",
+      "clothing": "flat cap and a patched jacket",
+      "tags": [
+        "youth",
+        "street",
+        "urchin",
+        "smudged face",
+        "cheeky",
+        "poor"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "victorian_physician_001",
+      "name": "The Physician",
+      "source": "victorian_physician_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "scholar",
+      "clothing": "round spectacles and a dark coat with a high collar",
+      "tags": [
+        "scholar",
+        "physician",
+        "warm light",
+        "gentleman",
+        "calm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "victorian_dowager_001",
+      "name": "The Dowager",
+      "source": "victorian_dowager_001.webp",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "matriarch",
+      "clothing": "black lace dress with a pearl choker",
+      "tags": [
+        "matriarch",
+        "dowager",
+        "silver hair",
+        "dignified",
+        "velvet"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "victorian_clockwork_gentleman_001",
+      "name": "The Clockwork Gentleman",
+      "source": "victorian_clockwork_gentleman_001.jpg",
+      "collection": "victorian_edwardian",
+      "period": "victorian",
+      "genre": [
+        "period_drama",
+        "mystery"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "inventor",
+      "clothing": "patterned waistcoat with a gear brooch, holding a brass device",
+      "tags": [
+        "inventor",
+        "clockwork",
+        "gentleman",
+        "goatee",
+        "steampunk",
+        "curls"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "western_sheriff_001",
+      "name": "The Sheriff",
+      "source": "western_sheriff_001.webp",
+      "collection": "western_historical",
+      "period": "wild_west",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "lawman",
+      "clothing": "dusty vest with a star badge and a wide hat",
+      "tags": [
+        "lawman",
+        "sheriff",
+        "golden hour",
+        "moustache",
+        "stern"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "western_gambler_001",
+      "name": "The Gambler",
+      "source": "western_gambler_001.webp",
+      "collection": "western_historical",
+      "period": "wild_west",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "rogue",
+      "clothing": "embroidered vest and a dark hat",
+      "tags": [
+        "rogue",
+        "gambler",
+        "saloon",
+        "lamplight",
+        "grey goatee"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "western_prospector_001",
+      "name": "The Prospector",
+      "source": "western_prospector_001.webp",
+      "collection": "western_historical",
+      "period": "wild_west",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "drifter",
+      "clothing": "tattered hat and a patched coat",
+      "tags": [
+        "drifter",
+        "prospector",
+        "long beard",
+        "grinning",
+        "dusty"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "western_rancher_001",
+      "name": "The Rancher",
+      "source": "western_rancher_001.webp",
+      "collection": "western_historical",
+      "period": "wild_west",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "wanderer",
+      "clothing": "battered hat and a bandana",
+      "tags": [
+        "wanderer",
+        "rancher",
+        "sunset",
+        "stubble"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "western_frontier_scout_001",
+      "name": "The Frontier Scout",
+      "source": "western_frontier_scout_001.webp",
+      "collection": "western_historical",
+      "period": "wild_west",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "explorer",
+      "clothing": "canvas jacket with leather straps",
+      "tags": [
+        "explorer",
+        "frontier",
+        "scout",
+        "scruffy",
+        "warm tones",
+        "tracker"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "western_homesteader_001",
+      "name": "The Homesteader",
+      "source": "western_homesteader_001.webp",
+      "collection": "western_historical",
+      "period": "wild_west",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "farmer",
+      "clothing": "linen bonnet and a plain work dress",
+      "tags": [
+        "farmer",
+        "homesteader",
+        "wheat field",
+        "prairie",
+        "steady"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "historical_aviator_001",
+      "name": "The Aviator",
+      "source": "historical_aviator_001.webp",
+      "collection": "western_historical",
+      "period": "1910s",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "pilot",
+      "clothing": "leather helmet, goggles and a shearling collar",
+      "tags": [
+        "pilot",
+        "aviator",
+        "laughing",
+        "biplane",
+        "pioneer"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "historical_field_nurse_001",
+      "name": "The Field Nurse",
+      "source": "historical_field_nurse_001.webp",
+      "collection": "western_historical",
+      "period": "1910s",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "caregiver",
+      "clothing": "white veil with a red cross and a white apron",
+      "tags": [
+        "caregiver",
+        "field",
+        "nurse",
+        "quiet",
+        "wartime",
+        "serious"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "historical_revolutionary_001",
+      "name": "The Revolutionary",
+      "source": "historical_revolutionary_001.webp",
+      "collection": "western_historical",
+      "period": "18th_century",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "statesman",
+      "clothing": "powdered wig, cravat and a plain brown coat",
+      "tags": [
+        "statesman",
+        "revolutionary",
+        "candlelight",
+        "mid-speech",
+        "orator"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "historical_privateer_001",
+      "name": "The Privateer Captain",
+      "source": "historical_privateer_001.jpg",
+      "collection": "western_historical",
+      "period": "18th_century",
+      "genre": [
+        "western",
+        "historical"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "captain",
+      "clothing": "feathered tricorn hat and a red coat, holding an astrolabe",
+      "tags": [
+        "captain",
+        "privateer",
+        "beard",
+        "brass",
+        "commanding"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_woodland_ranger_001",
+      "name": "The Woodland Ranger",
+      "source": "fantasy_woodland_ranger_001.webp",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "ranger",
+      "clothing": "green hood with braided hair and leather straps",
+      "tags": [
+        "ranger",
+        "woodland",
+        "elf",
+        "forest",
+        "pointed ears"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_dwarf_smith_001",
+      "name": "The Dwarf Smith",
+      "source": "fantasy_dwarf_smith_001.webp",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "craftsman",
+      "clothing": "braided beard with metal rings and a leather apron",
+      "tags": [
+        "craftsman",
+        "dwarf",
+        "smith",
+        "embers",
+        "gruff"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_sorceress_001",
+      "name": "The Sorceress",
+      "source": "fantasy_sorceress_001.webp",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "mage",
+      "clothing": "violet robe with silver embroidery",
+      "tags": [
+        "mage",
+        "sorceress",
+        "long dark hair",
+        "purple light",
+        "calm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_druid_001",
+      "name": "The Druid",
+      "source": "fantasy_druid_001.webp",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "mystic",
+      "clothing": "woven greenery, beads and a crown of leaves",
+      "tags": [
+        "mystic",
+        "druid",
+        "curls",
+        "nature",
+        "teal backdrop"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_shieldmaiden_001",
+      "name": "The Shieldmaiden",
+      "source": "fantasy_shieldmaiden_001.webp",
+      "collection": "fantasy_mythology",
+      "period": "norse_myth",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "warrior",
+      "clothing": "winged steel helm, fur collar and chainmail",
+      "tags": [
+        "warrior",
+        "shieldmaiden",
+        "braids",
+        "stern",
+        "northern"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_dryad_001",
+      "name": "The Dryad",
+      "source": "fantasy_dryad_001.webp",
+      "collection": "fantasy_mythology",
+      "period": "myth",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "spirit",
+      "clothing": "bark-textured skin crowned with moss and ferns",
+      "tags": [
+        "spirit",
+        "dryad",
+        "tree spirit",
+        "woodland",
+        "dappled light"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_dragon_knight_001",
+      "name": "The Dragon Knight",
+      "source": "fantasy_dragon_knight_001.webp",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "warrior",
+      "clothing": "dragon-scale armour",
+      "tags": [
+        "warrior",
+        "dragon",
+        "knight",
+        "scarred",
+        "grey hair",
+        "veteran"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_elven_scout_001",
+      "name": "The Elven Scout",
+      "source": "fantasy_elven_scout_001.jpg",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "stylized_3d",
+      "age_category": "young_adult",
+      "archetype": "ranger",
+      "clothing": "leaf circlet, green cloak and a gem brooch",
+      "tags": [
+        "ranger",
+        "elven",
+        "scout",
+        "elf",
+        "freckles",
+        "green glow"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "fantasy_horned_beastman_001",
+      "name": "The Horned Beastman",
+      "source": "fantasy_horned_beastman_001.jpg",
+      "collection": "fantasy_mythology",
+      "period": "high_fantasy",
+      "genre": [
+        "fantasy",
+        "adventure"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "creature",
+      "clothing": "fur-trimmed leather vest with a claw necklace",
+      "tags": [
+        "creature",
+        "horned",
+        "beastman",
+        "blue skin",
+        "horns",
+        "fierce"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "scifi_android_001",
+      "name": "The Android",
+      "source": "scifi_android_001.webp",
+      "collection": "science_fiction_cyberpunk",
+      "period": "far_future",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "android",
+      "clothing": "black turtleneck",
+      "tags": [
+        "android",
+        "synthetic",
+        "studio",
+        "neutral"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "cyberpunk_tinkerer_001",
+      "name": "The Back-Alley Tinkerer",
+      "source": "cyberpunk_tinkerer_001.webp",
+      "collection": "science_fiction_cyberpunk",
+      "period": "cyberpunk",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "hacker",
+      "clothing": "clear plastic apron and glowing goggles",
+      "tags": [
+        "hacker",
+        "back-alley",
+        "tinkerer",
+        "neon",
+        "cables",
+        "grey hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "cyberpunk_net_courier_001",
+      "name": "The Net Courier",
+      "source": "cyberpunk_net_courier_001.webp",
+      "collection": "science_fiction_cyberpunk",
+      "period": "cyberpunk",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "runner",
+      "clothing": "hooded jacket with a glowing earpiece",
+      "tags": [
+        "runner",
+        "net",
+        "courier",
+        "circuit board",
+        "teal",
+        "sly smile"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "scifi_station_director_001",
+      "name": "The Station Director",
+      "source": "scifi_station_director_001.webp",
+      "collection": "science_fiction_cyberpunk",
+      "period": "far_future",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "scientist",
+      "clothing": "white high-collared uniform",
+      "tags": [
+        "scientist",
+        "station",
+        "director",
+        "short grey hair",
+        "glass wall",
+        "calm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "scifi_wasteland_mechanic_001",
+      "name": "The Wasteland Mechanic",
+      "source": "scifi_wasteland_mechanic_001.webp",
+      "collection": "science_fiction_cyberpunk",
+      "period": "space_frontier",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "engineer",
+      "clothing": "respirator mask and a worn work jacket",
+      "tags": [
+        "engineer",
+        "wasteland",
+        "mechanic",
+        "red wall",
+        "dusty",
+        "tough"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "scifi_ambassador_001",
+      "name": "The Ambassador",
+      "source": "scifi_ambassador_001.webp",
+      "collection": "science_fiction_cyberpunk",
+      "period": "space_opera",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "ageless",
+      "archetype": "alien",
+      "clothing": "high-collared violet jacket",
+      "tags": [
+        "alien",
+        "ambassador",
+        "pale skin",
+        "stars"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "scifi_refinery_engineer_001",
+      "name": "The Refinery Engineer",
+      "source": "scifi_refinery_engineer_001.webp",
+      "collection": "science_fiction_cyberpunk",
+      "period": "space_frontier",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "engineer",
+      "clothing": "welding goggles and a patched leather jacket",
+      "tags": [
+        "engineer",
+        "refinery",
+        "pipes",
+        "amber light",
+        "grin"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "cyberpunk_operative_001",
+      "name": "The Operative",
+      "source": "cyberpunk_operative_001.jpg",
+      "collection": "science_fiction_cyberpunk",
+      "period": "cyberpunk",
+      "genre": [
+        "science_fiction"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "operative",
+      "clothing": "dark jacket with glowing collar details",
+      "tags": [
+        "operative",
+        "blue light",
+        "black hair",
+        "steady gaze"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_pale_archivist_001",
+      "name": "The Pale Archivist",
+      "source": "horror_pale_archivist_001.webp",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "ominous",
+      "clothing": "black coat and a high collar",
+      "tags": [
+        "ominous",
+        "pale",
+        "archivist",
+        "long white hair",
+        "gaunt",
+        "grey backdrop"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_count_001",
+      "name": "The Count",
+      "source": "horror_count_001.webp",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "vampire",
+      "clothing": "high red-lined collar and a dark cape",
+      "tags": [
+        "vampire",
+        "count",
+        "candlelit",
+        "dark hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_monster_hunter_001",
+      "name": "The Monster Hunter",
+      "source": "horror_monster_hunter_001.webp",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "hunter",
+      "clothing": "wide leather hat and a buckled coat",
+      "tags": [
+        "hunter",
+        "monster",
+        "scarred",
+        "grim",
+        "smoky"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_medium_001",
+      "name": "The Medium",
+      "source": "horror_medium_001.webp",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "mystic",
+      "clothing": "beaded headscarf and a shawl",
+      "tags": [
+        "mystic",
+        "medium",
+        "candles",
+        "seance",
+        "purple light"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_exorcist_001",
+      "name": "The Exorcist Priest",
+      "source": "horror_exorcist_001.webp",
+      "collection": "horror_supernatural",
+      "period": "modern_horror",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "cleric",
+      "clothing": "black clerical shirt with a white collar",
+      "tags": [
+        "cleric",
+        "exorcist",
+        "priest",
+        "flames",
+        "haunted",
+        "grave"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_scarecrow_farmer_001",
+      "name": "The Scarecrow Farmer",
+      "source": "horror_scarecrow_farmer_001.webp",
+      "collection": "horror_supernatural",
+      "period": "folk_horror",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "unsettling",
+      "clothing": "straw hat and patched overalls",
+      "tags": [
+        "unsettling",
+        "scarecrow",
+        "farmer",
+        "cornfield",
+        "dusk",
+        "too wide a smile"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_veiled_mourner_001",
+      "name": "The Veiled Mourner",
+      "source": "horror_veiled_mourner_001.webp",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "ghost",
+      "clothing": "grey veil with loose hair",
+      "tags": [
+        "ghost",
+        "veiled",
+        "mourner",
+        "pale",
+        "grief",
+        "white backdrop"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_lighthouse_keeper_001",
+      "name": "The Lighthouse Keeper",
+      "source": "horror_lighthouse_keeper_001.webp",
+      "collection": "horror_supernatural",
+      "period": "gothic",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "haunted",
+      "clothing": "oilskin coat",
+      "tags": [
+        "haunted",
+        "lighthouse",
+        "keeper",
+        "white beard",
+        "sea",
+        "teal backdrop"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_occult_professor_001",
+      "name": "The Occult Professor",
+      "source": "horror_occult_professor_001.webp",
+      "collection": "horror_supernatural",
+      "period": "modern_horror",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "scholar",
+      "clothing": "tweed jacket and round glasses",
+      "tags": [
+        "scholar",
+        "occult",
+        "professor",
+        "study",
+        "anxious",
+        "books"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "horror_ghoul_001",
+      "name": "The Ghoul",
+      "source": "horror_ghoul_001.jpg",
+      "collection": "horror_supernatural",
+      "period": "modern_horror",
+      "genre": [
+        "horror",
+        "thriller"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "undead",
+      "clothing": "torn clothes",
+      "tags": [
+        "undead",
+        "ghoul",
+        "pale",
+        "dark hair",
+        "scars"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_bear_chef_001",
+      "name": "The Bear Chef",
+      "source": "stylized_bear_chef_001.webp",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "creature",
+      "clothing": "white chef coat and a tall hat",
+      "tags": [
+        "creature",
+        "bear",
+        "chef",
+        "kitchen",
+        "friendly"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_little_robot_001",
+      "name": "The Little Robot",
+      "source": "stylized_little_robot_001.webp",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "robot",
+      "clothing": "brushed-metal body with large glowing eyes",
+      "tags": [
+        "robot",
+        "little",
+        "teal backdrop",
+        "curious"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_fox_scout_001",
+      "name": "The Fox Scout",
+      "source": "stylized_fox_scout_001.webp",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "creature",
+      "clothing": "maroon scarf and a satchel strap",
+      "tags": [
+        "creature",
+        "fox",
+        "scout",
+        "orange backdrop",
+        "sly"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_inventor_gran_001",
+      "name": "The Inventor Gran",
+      "source": "stylized_inventor_gran_001.webp",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "elderly",
+      "archetype": "inventor",
+      "clothing": "aviator cap with goggles and a tool apron",
+      "tags": [
+        "inventor",
+        "gran",
+        "workshop",
+        "smiling",
+        "gears"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_young_explorer_001",
+      "name": "The Young Explorer",
+      "source": "stylized_young_explorer_001.webp",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "child",
+      "archetype": "explorer",
+      "clothing": "bucket hat, yellow jacket and a backpack",
+      "tags": [
+        "explorer",
+        "young",
+        "boy",
+        "compass",
+        "excited"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_baby_dragon_001",
+      "name": "The Baby Dragon",
+      "source": "stylized_baby_dragon_001.webp",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "ageless",
+      "archetype": "creature",
+      "clothing": "golden scales and small horns",
+      "tags": [
+        "creature",
+        "baby",
+        "dragon",
+        "big eyes",
+        "purple backdrop"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_space_cadet_001",
+      "name": "The Space Cadet",
+      "source": "stylized_space_cadet_001.webp",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "teen",
+      "archetype": "astronaut",
+      "clothing": "white and orange suit with a bubble helmet",
+      "tags": [
+        "astronaut",
+        "space",
+        "cadet",
+        "stars",
+        "joyful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_music_kid_001",
+      "name": "The Music Kid",
+      "source": "stylized_music_kid_001.jpg",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "child",
+      "archetype": "youth",
+      "clothing": "denim jacket, yellow hoodie and headphones",
+      "tags": [
+        "youth",
+        "music",
+        "kid",
+        "girl",
+        "curly puffs",
+        "cheerful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_jazz_grandpa_001",
+      "name": "The Jazz Grandpa",
+      "source": "stylized_jazz_grandpa_001.jpg",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "elderly",
+      "archetype": "musician",
+      "clothing": "burgundy fedora and suit with a saxophone",
+      "tags": [
+        "musician",
+        "jazz",
+        "grandpa",
+        "moustache",
+        "glasses",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "stylized_tea_grandma_001",
+      "name": "The Tea Grandma",
+      "source": "stylized_tea_grandma_001.jpg",
+      "collection": "stylized_3d_animation",
+      "period": "stylized",
+      "genre": [
+        "animation",
+        "family"
+      ],
+      "style": "stylized_3d",
+      "age_category": "elderly",
+      "archetype": "matriarch",
+      "clothing": "teal embroidered jacket and jade earrings",
+      "tags": [
+        "matriarch",
+        "tea",
+        "grandma",
+        "glasses",
+        "silver bun",
+        "kind"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_highland_traveller_001",
+      "name": "The Highland Traveller",
+      "source": "global_highland_traveller_001.webp",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "wanderer",
+      "clothing": "cream striped shawl and jade earrings",
+      "tags": [
+        "wanderer",
+        "highland",
+        "traveller",
+        "long hair",
+        "green backdrop",
+        "looking up"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_court_official_001",
+      "name": "The Court Official",
+      "source": "global_court_official_001.webp",
+      "collection": "global_cultural_archetypes",
+      "period": "imperial_china",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "official",
+      "clothing": "black winged hat and a dark robe",
+      "tags": [
+        "official",
+        "court",
+        "red wall",
+        "goatee",
+        "formal"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_andean_elder_001",
+      "name": "The Highland Elder",
+      "source": "global_andean_elder_001.webp",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "elder",
+      "clothing": "knit cap and a woven wool shawl",
+      "tags": [
+        "elder",
+        "highland",
+        "warm smile",
+        "weathered",
+        "andes"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_storyteller_001",
+      "name": "The Storyteller",
+      "source": "global_storyteller_001.webp",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "storyteller",
+      "clothing": "patterned woven jacket and beaded necklaces",
+      "tags": [
+        "storyteller",
+        "firelight",
+        "long grey hair",
+        "joyful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_festival_dancer_001",
+      "name": "The Festival Dancer",
+      "source": "global_festival_dancer_001.webp",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "celebrant",
+      "clothing": "flower crown and an embroidered blouse",
+      "tags": [
+        "celebrant",
+        "festival",
+        "dancer",
+        "laughing",
+        "colourful",
+        "pink backdrop"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_tea_master_001",
+      "name": "The Tea Master",
+      "source": "global_tea_master_001.webp",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "mentor",
+      "clothing": "grey kimono",
+      "tags": [
+        "mentor",
+        "tea",
+        "master",
+        "paper screen",
+        "serene",
+        "white hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_desert_nomad_001",
+      "name": "The Desert Nomad",
+      "source": "global_desert_nomad_001.webp",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "nomad",
+      "clothing": "sand-coloured turban and robe",
+      "tags": [
+        "nomad",
+        "desert",
+        "dunes",
+        "stubble",
+        "golden light"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_market_matriarch_001",
+      "name": "The Market Matriarch",
+      "source": "global_market_matriarch_001.jpg",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "matriarch",
+      "clothing": "bright patterned headwrap and a mustard cardigan",
+      "tags": [
+        "matriarch",
+        "market",
+        "smiling",
+        "chin on hand",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_village_elder_001",
+      "name": "The Village Elder",
+      "source": "global_village_elder_001.jpg",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "elder",
+      "clothing": "orange headwrap, beaded necklace and a patterned dress",
+      "tags": [
+        "elder",
+        "village",
+        "grey curls",
+        "hoop earrings",
+        "wise"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
+    },
+    {
+      "id": "global_village_weaver_001",
+      "name": "The Village Weaver",
+      "source": "global_village_weaver_001.jpg",
+      "collection": "global_cultural_archetypes",
+      "period": "traditional",
+      "genre": [
+        "drama",
+        "world"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "artisan",
+      "clothing": "grey-green wrap top with a brown shawl",
+      "tags": [
+        "artisan",
+        "village",
+        "weaver",
+        "hair bun",
+        "gentle"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded, so keep the owner's record of them. Delivered as a 1024 px WebP or a 1254 px JPEG converted from the original, then reduced to the 1024 px master; the original files were not seen."
+      },
+      "tier": "master"
     }
   ]
 }

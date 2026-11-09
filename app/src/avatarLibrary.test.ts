@@ -145,15 +145,18 @@ describe("searching and filtering", () => {
   it("filters by collection, age, genre and style, together", () => {
     expect(filterAvatars(list, { collection: "science_fiction_cyberpunk" }).every((a) => a.collection === "science_fiction_cyberpunk")).toBe(true);
     expect(filterAvatars(list, { age: "elderly" }).every((a) => a.age_category === "elderly")).toBe(true);
-    expect(filterAvatars(list, { genre: "cyberpunk", age: "young_adult" }).map((a) => a.id)).toEqual(["scifi_runner_001"]);
-    expect(filterAvatars(list, { style: "stylized_3d" })).toEqual([]);
+    expect(filterAvatars(list, { genre: "cyberpunk", age: "young_adult" }).map((a) => a.id)).toContain("scifi_runner_001");
+    const flat = filterAvatars(list, { style: "stylized_3d" });
+    expect(flat.length).toBeGreaterThan(0);
+    expect(flat.every((a) => a.style === "stylized_3d")).toBe(true);
     expect(filterAvatars(list, { only: new Set(["contemporary_elder_001"]) })).toHaveLength(1);
   });
 
   it("lists only the choices that exist", () => {
     const f = facets(list);
     expect(f.collections).toContain("contemporary_everyday");
-    expect(f.collections).not.toContain("ancient_civilizations");
+    expect(f.collections).toContain("ancient_civilizations");
+    expect(facets([list[0]!]).collections).toEqual([list[0]!.collection]);
     expect(f.ages.length).toBeGreaterThan(2);
   });
 });
@@ -171,7 +174,7 @@ describe("suggestions", () => {
   });
 
   it("offers fewer rather than unrelated faces, and nothing for an empty description", () => {
-    expect(suggestAvatars("dragon", list)).toEqual([]);
+    expect(suggestAvatars("submarine zeppelin", list)).toEqual([]);
     expect(suggestAvatars("", list)).toEqual([]);
     expect(suggestAvatars("a young cyberpunk hacker", list)[0]!.entry.id).toBe("scifi_runner_001");
   });

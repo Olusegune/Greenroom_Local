@@ -88,7 +88,7 @@ Each line is a card led by its character's **portrait**. Along the top are the t
 
 ### Avatars for characters
 
-Press a character's face (on Perform, Cast or the Reaction Library) to open the **Avatar browser**: search and filter the built-in portraits, mark favourites, see recently used ones, import your own picture, get suggestions from a description, or create a custom avatar. A character's avatar and voice are separate: changing one never changes the other. Details, the rights status and what is still missing are in [Avatar library](AVATAR_LIBRARY.md). **The built-in library has 12 of its 100 planned portraits so far.**
+Press a character's face (on Perform, Cast or the Reaction Library) to open the **Avatar browser**: search and filter the built-in portraits, mark favourites, see recently used ones, import your own picture, get suggestions from a description, or create a custom avatar. A character's avatar and voice are separate: changing one never changes the other. Details, the rights status and what is still missing are in [Avatar library](AVATAR_LIBRARY.md). **The built-in library has 100 portraits (10 in each of ten collections), plus 22 lower-resolution previews.**
 
 ### Pictures for voices
 

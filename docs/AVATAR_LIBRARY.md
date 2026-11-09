@@ -1,6 +1,6 @@
 # Character Avatar Library
 
-**Status (2026-11-08): 12 of the 100 required full-resolution portraits exist, plus 22 preview-resolution portraits that do not count toward the 100. The 100-avatar requirement is NOT complete.** The pipeline, the manifest, the browser and all the integration are built and tested. The other 88 portraits need to be made (see `avatars/plan.json`, which holds a prompt for each) and then run through the same pipeline. Nothing was duplicated, recoloured or upscaled to reach a count.
+**Status (2026-11-08): 100 of the 100 required full-resolution portraits exist (10 in each collection), plus 22 preview-resolution portraits that do not count toward the 100.** All 100 passed the file checks: unique ids, exact sizes and formats, no two the same picture, rights recorded. The 88 added in version 0.8.0 were chosen from the owner's three folders (see "How the last 88 were chosen"). **Nothing has been judged by eye for quality beyond one pass over contact sheets, and no portrait has been checked against real people by anyone but that pass.** Nothing was duplicated, recoloured or upscaled to reach the count.
 
 ## What the owner gets
 
@@ -30,7 +30,7 @@ A character holds separate references: its own id, an **avatar id** (`avatarId`)
 
 | Tier | What it has | Counts toward the 100 |
 |---|---|---|
-| **Master** | 1024 x 1024 PNG master, 512 and 256 WebP cards, 128 thumbnail | Yes (12 so far) |
+| **Master** | 1024 x 1024 PNG master, 512 and 256 WebP cards, 128 thumbnail | Yes (100) |
 | **Preview** | Only a 256 WebP card and a 128 thumbnail, cut from a contact sheet. No master and no 512 card, because the sheet tiles are about 330 px and are never upscaled | No (22 so far) |
 
 Previews are labelled "Preview" in the browser and the preview panel says so. The manifest and a test refuse a preview that claims a master or a 512 card.
@@ -49,7 +49,7 @@ Five distinct contact sheets (and `IMAGES.png`, an exact copy of `Mosaic-1`). Tw
 | 512 px WebP cards, 256 px cards, 128 px thumbnails and the runtime manifest, bundled in the app | `app/public/avatars/` |
 | The owner's avatars, favourites and recent list | `avatars.json` in Documents/Greenroom Local |
 
-Bundled size for the 12 portraits is about 650 KB; the masters (19 MB) are not loaded by the app.
+Bundled size for the 100 masters plus 22 previews is about 6 MB; the masters (about 145 MB) are not loaded by the app.
 
 ## Adding portraits (the pipeline)
 
@@ -62,30 +62,30 @@ Bundled size for the 12 portraits is about 650 KB; the masters (19 MB) are not l
 
 ## The ten collections and what exists
 
-| Collection | Made | Planned slots still missing |
+| Collection | Made | Still missing |
 |---|---|---|
-| Contemporary and everyday | 9 (+7 preview) | 1 |
-| Ancient civilizations | 0 | 10 |
-| Medieval and Renaissance | 0 (+1 preview) | 10 |
-| Victorian and Edwardian | 0 | 10 |
-| Western and historical | 0 (+1 preview) | 10 |
-| Fantasy and mythology | 1 (+3 preview) | 9 |
-| Science fiction and cyberpunk | 2 (+4 preview) | 8 |
-| Horror and supernatural | 0 (+1 preview) | 10 |
-| Stylized 3D and animation | 0 | 10 |
-| Global and cultural archetypes | 0 (+5 preview) | 10 |
+| Contemporary and everyday | 10 (+7 preview) | 0 |
+| Ancient civilizations | 10 | 0 |
+| Medieval and Renaissance | 10 (+1 preview) | 0 |
+| Victorian and Edwardian | 10 | 0 |
+| Western and historical | 10 (+1 preview) | 0 |
+| Fantasy and mythology | 10 (+3 preview) | 0 |
+| Science fiction and cyberpunk | 10 (+4 preview) | 0 |
+| Horror and supernatural | 10 (+1 preview) | 0 |
+| Stylized 3D and animation | 10 | 0 |
+| Global and cultural archetypes | 10 (+5 preview) | 0 |
 
-The 12 portraits are all one visual style (cinematic realism). The planned slots add variety across periods, cultures, ages and a stylized 3D collection. I could not make them: the image tool I looked for (the local SimpliGen app) was not running, and Greenroom's own image route (Kie) has only been tested against a fake server and costs money, which automated work must not spend.
+Eighty-nine portraits are cinematic realism and eleven are stylized 3D (the whole Stylized 3D collection and one fantasy elf). The cinematic ones are made in a common studio style, so **many faces share a family resemblance** (the same few male and female archetypes recur across the Egyptian, medieval, western and horror sets). The checks only catch identical or near-identical pictures, not "same kind of face", so if the set feels samey in use, that is the cause and those portraits can be swapped.
 
 ## Rights
 
-All portraits were **supplied by the owner** (the folders "Green Local avatars" and "NEW IMAGES FOR GREEN ROOM"), who stated on 2026-11-08 that the images belong to them. Each entry records that statement and `commercial_use: "confirmed"` on the owner's word. **The tool that made the images and its terms were not recorded**, so keep your own record of them: ownership of generated images can depend on the generator's terms, and a distributor may ask. None of the portraits used is a recognisable real person or franchise character as far as can be seen, but nobody has verified that, and the orc and vampire are generic fantasy types. For the remaining 88, every entry must record where its art came from.
+All portraits were **supplied by the owner** (the folders "Green Local avatars" and "NEW IMAGES FOR GREEN ROOM"), who stated on 2026-11-08 that the images belong to them. Each entry records that statement and `commercial_use: "confirmed"` on the owner's word. **The tool that made the images and its terms were not recorded**, so keep your own record of them: ownership of generated images can depend on the generator's terms, and a distributor may ask. None of the portraits used is a recognisable real person or franchise character as far as can be seen, but nobody has verified that, and the orc and vampire are generic fantasy types. The 88 added in 0.8.0 carry the same record. They arrived as 1024 px WebP files and as JPEGs (up to 1254 px) converted by the owner's export from the original PNGs; those originals were not seen, so the masters are one lossy step from the original art.
 
 ## QA (what was checked, 2026-11-08)
 
 | Check | Result |
 |---|---|
-| Every manifest entry references real files; no broken paths | Passed for all 34 (automatic test reads the files) |
+| Every manifest entry references real files; no broken paths | Passed for all 122 (automatic test reads the files) |
 | No duplicate ids or asset files; no two portraits the same picture | Passed (exact hashes in the test; perceptual hash in the build script) |
 | Masters 1024 x 1024 PNG; cards 512, 256 and thumbnails 128 WebP, exact sizes (previews: 256 and 128 only) | Passed |
 | Bundled files small (thumbnails under 15 KB, cards under 120 KB) | Passed |
@@ -94,7 +94,21 @@ All portraits were **supplied by the owner** (the folders "Green Local avatars" 
 | Persistence of avatar, favourites, recent and custom avatars | Rust test (saves and reloads, refuses bad data) and JavaScript tests; **not tested across a real restart of the installed app** |
 | Existing projects open unchanged | Passed (test) |
 | No unwanted network requests | Passed (test: the only fetch is the relative manifest; the one paid path asks first). **Not measured with a network monitor** |
-| Smooth scrolling and memory with thousands of avatars | **Not measured.** Only visible rows are drawn and pictures load lazily (tested in code), but no thousand-image library exists to try it on |
+| Smooth scrolling and memory with thousands of avatars | **Not measured.** Only visible rows are drawn and pictures load lazily (tested in code); 122 avatars were not enough to stress it, and no thousand-image library exists |
 | Shown in Casting Studio, Perform, the character rail, the Reaction Library, the script screen's cast list | Done |
 | Shown in Acting Director, Scene Studio, the dialogue timeline, the Voice Library | **Not done.** The Acting Director is the Director panel inside Perform (the face is on its card); Greenroom has no separate Scene Studio or dialogue-timeline faces; the Voice Library still shows voice pictures and drawn faces |
-| 100 distinct full-resolution portraits | **Not met: 12 exist** (plus 22 previews that do not count) |
+| 100 distinct full-resolution portraits | **Met: 100 exist** (plus 22 previews that do not count). Distinct as pictures; see the note on family resemblance |
+
+## How the last 88 were chosen (version 0.8.0)
+
+The owner supplied three more sources: the folder "Greenroom Avatar Images Vs 2" (79 WebP files, all 1024 x 1024) and the archive `Greenroom_All_Created_Avatars_Optimized.zip` (278 files: individual portraits up to 1254 px, five contact sheets, four "previous batch" folders and an inventory). From these, 225 square files of 1024 px or more were found; 19 were already in the library and 30 were near-duplicates of each other (difference-hash distance of 20 or less), leaving 184 distinct candidates. Each was looked at on numbered contact sheets and 88 were chosen to give each collection exactly ten, favouring different people, ages, cultures and clothing.
+
+Left out on purpose:
+
+- **Look-alikes of known characters:** a face with a Starfleet-style badge, two swamp creatures, a long-bearded wizard in starry blue, a bespectacled boy wizard with a pointed hat, a blue horned monster in a hoodie (two versions), a hoodie-wearing fox that resembles a film character and a black-haired queen with a high collar.
+- **Text on the picture:** a fire-fighter helmet reading "FIRE RESCUE" and a banner reading "SPQR".
+- **Not head-and-shoulders:** six full-body figures.
+- **The 100 "previous batch" images at 512 px:** too small for a master (masters are never upscaled), and already counted in the tiers above if used at all.
+- **One unsettling wet-haired child**, as too close to a well-known horror image.
+
+Many near-identical variations of the same face (for example eight similar Egyptian elders) were reduced to one or two.
