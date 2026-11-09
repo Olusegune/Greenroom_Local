@@ -4,6 +4,7 @@ import type { VoiceDna } from "./voiceDna";
 import type { ConvertReport } from "./convertReport";
 import type { BeatMode, BeatSetting } from "./beats";
 import type { Reaction } from "./reactions";
+import type { AgentRun } from "./agent/graph";
 
 export interface Character {
   id: string;
@@ -237,6 +238,8 @@ export interface Project {
   music?: MusicClip[];
   mix?: Partial<MixCfg>;
   ledger?: LedgerEntry[];
+  /** The Agent Studio production run: plan, progress, approvals and audit log. Absent on projects made before it. */
+  agent?: AgentRun;
   createdAt: string;
   updatedAt: string;
 }

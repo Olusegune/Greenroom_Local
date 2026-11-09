@@ -20,6 +20,7 @@ import { checkForUpdates, useUpdates } from "./updates";
 import Settings from "./screens/Settings";
 import Voices from "./screens/Voices";
 import Presets from "./screens/Presets";
+import AgentStudio from "./screens/AgentStudio";
 import Models from "./screens/Models";
 import Help from "./screens/Help";
 import SfxStudio from "./screens/SfxStudio";
@@ -105,7 +106,7 @@ function Shell() {
   const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem("greenroom-rail") === "collapsed"; } catch { return false; } });
   const toggleRail = () => setCollapsed((c) => { const next = !c; try { localStorage.setItem("greenroom-rail", next ? "collapsed" : "open"); } catch { /* not saved */ } return next; });
   const takes = project ? project.lines.filter((l) => l.takes.length > 0).length : 0;
-  const screens: Record<Tab, React.ReactNode> = { home: <Home />, write: <Write />, cast: <Cast />, perform: <Perform />, timeline: <Timeline />, picture: <PictureScreen />, export: <Export />, studio: <Studio />, history: <History />, voices: <Voices />, presets: <Presets />, models: <Models />, engines: <Engines />, sfx: <SfxStudio />, lab: <Lab />, settings: <Settings />, help: <Help /> };
+  const screens: Record<Tab, React.ReactNode> = { home: <Home />, write: <Write />, cast: <Cast />, perform: <Perform />, timeline: <Timeline />, picture: <PictureScreen />, export: <Export />, studio: <Studio />, history: <History />, voices: <Voices />, presets: <Presets />, agent: <AgentStudio />, models: <Models />, engines: <Engines />, sfx: <SfxStudio />, lab: <Lab />, settings: <Settings />, help: <Help /> };
 
   return (
     <div className={collapsed ? "shell rail-collapsed" : "shell"}>
@@ -125,6 +126,7 @@ function Shell() {
             <Item id="timeline" label="Timeline" icon={<TimelineIcon size={18} />} />
             <Item id="picture" label="Picture" icon={<Eye size={18} />} count={project.picture ? "on" : undefined} />
             <Item id="export" label="Export" icon={<ExportIcon size={18} />} />
+            <Item id="agent" label="Agent Studio" icon={<Sparkle size={18} />} />
             <Item id="studio" label="Studio" icon={<Shield size={18} />} />
             <Item id="history" label="History" icon={<Clock size={18} />} />
           </>

@@ -41,6 +41,9 @@ export interface Plan {
 /** The director's own words for the line (if any) compiled for this voice's engine. The saved line is never changed. */
 const acted = (l: Line, v: VoiceEntry, o: PlanOptions) => withActing(l, { engine: v.provider, ...(o.inworldModel ? { inworldModel: o.inworldModel } : {}) });
 
+/** Whether making this line for this voice takes one request per phrase, counting beats that come from the director's own words. */
+export const assembledFor = (original: Line, voice: VoiceEntry, opts: PlanOptions = {}): boolean => isAssembled(acted(original, voice, opts).line);
+
 function planOne(saved: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], opts: PlanOptions = {}): Plan {
   // The performance plan (if any) is compiled into the direction here; the saved line is never changed.
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });

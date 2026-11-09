@@ -20,7 +20,7 @@ import { api } from "../api";
 import { ENGINES, ENGINE_ORDER, directorLabel, directorReady, qualityFormat, soundEngineOf } from "../engines";
 import { askCloud } from "../directorCall";
 import { useLocalDirectorReady } from "../localDirector";
-import { makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type Model } from "../generate";
+import { assembledFor, makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type Model } from "../generate";
 import { beatsFor, hasBeats, isAssembled } from "../beats";
 import { migrateReactions, reuse, saveReaction } from "../reactions";
 import ReVoiceDialog from "./ReVoiceDialog";
@@ -105,7 +105,7 @@ export default function Perform() {
     }
     try {
       for (let i = 0; i < runs.length; i++) {
-        const t = await (isAssembled(line) ? makeBeatTake : makeTake)(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i] });
+        const t = await (assembledFor(line, voice, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i] });
         // A set of interpretations never replaces a take you already chose.
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: variations ? l.chosen ?? t.id : t.id }), "~take");
         const sent = t.provenance?.chars ?? chars;
@@ -135,7 +135,7 @@ export default function Perform() {
       const line = todo[i]!;
       try {
         const v = voiceOf(line)!;
-        const t = await (isAssembled(line) ? makeBeatTake : makeTake)(project.id, line, v, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
+        const t = await (assembledFor(line, v, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, v, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }), "~take");
         const sent = t.provenance?.chars ?? 0;
         addLedger({ kind: "speech", engine: ENGINES[v.provider].label, chars: sent, items: [{ kind: "speech", engine: v.provider, chars: sent }] });

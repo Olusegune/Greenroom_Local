@@ -64,6 +64,7 @@ export function buildMenus(a: MenuActions): MenuDef[] {
         { sep: true },
         { label: "Voice library", run: () => a.go("voices") },
         { label: "Voice presets", run: () => a.go("presets") },
+        { label: "Agent Studio", run: () => a.go("agent") },
         { label: "Model Center", run: () => a.go("models") },
         { label: "Voice lab", run: () => a.go("lab") },
         { label: "Settings", run: () => a.go("settings") },
