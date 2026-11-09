@@ -85,6 +85,10 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
 
+## New in 0.12.1
+- **Set up my PC** (Model Center): one confirmation, then Piper and two free English voices are installed in order with progress. Chatterbox (for Re-voice) is an optional tick. Safe to run again: finished steps are skipped.
+- **Free preview on this PC**: a preset audition on a cloud voice can play a plain-read local stand-in instead of spending credits. Settings, Local first, makes that the main Audition button. The stand-in is not the cloud voice.
+
 ## New in 0.12.0
 - **Faces on presets** from the existing portrait library, matched on role, age and presentation, never on accent.
 - **Audition with direction**, **character profiles** you can export and import, and an **accent listening test** whose reviews are the only way an accent label can go up.
