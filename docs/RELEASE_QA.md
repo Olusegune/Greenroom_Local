@@ -64,3 +64,8 @@ Manual, by the owner, before sharing widely:
 - Confirm a local-only run sends nothing (watch the network, or unplug it).
 - Confirm a cloned voice with no consent record is refused.
 - Listen to each Nigerian English, Yoruba, Igbo, Hausa and Pidgin starter before relying on its accent.
+
+## 0.12.0 additions
+Automated and real-audio results: `docs/QA_RESULTS.md`; accessibility: `docs/ACCESSIBILITY.md`; demos: `docs/DEMO_RESULTS.md`. Run before a release: `npx vite --port 5173`, then `node scripts/qa/smoke.mjs`, `presets_e2e.mjs <dir>`, `agent_e2e.mjs <dir>`, `a11y.mjs <dir>` and `keyboard.mjs`.
+
+Manual, by the owner: listen to the four demo exports in `Demo audio` (and the Venomspur take, where Piper cannot act); run the Nigerian accent listening tests with a native speaker; run one Agent Studio production on ElevenLabs with a $1 limit and compare the cost sheet with the bill; confirm a local-only run sends nothing; try the app with a screen reader.

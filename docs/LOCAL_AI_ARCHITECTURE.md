@@ -96,3 +96,6 @@ Yoruba, Igbo, Hausa, Nigerian Pidgin, Nigerian English, British varieties, Filip
 - **Performance compiler** (`performanceCompiler.ts`) compiles free-text direction to the existing `PerformancePlan` and beats, then reports sent, approximated or not sent per engine. It runs offline.
 - **Agent Studio** (`agent/`) is a job graph over the existing services. It makes no provider call itself: takes go through `generate.ts` with the usual cost sheet, ledger and provenance.
 - Still true: Kokoro and Qwen3-TTS can be installed but have no speech route; Chatterbox speaks with its default voice only.
+
+## Real local audio path (0.12.0)
+The demo builder calls the Piper binary with the same arguments as the app's Piper route (`piper_args` in `local.rs`), and runs the Agent Studio's planner, steps, quality check and export around it. The export mixes takes with `planTimeline`, the loudness module and `encodeWav`, the same code the Export screen uses. Four Piper voices (Alan, Alba, Amy, Joe) are installed on the owner's PC for this.

@@ -88,3 +88,13 @@ Not tested: a live OpenAI or Gemini call; very large real-world PDFs; the instal
 
 Tests: 12 security tests (`agent/security.test.ts`), 6 saved-run tests, import and validation tests. Dependencies: `npm audit` 0 vulnerabilities; `cargo audit` 0 vulnerabilities (6 allowed warnings from Tauri's Linux stack, as before).
 Not done: `rafter run` remote scan (quota, as before); a live OpenAI or Gemini call; the installed build was not penetration-tested.
+
+## 0.12.0 additions (2026-11-09)
+| Surface | Decision |
+|---|---|
+| Character profile files | A file holds the description only: no voice id, no consent record, no reference takes, no person's name. Import never creates consent or a voice, keeps a consent claim only as a note marked "Imported, unverified", refuses files over 200 KB, foreign or newer files, and treats markup as plain text. |
+| Accent review files | Validated, at most 500; everything imported is marked imported and can never earn "native-speaker reviewed". |
+| Export | The agent writes only a file named from letters, digits, spaces and dashes into the project's export folder, only after the delivery gate is approved. |
+| Demo builder | Guarded by an environment variable so a normal test run never writes to your data folder; refuses to touch any project not named "Demo:"; backs up `voices.json` before adding four Piper voices (additive); local-only, no key read, no cloud call. |
+| Dependencies | `axe-core` added as a development-only dependency (not bundled); `npm audit` 0 vulnerabilities. A download of four Piper voices was made with the owner's permission from the app's pinned Hugging Face source, each file verified against the catalog's MD5 and size. |
+| Not done | `rafter run`: no API key configured on this PC. Run `rafter agent config set backend.apiKey <key>` and `rafter run`. |

@@ -11,10 +11,10 @@ Written 2026-11-09 on branch `feat/agent-studio-presets` (cut from `feat/cinemat
 | Check | Result |
 |---|---|
 | `npx tsc --noEmit` | Clean |
-| `npx vitest run` | 66 files, **708 passed** before this work; 71 files, **840 passed** after |
+| `npx vitest run` | 66 files, **708 passed** before this work; 79 files, **909 passed** after (plus 1 guarded demo builder) |
 | `cargo test` | **121 passed**, 1 ignored |
 | `cargo clippy --all-targets -- -D warnings` | Failed on arrival (one lint, `chunks_exact_to_as_chunks`, new in Rust 1.98); **fixed**, now clean |
-| `npm audit` / `cargo audit` / `rafter secrets` | Re-run at the end: 0 vulnerabilities, 0 vulnerabilities (6 allowed warnings), no secrets. `rafter run` (remote) not run |
+| `npm audit` / `cargo audit` / `rafter secrets` | Re-run at the end: 0 vulnerabilities, 0 vulnerabilities (6 allowed warnings), no secrets. `rafter run` (remote) not run: no API key on this PC |
 | `npx tauri build`, headless smoke script | Not run today |
 
 ## Capability audit
@@ -60,24 +60,25 @@ Written 2026-11-09 on branch `feat/agent-studio-presets` (cut from `feat/cinemat
 - The handover says clippy is clean; on Rust 1.98 it is not (see baseline). Documentation is behind the toolchain, not the code.
 - Not yet compared line by line: `README.md`, `PRODUCT_ROADMAP.md`, `GETTING_STARTED.md`, `RELEASE_QA.md`.
 
-## What this release (0.11.0) adds, and its honest state
+## What this branch adds (0.12.0), and its honest state
 
 | Item | State |
 |---|---|
-| Preset schema, validation, search, readiness, import/export (`presets/`) | Built, 28 unit tests |
-| 120 starter presets in 12 genres | Built as data; exact count and per-genre counts asserted. No audio, no portraits, every accent unverified or experimental |
-| Presets screen (genres, search, filters, favourites, recents, compare, readiness gate, plain-voice audition through the cost sheet, Add to Cast with preview and undo, duplicate, import, export) | Built; browser run of the demo build passed (19 checks). Audition ignores the preset's acting direction (said on the card) |
-| Performance compiler (`performanceCompiler.ts`) and the "Direct in your own words" box on Perform | Built; 45 tests including the Venomspur example; wired into take planning, the cost sheet and provenance (`notSent`). Placement is by phrase boundary; accents and languages cannot change inside a line |
-| Agent Studio (job graph, planner, brief reader, audio check, board, gates, budget, local-only, resume, selective regeneration, audit log) | Built; 59 unit and security tests and a browser run (19 checks) of a full guided run on the demo backend. **Not run against live engines.** The agent prepares and checks the export; it does not export |
-| Security tests for the new code | 12 tests (no keys, no network, no tag injection, no HTML, hostile saved runs) |
-| Clippy on Rust 1.98 | Fixed (one `chunks_exact`) |
-| Character voice profile extensions (background, audition script, consent note, compatibility list, profile import/export) | **Not built.** Voice DNA already holds timbre, accent, tendencies, range, pronunciations, references and the approved voice |
-| Accent and language verification, listening-test suite | **Not built.** Labels are honest, but nothing is verified |
+| Preset schema, 120 starter presets in 12 genres, Presets screen (genres, search, filters, favourites, recents, compare, readiness gate, Add to Cast, import and export) | Built and tested; all accents unverified or experimental |
+| Preset portraits from the avatar library, matched on role, age and stated presentation only | Built; 13 tests against the real library |
+| Audition with the preset's acting direction | Built for ElevenLabs; other engines get a plain read and say so |
+| Performance compiler and "Direct in your own words" | Built; 45 tests including the Venomspur example; wired into take planning, the cost sheet and provenance. Accents and languages cannot change inside a line |
+| Character profile extras (background, age, presentation, pitch, texture, signature behaviours, audition, consent note, provenance, compatibility) with export, import and duplicate | Built; 14 tests. Files carry no voice id or consent |
+| Accent listening-test suite and review store | Built; 15 tests. **No review recorded, so no label has moved** |
+| Agent Studio: plan, modes, gates, budget, local-only, resume, regeneration, audit log; steps for auditions, sound effects (six at most) and gated full-scene export | Built; run for real only against Piper (local, free) |
+| Quality check: missing, flat-top clipping, silence, timing, unsupported sounds, wrong voice, rights, **loudness consistency, music ducking, picture sync** | Built and tested |
+| Accessibility | axe-core: 108 light-theme failures fixed, 0 on 12 screens in both themes; keyboard pass on the new screens. No screen reader test |
+| Demonstration projects | Four rendered with real Piper audio and verified with ffmpeg; the Nigerian family drama **planned, not rendered** |
+| Security tests for the new code | 12 tests; `rafter secrets`, `npm audit`, `cargo audit` clean; `rafter run` not run (no API key on this PC) |
+| Clippy on Rust 1.98 | Fixed |
+| Whole-scene re-voice | **Not built** (needs per-character reference recordings and source performances) |
 | Venomspur signature preset | **Blocked:** no profile or portrait in the repository |
-| Agent audition clips, agent-made ambience and effects, whole-scene re-voice | **Not built** |
-| Demonstration projects 1 to 5 | **Not done as real generation.** Template projects exist; no engine was run, no audio generated |
-| Real-machine audio verification | **Not done.** No keys were used and no paid call was made, by rule |
-| Accessibility audit | Partial: labelled controls, `aria-pressed`, live regions and keyboard-reachable buttons on the new screens; no screen-reader or contrast audit was run |
+| Real cloud engine run, ear judgement, installed-app click-through | **Not done** (keys, ears and a person are needed) |
 
 ## Known blockers for the remaining work
 

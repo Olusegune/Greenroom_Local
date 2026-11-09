@@ -59,3 +59,6 @@ Never add or clone a real person's voice without their permission and an appropr
 2. Press **Add to Cast** to give a preset to a character in your open project. You see what will change first, and Undo reverts it.
 3. In **Perform**, open "Direct in your own words" and describe the delivery. You see what your voice will be given before you make a take.
 4. Or open **Agent Studio**: write a brief, choose Guided Agent, plan, press Start and approve each checkpoint. Leave **Local only** on if nothing may leave your computer. Delivery is always your decision.
+
+## Try the demo projects (0.12.0)
+Open Projects: five projects starting "Demo:" are in your list (Venomspur, Nigerian family drama, Children's adventure, Fantasy RPG, Science explainer). Four have real takes made with the free local Piper engine; open Agent Studio inside one to see the finished plan, the audit log and the audio check. The Nigerian drama is a plan only: it is cast on your ElevenLabs voices and starts only when you press Start. Piper cannot act, so the notes about acting that it could not perform are listed, not hidden. Four Piper voices (Alan, Alba, Amy, Joe) were added to your Voices library for them.

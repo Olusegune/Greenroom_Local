@@ -25,3 +25,6 @@ Greenroom is software. Selling or using it commercially does **not** make anythi
 ## Not verified by Greenroom
 
 Provider terms change. Greenroom has not had any provider licence reviewed by a lawyer, and does not offer legal advice. The Portrait library's rights were recorded as owner-supplied on the owner's statement.
+
+## Piper demo voices (0.12.0)
+The four Piper voices used in the demo projects (Alan, Alba, Amy, Joe) each have their own licence on their model card. Greenroom has **not** recorded those licences, so the voices are listed with an unknown licence. Check each before using their audio commercially. The demo audio is for evaluation.

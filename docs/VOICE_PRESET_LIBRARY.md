@@ -16,7 +16,7 @@ Not included: a Venomspur signature preset. The repository has no Venomspur prof
 - **Search** across name, description, language, accent, tags and genre. **Advanced filters**: age, presentation, accent review label, "only presets I can hear now". **Favorites** filter.
 - **Card**: name, genre, description, language, accent and its review label, ages, the engines whose declared abilities meet the preset's needs, and a status.
 - **Status** is never faked:
-  - *Ready to hear*: a compatible engine is connected and a voice from it is in your library. Audition reads the preset's audition line in a plain voice with the voice you pick. It does **not** apply the preset's acting direction, and says so on the card. Cloud voices ask before spending, through the existing cost sheet.
+  - *Ready to hear*: a compatible engine is connected and a voice from it is in your library. Audition reads the preset's audition line with the voice you pick, carrying the preset's acting direction on ElevenLabs and as a plain read on other engines (the card says which, and lists what was not sent). Cloud voices ask before spending, through the existing cost sheet.
   - *Requires voice selection*: a compatible engine is ready but no voice is. The button opens Voices.
   - *Needs an engine*: no connected engine can perform the preset. The button opens Model Center.
 - **Compare**: up to three presets side by side.
@@ -26,8 +26,20 @@ Not included: a Venomspur signature preset. The repository has no Venomspur prof
 
 ## Accent labels
 
-Every starter preset is *Model supported, unverified* or *Experimental*. Greenroom never sets *Native-speaker reviewed* or *Community reviewed* by itself; only a recorded human review can. The four Nigerian English and Pidgin starters are limited to WazobiaVoice and ElevenLabs, the two engines that declare Nigerian English or accent voices in this code base. That is a declaration, not a listening result. They are starter profiles, not claims that one accent represents a population. Language, accent, culture and appearance are separate fields, and no portrait is attached to any preset.
+Every starter preset is *Model supported, unverified* or *Experimental*. Greenroom never sets *Native-speaker reviewed* or *Community reviewed* by itself; only a recorded human review can. The four Nigerian English and Pidgin starters are limited to WazobiaVoice and ElevenLabs, the two engines that declare Nigerian English or accent voices in this code base. That is a declaration, not a listening result. They are starter profiles, not claims that one accent represents a population. Language, accent, culture and appearance are separate fields, and starter presets store no portrait of their own (a face is chosen from the avatar library when the card is shown; see Portraits).
+
+## Portraits (0.12.0)
+
+Every card shows a face from the existing avatar library (172 portraits); nothing is generated and no path is invented. The matcher sees only the preset's **role, age range and stated presentation**. It never sees language, accent or culture: any heritage-like word in a preset's text is removed first, and the international starters are matched on age and presentation alone, so an accent can never pick a face. The library's hard rules apply: a child preset gets only a child or teen face, an adult preset never does (even if its name says "children's"), a stated presentation is never crossed, and faces are spread (no portrait on more than three presets). Creatures and roles (the demon judge, the dragon, the alien) get the matching portrait. Add to Cast gives a character the face only if it has none. A preset's own `portraitId` wins. Tests: `presets/portraits.test.ts` (13, against the real library).
+
+## Audition with the preset's direction (0.12.0)
+
+On ElevenLabs an audition now carries the preset's acting direction through the same planning code as a real take. Other engines get a plain read and the card says so, with a "Not sent" list (a preview has no speed setting, so pace is never claimed). See `presets/audition.ts`.
+
+## Listening tests (0.12.0)
+
+A card's More menu opens a listening test for its accent. See `ACCENT_VERIFICATION.md`. No label has moved yet because no review has been recorded.
 
 ## Not built yet
 
-Preset-driven audition with acting direction applied; portraits mapped to avatar-library ids; editing a custom preset's fields in place (duplicate and import exist); a listening-test suite per accent; saving a character as a reusable cast entry from this screen (Cast's own *Save cast* already carries the profile); a beginner/advanced split beyond the filters.
+A Venomspur signature preset (his profile and portrait are not in the repository); editing a custom preset's fields in place (duplicate and import exist); portrait choice per preset (a preset's own `portraitId` is honoured but there is no picker); a regrouping of the library by capability.

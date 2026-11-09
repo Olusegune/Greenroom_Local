@@ -93,3 +93,14 @@ Next, in order:
 4. A Venomspur signature preset once his profile and portrait are in the repository.
 5. Persistent character profile fields (background, audition script, consent note, model compatibility) and profile import/export. Voice DNA covers timbre, accent, tendencies, range, pronunciations, references and the approved voice today.
 6. Code-signing certificate and updater key.
+
+## Status at 0.12.0 (2026-11-09)
+Added since 0.11.0: preset portraits, directed auditions, character profile extras with import and export, the accent listening-test suite and review store, agent steps for auditions, sound effects and gated export, loudness, ducking and sync checks, an accessibility audit with fixes, and four demo projects rendered with real Piper audio. Still true: **nothing has been judged by ear and no cloud engine has been run through the agent.**
+
+Next, in order:
+1. **Listen.** Run the Agent Studio on a real project with ElevenLabs and a small limit; listen to the tags and the acting; record what works per engine in `DECISIONS.md`.
+2. **Accent reviews.** Have a native speaker of each Nigerian accent run the listening test on the voices you use, so labels can honestly move.
+3. Render the Nigerian family drama with ElevenLabs or WazobiaVoice once the owner has listened to the voices.
+4. Screen-reader, zoom and high-contrast testing; axe on the screens not yet covered.
+5. A Venomspur signature preset when his profile and portrait are added; whole-scene re-voice once per-character references exist; agent-made music.
+6. Code-signing certificate and updater key; a Rafter API key for the remote scan.

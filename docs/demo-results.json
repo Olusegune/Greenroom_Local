@@ -1,6 +1,6 @@
 {
- "builtAt": "2026-11-09T16:07:05.386Z",
- "appVersion": "0.11.0",
+ "builtAt": "2026-11-09T16:08:34.884Z",
+ "appVersion": "0.12.0",
  "results": [
   {
    "id": "demo-venomspur",
@@ -9,8 +9,8 @@
    "characters": 2,
    "lines": 8,
    "takes": 8,
-   "seconds": 34.5,
-   "lufs": -17.2,
+   "seconds": 34.6,
+   "lufs": -16.9,
    "notSent": [
     "emotion: nervous (piper does not act on written direction)",
     "physical state: still (piper does not act on written direction)",
@@ -26,7 +26,7 @@
     "listen": 1,
     "notes": 0,
     "sample": [
-     "GRIMBLE: more than 52% of the take is silence. Listen.",
+     "GRIMBLE: more than 51% of the take is silence. Listen.",
      "GRIMBLE: not played by the engine: emotion: nervous (piper does not act on written direction).",
      "GRIMBLE: not played by the engine: physical state: still (piper does not act on written direction).",
      "GRIMBLE: not played by the engine: voice: quiet, tense (piper does not act on written direction).",
@@ -56,10 +56,10 @@
    "engine": "Piper (local, real inference)",
    "export": {
     "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\projects\\demo-venomspur\\exports\\Demo Venomspur dark comedy - full scene.wav",
-    "sha256": "83e1864d8f23977094fb407f0936b2787c67e8f1d61c0cf3ecd587f9f264d64b",
+    "sha256": "3f8ae7e2fac8df417bf21fec851e82502ace20f713a1866617aece1885c95c5f",
     "lufs": -16,
     "truePeakDb": -2.9,
-    "seconds": 37.7
+    "seconds": 37.8
    },
    "verified": [
     "2 characters, each with a library voice, a profile and a portrait",
@@ -119,8 +119,8 @@
    "characters": 3,
    "lines": 8,
    "takes": 8,
-   "seconds": 35,
-   "lufs": -17.4,
+   "seconds": 35.6,
+   "lufs": -16.9,
    "notSent": [],
    "qc": {
     "problems": 0,
@@ -151,10 +151,10 @@
    "engine": "Piper (local, real inference)",
    "export": {
     "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\projects\\demo-childrens-adventure\\exports\\Demo Childrens adventure animated - full scene.wav",
-    "sha256": "36dc1980eb47bf6fde6222723b541823935330f8f5dc206a896085be8660308b",
+    "sha256": "0655fe6a8a0acf9609845475e1c3de6a65a9eb2a91257ca173b23ee5265cb26b",
     "lufs": -16,
-    "truePeakDb": -1.5,
-    "seconds": 38.2
+    "truePeakDb": -1.8,
+    "seconds": 38.8
    },
    "verified": [
     "3 characters, each with a library voice, a profile and a portrait",
@@ -170,8 +170,8 @@
    "characters": 4,
    "lines": 8,
    "takes": 8,
-   "seconds": 38.4,
-   "lufs": -16.7,
+   "seconds": 38,
+   "lufs": -16.4,
    "notSent": [
     "physical state: still (piper does not act on written direction)",
     "voice: projected (piper does not act on written direction)",
@@ -214,10 +214,10 @@
    "engine": "Piper (local, real inference)",
    "export": {
     "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\projects\\demo-fantasy-rpg\\exports\\Demo Fantasy RPG dialogue - full scene.wav",
-    "sha256": "0f85f6a37ac4983ea8ce338ebc48f4d286dc4a0240dd7af126b9c3e4525c3b0a",
+    "sha256": "39c4fb7f6759f0bd63c21c7edf33062e817fc13ccb448132ef4f9135e325f09c",
     "lufs": -16,
-    "truePeakDb": -2.2,
-    "seconds": 41.6
+    "truePeakDb": -2.4,
+    "seconds": 41.2
    },
    "verified": [
     "4 characters, each with a library voice, a profile and a portrait",
@@ -233,8 +233,8 @@
    "characters": 2,
    "lines": 7,
    "takes": 7,
-   "seconds": 37.2,
-   "lufs": -18.2,
+   "seconds": 37.1,
+   "lufs": -18.1,
    "notSent": [],
    "qc": {
     "problems": 0,
@@ -264,10 +264,10 @@
    "engine": "Piper (local, real inference)",
    "export": {
     "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\projects\\demo-science-explainer\\exports\\Demo Science explainer narration - full scene.wav",
-    "sha256": "8764401ba6eae9a469f9337f4b62898a66b665319c51617d75518d7e717f9b20",
-    "lufs": -16.4,
+    "sha256": "592c07ed29b8346b8efb4082d7976016d46082258682dd94fc50674059426b4f",
+    "lufs": -16.2,
     "truePeakDb": -1,
-    "seconds": 40
+    "seconds": 39.9
    },
    "verified": [
     "2 characters, each with a library voice, a profile and a portrait",

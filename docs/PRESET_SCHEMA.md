@@ -19,7 +19,7 @@ Defined in `app/src/presets/schema.ts`. A preset is engine-independent data. It 
 | `audition` | A short line for hearing the voice. |
 | `needs` | `words`, `nonverbal`, `cloning`, and `onlyEngines` (engines that declare the preset's language or accent). `compatibleEngines()` derives the compatible list from the capability table. |
 | `license` | `authored_text`, author, `voiceRights: "defined_by_voice"` and a note. A preset cannot grant rights to any voice. |
-| `portraitId` | An avatar-library id, or absent. No starter preset has one; none was invented. |
+| `portraitId` | An avatar-library id, or absent. No starter preset stores one. The screen picks a face from the library at run time (role, age range and stated presentation only; never language, accent or culture), and a preset's own valid `portraitId` wins. |
 | `availability` | `starter`, `custom` or `imported`. |
 | `signature` | Marks a signature character. None shipped (see below). |
 

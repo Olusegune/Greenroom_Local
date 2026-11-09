@@ -12,7 +12,7 @@ Code: `app/src/agent/` (`graph.ts` run rules, `plan.ts` planner, `brief.ts` inst
 
 ## The plan
 
-Analyze the script, recommend and approve the cast, compile acting direction, make one take per line, check the audio, plan ambience and effects (off by default; generating sounds is a separate paid step), assemble the timeline, prepare the export. Each step has dependencies, a gate, an estimate and a status on the board: planned, running, awaiting approval, completed, failed or stopped. You can turn optional steps on or off, approve or reject, try a failed step again, remake one line, and resume after an interruption. Updating a plan keeps finished steps whose inputs did not change, and a line with an approved take is never remade unless you ask.
+Analyze the script, recommend and approve the cast, line up voice auditions, compile acting direction, make one take per line, check the audio, make ambience and sound effects (off by default), assemble the timeline, export the full scene. Each step has dependencies, a gate, an estimate and a status on the board: planned, running, awaiting approval, completed, failed or stopped. You can turn optional steps on or off, approve or reject, try a failed step again, remake one line, and resume after an interruption. Updating a plan keeps finished steps whose inputs did not change, and a line with an approved take is never remade unless you ask.
 
 ## What the agent will not do (each is enforced and tested)
 
@@ -29,14 +29,19 @@ Analyze the script, recommend and approve the cast, compile acting direction, ma
 
 `interpret` turns instructions such as "Keep total cloud spending below $5", "Use local models unless cloud generation is necessary", "Make this scene more emotionally restrained", "Give the villain a more sophisticated British voice", "Use Nigerian English where appropriate", "Make the dialogue feel less robotic", "Regenerate only the lines that sound unnatural" and "Create a version suitable for a children's animated film" into **explicit proposals**. Budget and privacy proposals can be applied to the limits with one button; everything else is a suggestion. Sentences it does not understand are shown back.
 
+## The steps added in 0.12.0
+
+- **Voice auditions:** for each character, the voices in your library that suit their preset, with a Play button on the board. Nothing is generated until you press Play; local voices are free, cloud voices ask first. A local-only run offers only local voices.
+- **Sound effects:** reads up to **six** sounds from the stage directions and makes them with your chosen sound engine, placing each next to its line. Off until you turn it on; a cloud sound engine makes it a spend step inside the cloud limit; it never remakes a sound a line already has.
+- **Export:** after you approve delivery, mixes the approved takes on the timeline with the project's saved export settings, brings the level to the chosen loudness target without exceeding the peak ceiling (it says when the ceiling stopped the target) and writes one 24-bit WAV into the project's export folder (`app/src/exportScene.ts`). Stems, OTIO, EDL, the cue sheet and the report stay on the Export screen. It refuses while there are real problems (a line with no take, an unconsented clone, a take with flat-topped clipping). Acting an engine could not perform is listed in the result, not hidden, and does not block the file.
+
 ## Audio check
 
-Flags missing takes, clipping, long silence, timing far from the usual length, sounds an engine could not play, a take made with a different voice than the one now cast, and unconsented clones. Measurable problems are "problems"; anything subjective is "listen". It never calls a performance good or bad.
+Flags missing takes, **clipping** (counts runs of flat-topped samples; a take normalised to full scale is not called clipped, and a peak-only measurement is only a reason to listen), long silence, timing far from the usual length, **loudness** far from the scene's typical level (more than 6 LU), **music that does not duck** under dialogue (ducking off, no clip set to duck, or a dip under 6 dB), **picture sync** (a line running past the end of the picture, lines that overlap, no cues), sounds an engine could not play, a take made with a different voice than the one now cast, and unconsented clones. Measurable problems are "problems"; anything subjective is "listen". It never calls a performance good or bad.
 
 ## Not built, honestly
 
-- Exporting: the agent prepares and checks, then you export from Export.
-- Generating ambience and sound effects: planned from stage directions only.
-- A voice audition step that generates comparison clips: auditions remain on the Presets screen.
-- Whole-scene re-voicing, and agent-driven picture sync.
-- A real run against live engines. Everything here was tested with fake engines and the demo backend; no paid call was made.
+- **Whole-scene re-voice.** It needs a source performance and a target reference recording for every character, which a script does not have. Single-line re-voice on Perform is unchanged.
+- Agent-made **music**; agent-driven picture sync; more than six sounds per run.
+- Exporting stems, OTIO, EDL, cue sheets or the production report from the agent (use Export).
+- A run against live cloud engines. It has been run for real only against Piper, in local-only mode (see `DEMO_RESULTS.md`).

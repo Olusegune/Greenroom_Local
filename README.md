@@ -84,3 +84,9 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Performance compiler**: type how a line should be played ("begins politely, clears his throat, chuckles quietly, pauses, then delivers the final sentence with restrained menace") under Perform. Greenroom shows exactly what the chosen voice will get, what is approximated and what cannot be sent. See `docs/PERFORMANCE_ENGINE.md`.
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
+
+## New in 0.12.0
+- **Faces on presets** from the existing portrait library, matched on role, age and presentation, never on accent.
+- **Audition with direction**, **character profiles** you can export and import, and an **accent listening test** whose reviews are the only way an accent label can go up.
+- **Agent Studio** can line up voice auditions, make a few sound effects inside your limit, and write the finished scene after you approve delivery. The audio check also looks at loudness, music ducking and picture sync.
+- **Five demo projects** (four with real local audio), an **accessibility audit** (axe: 0 violations in both themes) and a keyboard pass. See `docs/DEMO_RESULTS.md`, `docs/ACCESSIBILITY.md`, `docs/ACCENT_VERIFICATION.md`, `docs/CHARACTER_PROFILES.md`.
