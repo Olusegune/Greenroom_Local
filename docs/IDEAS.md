@@ -4,7 +4,7 @@ Ordered by what I think pays off most for someone who directs voices in the app 
 
 ## Do next (closes gaps we hit this week)
 
-1. **"Add portraits" inside the app.** Right now a new picture has to go through me and a script. A screen where you drop files, crop them (with a face-aware square crop, so a 1376x768 picture becomes a good square), tick gender, age and heritage, and add them to the library, with the same checks the pipeline makes (size, duplicates, stray strips, text, rights note). This would have saved most of this week.
+1. **(Done in 0.9.0) "Add portraits" inside the app.** Right now a new picture has to go through me and a script. A screen where you drop files, crop them (with a face-aware square crop, so a 1376x768 picture becomes a good square), tick gender, age and heritage, and add them to the library, with the same checks the pipeline makes (size, duplicates, stray strips, text, rights note). This would have saved most of this week.
 2. **A "Voice library health" panel.** One list of every voice with what the app thinks it is (gender, age, heritage, how sure) and a one-click confirm. Voices with a conflict or no answer float to the top ("River: neutral, no age"). Bulk edit instead of opening each card.
 3. **Estimate gender and age from the sound.** The app already measures pitch from preview audio. Use it to suggest gender and an age band, and warn when the label disagrees ("labelled male, sounds female"). Labels from services are often wrong; ears and numbers beat them.
 4. **"Why this face?" and "Shuffle / Lock".** A small tooltip on any automatic face ("female, young adult, Nigerian"), a Shuffle button for another fitting face, and Lock to keep one. Turns a guess into something you can steer in one click.

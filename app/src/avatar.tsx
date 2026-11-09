@@ -1,4 +1,4 @@
-import { autoAvatar, readVoice } from "./avatarLibrary";
+import { autoAvatar, customFaces, faceFor, readVoice } from "./avatarLibrary";
 import { useAvatars } from "./avatarState";
 import { assignedFace, hintFor, metaFor, portraitFor } from "./portrait";
 
@@ -118,14 +118,16 @@ function HairFront({ style, f, band }: { style: string; f: string; band: string 
 /** A round, soft 3D-style portrait. `size` is in pixels. */
 export function Avatar({ seed, gender, size = 64, label, hint }: { seed: string; gender?: string; size?: number; label?: string; hint?: string }) {
   const photo = portraitFor(seed);
-  const { manifest } = useAvatars();
+  const { manifest, store } = useAvatars();
   if (photo) return <img className="avatar" src={photo} alt={label ?? ""} width={size} height={size} style={{ objectFit: "cover", borderRadius: "50%" }} />;
   // No chosen picture: a steady built-in portrait (never saved; choosing an avatar replaces it). The drawn face is only the
   // fallback while the library has not loaded or cannot be read.
-  const auto = (hint && readVoice(gender, hint).story ? null : assignedFace(manifest, seed)) ?? autoAvatar(manifest, seed, gender, [hintFor(seed), hint].filter(Boolean).join(" "), metaFor(seed));
-  if (auto) {
-    const p = size >= 96 ? auto.assets.card ?? auto.assets.card_small : size >= 48 ? auto.assets.card_small : auto.assets.thumbnail;
-    return <img className="avatar" src={`./avatars/${p}`} alt={label ?? ""} width={size} height={size} decoding="async" loading="lazy" style={{ objectFit: "cover", borderRadius: "50%" }} />;
+  const custom = customFaces(store);
+  const auto = (hint && readVoice(gender, hint).story ? null : assignedFace(manifest, seed, custom)) ?? autoAvatar(manifest, seed, gender, [hintFor(seed), hint].filter(Boolean).join(" "), metaFor(seed), undefined, custom);
+  const face = auto ? faceFor(auto.id, manifest, store) : null;
+  if (face) {
+    const src = size >= 96 ? face.card : size >= 48 ? face.small : face.thumb;
+    return <img className="avatar" src={src} alt={label ?? ""} width={size} height={size} decoding="async" loading="lazy" style={{ objectFit: "cover", borderRadius: "50%" }} />;
   }
   const t = traits(seed, lookFor(gender));
   const id = "av" + hash(seed).toString(36);

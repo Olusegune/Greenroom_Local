@@ -223,3 +223,8 @@ Add your Inworld Base64 credential in **Settings**, press **Test Inworld connect
 - **Help and guide** in the app, or **Help > Help and guide**.
 - **Settings** to check a connection or change a key.
 - [Getting started](GETTING_STARTED.md) for installing local engines.
+
+
+## Adding your own portraits
+
+In the avatar browser press **Add portraits...**, choose pictures (PNG, JPEG or WebP, up to 24), adjust the cut, name each one, and say who it shows (gender, age, heritage). Tick "Use as an automatic face" and voices with no picture can use it. Pictures stay on your computer.

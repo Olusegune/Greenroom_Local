@@ -104,7 +104,7 @@ describe("source hygiene", () => {
     for (const [f, s] of src) expect(s, f).not.toMatch(/dangerouslySetInnerHTML|\.innerHTML\s*=|\beval\(|new Function\(|document\.write\(/);
   });
   it("the avatar and voice-face code makes no network request of its own", () => {
-    for (const f of ["avatar.tsx", "avatarLibrary.ts", "portrait.ts", "screens/AvatarButton.tsx"]) {
+    for (const f of ["avatar.tsx", "avatarLibrary.ts", "portrait.ts", "importer.ts", "screens/AvatarButton.tsx", "screens/PortraitImporter.tsx"]) {
       const s = readFileSync(join(__dirname, f), "utf8");
       expect(s.replace(/fetch\(`data:/g, ""), f).not.toMatch(/\bfetch\(|XMLHttpRequest|WebSocket|navigator\.sendBeacon|https?:\/\//);
     }

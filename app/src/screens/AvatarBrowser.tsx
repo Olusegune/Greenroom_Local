@@ -6,6 +6,7 @@ import { addCustom, AGE_LABEL, AGES, assignAvatar, COLLECTION_LABEL, COLLECTIONS
 import { currentFace, updateStore, useAvatars } from "../avatarState";
 import { useApp } from "../ctx";
 import { avatarPrompt, squareJpeg } from "../portrait";
+import { PortraitImporter } from "./PortraitImporter";
 import type { Character, VoiceEntry } from "../types";
 
 /** One item in the browser, built-in or the owner's own. */
@@ -85,6 +86,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
   const [about, setAbout] = useState(() => [character.name, character.dna?.timbre, character.dna?.tendencies, character.dna?.range].filter(Boolean).join(". "));
   const [suggested, setSuggested] = useState<ReturnType<typeof suggestAvatars>>([]);
   const [create, setCreate] = useState(false);
+  const [importing, setImporting] = useState(false);
   const fac = useMemo(() => facets(builtin), [builtin]);
 
   const items: Item[] = useMemo(() => {
@@ -111,22 +113,6 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
     onClose();
   };
   const save = (fn: Parameters<typeof updateStore>[0]) => void updateStore(fn).catch((e: Error) => toast(e.message, true));
-
-  const importImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    if (!file.type.startsWith("image/") || file.size > 20_000_000) return toast("Choose a picture file up to 20 MB.", true);
-    try {
-      const a: CustomAvatar = { id: `custom:${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, name: file.name.replace(/\.[^.]+$/, "").slice(0, 60) || "Imported avatar", createdAt: new Date().toISOString(), image: await squareJpeg(file, 512, 0.86), thumb: await squareJpeg(file, 128, 0.8), source: "imported", tags: [] };
-      save((s) => addCustom(s, a));
-      setSel(a.id);
-      setMode("mine");
-      toast("Imported. It is in My avatars.");
-    } catch {
-      toast("Greenroom could not read that picture.", true);
-    }
-  };
 
   const cell = (i: Item) => (
     <button className="av-cell" aria-pressed={sel === i.id} onClick={() => setSel(i.id)} onDoubleClick={() => assign(i.id)} title={i.name} style={{ width: "100%", height: "100%" }}>
@@ -254,15 +240,13 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
         </div>
 
         <div className="row wrap">
-          <label className="sm" style={{ cursor: "pointer" }}>
-            <button type="button" onClick={(e) => (e.currentTarget.nextElementSibling as HTMLInputElement).click()}>Import an image…</button>
-            <input type="file" accept="image/*" aria-label="Import an image" style={{ display: "none" }} onChange={(e) => void importImage(e)} />
-          </label>
+          <button type="button" onClick={() => setImporting(true)}>Add portraits…</button>
           <button onClick={() => setCreate(!create)} aria-expanded={create}>Create a custom avatar…</button>
           <span className="spacer" />
           {character.avatarId && <button className="ghost" onClick={() => assign(undefined)}>Remove the avatar</button>}
           <button className="primary" onClick={onClose}>Done</button>
         </div>
+        {importing && <PortraitImporter onClose={() => setImporting(false)} onAdded={(ids) => { setMode("mine"); setSel(ids[0]); }} />}
         {create && <CreateAvatar onSaved={(a) => { setSel(a.id); setMode("mine"); setCreate(false); setText(""); setF({ collection: "", period: "", genre: "", age: "", style: "" }); }} />}
       </div>
     </div>

@@ -85,6 +85,12 @@ export interface CustomAvatar {
   source: "imported" | "generated";
   prompt?: string;
   tags: string[];
+  /** Who the portrait shows, so it can be used as an automatic face. All three are optional; a portrait without a gender and an age is never chosen automatically. */
+  gender?: "m" | "f";
+  age?: Age;
+  heritage?: Heritage;
+  /** Whether it may be chosen automatically for a voice with no picture. */
+  auto?: boolean;
 }
 
 export interface AvatarStore {
@@ -180,10 +186,10 @@ export function migrateStore(raw: unknown): AvatarStore {
         const v = (o.variants as Record<string, unknown> | undefined)?.[e];
         if (typeof v === "string" && DATA_IMG.test(v)) variants[e] = v;
       }
-      return { id: o.id.slice(0, 80), name: typeof o.name === "string" ? o.name.slice(0, 80) : "Custom avatar", createdAt: typeof o.createdAt === "string" ? o.createdAt : "", image: o.image, thumb: o.thumb, variants: Object.keys(variants).length ? variants : undefined, source: o.source === "generated" ? "generated" : "imported", prompt: typeof o.prompt === "string" ? o.prompt.slice(0, 1500) : undefined, tags: Array.isArray(o.tags) ? o.tags.filter((t): t is string => typeof t === "string").slice(0, 20) : [] };
+      return { id: o.id.slice(0, 80), name: typeof o.name === "string" ? o.name.slice(0, 80) : "Custom avatar", createdAt: typeof o.createdAt === "string" ? o.createdAt : "", image: o.image, thumb: o.thumb, variants: Object.keys(variants).length ? variants : undefined, source: o.source === "generated" ? "generated" : "imported", prompt: typeof o.prompt === "string" ? o.prompt.slice(0, 1500) : undefined, tags: Array.isArray(o.tags) ? o.tags.filter((t): t is string => typeof t === "string").map((t) => t.slice(0, 40)).slice(0, 20) : [], gender: o.gender === "m" || o.gender === "f" ? o.gender : undefined, age: typeof o.age === "string" && (AGES as readonly string[]).includes(o.age) && o.age !== "ageless" ? (o.age as Age) : undefined, heritage: typeof o.heritage === "string" && Object.prototype.hasOwnProperty.call(HERITAGES, o.heritage) ? (o.heritage as Heritage) : undefined, auto: o.auto === true };
     })
     .filter((c): c is CustomAvatar => c !== null);
-  return { custom, favorites: ids(r.favorites), recent: ids(r.recent).slice(0, RECENT_MAX) };
+  return { custom: custom.slice(0, 300), favorites: ids(r.favorites), recent: ids(r.recent).slice(0, RECENT_MAX) };
 }
 
 export const toggleFavorite = (s: AvatarStore, id: string): AvatarStore => ({ ...s, favorites: s.favorites.includes(id) ? s.favorites.filter((x) => x !== id) : [...s.favorites, id] });
@@ -648,7 +654,7 @@ const AGE_FIT: Record<VoiceAge, Age[]> = {
  * available in the browser for the owner to choose.
  */
 const PLAIN_GLOBAL = new Set(["global_andean_elder_001", "global_tea_master_001", "global_market_matriarch_001", "global_village_elder_001", "global_village_weaver_001"]);
-export const isPlainFace = (a: Pick<AvatarEntry, "id" | "tier">): boolean => a.id.startsWith("everyday_") || (a.tier !== "preview" && a.id.startsWith("contemporary_")) || PLAIN_GLOBAL.has(a.id);
+export const isPlainFace = (a: Pick<AvatarEntry, "id" | "tier">): boolean => a.id.startsWith("custom:") || a.id.startsWith("everyday_") || (a.tier !== "preview" && a.id.startsWith("contemporary_")) || PLAIN_GLOBAL.has(a.id);
 
 /**
  * Genders of the local (Piper) voices, which come with none. From the voice model cards as remembered by the person who
@@ -716,28 +722,61 @@ const isChildish = (a: Pick<AvatarEntry, "age_category">) => a.age_category === 
  * matched exactly and only dropped when no portrait of that gender and age exists. A creature or story role (a dragon, a robot,
  * a pharaoh) gets the matching portrait; everything else gets an ordinary person in everyday dress.
  */
-export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string, meta?: VoiceMeta, usage?: Map<string, number>): AvatarEntry | null {
+/** The owner's own portraits that may be used as automatic faces, shaped like the built-in ones. Rebuilt only when the library changes. */
+export interface CustomFace {
+  entry: AvatarEntry;
+  look: Look;
+}
+let lastStore: AvatarStore | null = null;
+let lastFaces: CustomFace[] = [];
+export function customFaces(store: AvatarStore | null | undefined): CustomFace[] {
+  if (!store) return [];
+  if (store === lastStore) return lastFaces;
+  lastStore = store;
+  lastFaces = store.custom
+    .filter((c) => c.auto && c.gender && c.age)
+    .map((c) => ({
+      entry: { id: c.id, name: c.name, collection: "contemporary_everyday", period: "contemporary", genre: [], style: "cinematic_realism", age_category: c.age!, archetype: "everyday", clothing: "", tags: c.tags, tier: "preview", assets: { card_small: "", thumbnail: "" }, license: { type: "owner_supplied", source: "Added by the owner", generator: "not recorded", commercial_use: "confirmed" } } as unknown as AvatarEntry,
+      look: { g: c.gender!, h: c.heritage },
+    }));
+  return lastFaces;
+}
+
+/**
+ * A steady built-in portrait for a voice or character with no chosen picture. Hard rules, never relaxed: the gender is never
+ * crossed when it is known, and a child's portrait goes only to a child and an adult's only to an adult. A stated heritage is
+ * matched exactly and only dropped when no portrait of that gender and age exists. A creature or story role (a dragon, a robot,
+ * a pharaoh) gets the matching portrait; everything else gets an ordinary person in everyday dress. The owner's own portraits
+ * (with a gender and an age set) take part like the built-in everyday ones.
+ */
+export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string, meta?: VoiceMeta, usage?: Map<string, number>, custom?: CustomFace[]): AvatarEntry | null {
   if (!manifest) return null;
   const want = readVoice(gender, hint);
   // what the owner or the voice service states about the voice outranks anything guessed from its description
   if (meta?.age && Object.prototype.hasOwnProperty.call(AGE_FIT, meta.age)) want.age = meta.age;
   if (meta?.heritage && Object.prototype.hasOwnProperty.call(HERITAGES, meta.heritage)) want.h = meta.heritage;
-  const known = manifest.avatars.filter((a) => LOOKS[a.id]);
+  const customLook = new Map((custom ?? []).map((c) => [c.entry.id, c.look]));
+  const lookOf = (a: AvatarEntry): Look | undefined => LOOKS[a.id] ?? customLook.get(a.id);
+  const known = [...manifest.avatars.filter((a) => LOOKS[a.id]), ...(custom ?? []).map((c) => c.entry)];
   const pick = (pool: AvatarEntry[]) => pool[seedHash(seed) % pool.length]!;
   if (want.story) {
-    const roleFaces = known.filter((a) => want.story!.includes(a.id) && (!want.g || LOOKS[a.id]!.g === "n" || LOOKS[a.id]!.g === want.g));
+    const roleFaces = known.filter((a) => want.story!.includes(a.id) && (!want.g || lookOf(a)!.g === "n" || lookOf(a)!.g === want.g));
     if (roleFaces.length) return pick(roleFaces);
   }
-  const plain = known.filter((a) => isPlainFace(a) && LOOKS[a.id]!.g !== "n");
-  const base = plain.length ? plain : known.filter((a) => LOOKS[a.id]!.g !== "n");
-  const byGender = want.g ? base.filter((a) => LOOKS[a.id]!.g === want.g) : base;
+  const plain = known.filter((a) => isPlainFace(a) && lookOf(a)!.g !== "n");
+  const base = plain.length ? plain : known.filter((a) => lookOf(a)!.g !== "n");
+  const byGender = want.g ? base.filter((a) => lookOf(a)!.g === want.g) : base;
   const wantsChild = want.age === "child";
   // childhood is a hard rule: a child voice only ever gets a child or teen portrait, anyone else never does
   const byLife = byGender.filter((a) => (wantsChild ? isChildish(a) : !isChildish(a) || want.age === "teen"));
   const life = byLife.length ? byLife : byGender;
   // a voice that states no age is not given an elderly face: it gets a young adult, adult or middle-aged one
   const ageOk = (a: AvatarEntry) => (want.age ? AGE_FIT[want.age].includes(a.age_category) : UNSTATED_AGE.includes(a.age_category));
-  const heritageOk = (a: AvatarEntry) => !want.h || LOOKS[a.id]!.h === want.h;
+  const heritageOk = (a: AvatarEntry) => {
+    if (!want.h) return true;
+    const h = lookOf(a)!.h;
+    return !!h && h === want.h;
+  };
   const tiers = [life.filter((a) => ageOk(a) && heritageOk(a)), life.filter(heritageOk), life.filter(ageOk), life];
   let pool = tiers.find((t) => t.length) ?? [];
   if (usage && pool.length > 1) {

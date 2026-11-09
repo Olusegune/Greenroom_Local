@@ -39,3 +39,22 @@ Scope: the voice-face work of versions 0.8.0 to 0.8.8 (automatic faces, voice ge
 4. **Dependencies:** re-run `npm audit` and `cargo audit` before each release (a CI job would do this on every push).
 5. **Rights:** portraits are recorded as the owner's on their statement; the generator and its terms were not recorded. Keep that record.
 6. **Not tested:** behaviour of the installed build under a real restart with a corrupted `voices.json` (the same code path is unit-tested); a network capture of the running app; fuzzing of the Rust parsers beyond the existing unit tests.
+
+## Added in 0.9.0: the "Add portraits" importer (secure-design walk, then tests)
+
+The importer takes untrusted files from the owner's computer, so it was designed with the ingestion checklist before it was written.
+
+| Question | Decision |
+|---|---|
+| What is accepted? | PNG, JPEG, WebP only. The declared type, the file's first bytes and its extension must all agree. SVG, GIF, HTML, programs and anything renamed are refused with a plain message. |
+| Size and count | 15 MB per file, 24 files per batch, 300 portraits in total, and a 400,000-character cap on each stored picture. |
+| Decompression bombs | The picture's size is read from its header **before anything decodes it**; more than 40 megapixels is refused (a 30,000 x 30,000 PNG that is a few kilobytes), and the decoded size is checked again afterwards. |
+| What is kept | The picture is decoded by the browser and drawn onto a canvas, then saved as a fresh JPEG (512 and 128 pixels). So EXIF data, embedded payloads and polyglot tricks are not kept. The file's own name and path are never stored; a name is made from it only as a suggestion and cleaned. |
+| Names and labels | Control, invisible and direction-changing characters are removed and the length is capped. Gender, age and heritage come from fixed lists and are checked again when the saved file is loaded; anything else is dropped. Names are shown as text by React, never as HTML. |
+| Where does it go | Only to the local avatar file (`avatars.json`, which the Rust side already validates as an object and caps at 48 MB). No network use at all (a source test checks the importer files for `fetch`, sockets and URLs). |
+| Never enlarged | A picture under 256 pixels on its short side is refused, so nothing is blown up. |
+| Duplicates | A perceptual hash flags a picture that is already in the library or in the same batch (tested in the real browser). |
+
+Tested: 22 unit tests (`importer.test.ts`) for the signature checks, the header size reader on real WebP and PNG files and on a crafted bomb, name cleaning, the crop staying inside the picture for hostile control values, duplicate matching, owner portraits taking part in automatic faces without crossing gender or age, and hostile saved files being cleaned on load; plus a real-Chrome run that fed the screen two real pictures, a picture already in the library, a text file named `.png`, an SVG and an empty file: the three bad ones were refused with the right messages and the others were added with no console errors.
+
+Not tested: files over the size cap through the real file picker (the cap is a unit test), animated or multi-frame images, and the installed build.
