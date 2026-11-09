@@ -1,0 +1,25 @@
+import { spawn } from "node:child_process";
+import { writeFileSync } from "node:fs";
+const port = 9666;
+const chrome = spawn("C:/Program Files/Google/Chrome/Application/chrome.exe", ["--headless=new", `--remote-debugging-port=${port}`, "--window-size=1360,900", "--user-data-dir=" + process.env.TEMP + "/gr-layout-profile", "about:blank"], { stdio: "ignore" });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let list;
+for (let i = 0; i < 40; i++) { try { list = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (list.length) break; } catch {} await sleep(250); }
+const ws = new WebSocket(list.find((t) => t.type === "page").webSocketDebuggerUrl);
+await new Promise((r) => (ws.onopen = r));
+let id = 0; const pending = new Map();
+ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } };
+const send = (method, params = {}) => new Promise((res) => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
+const ev = async (js) => (await send("Runtime.evaluate", { expression: js, awaitPromise: true, returnByValue: true })).result?.result?.value;
+const click = (t) => ev(`(()=>{const b=[...document.querySelectorAll('button,a,[role=tab]')].find(x=>x.textContent.trim().startsWith(${JSON.stringify(t)}));if(b){b.click();return true}return false})()`);
+await send("Page.enable"); await send("Runtime.enable");
+await send("Page.navigate", { url: "http://127.0.0.1:5173/" }); await sleep(1500);
+await click("Voices"); await sleep(600); await click("Casting call"); await sleep(1000);
+console.log(JSON.stringify(await ev(`(()=>{const sc=[...document.querySelectorAll('*')].filter(e=>{const s=getComputedStyle(e);return /(auto|scroll)/.test(s.overflowY)&&e.scrollHeight>e.clientHeight+5});return sc.map(e=>({tag:e.tagName,cls:e.className.toString().slice(0,40),sh:e.scrollHeight,ch:e.clientHeight}))})()`)));
+console.log(await ev(`(()=>{const m=document.querySelector("main.stage");const out=[];for(let e=m;e;e=e.parentElement){const s=getComputedStyle(e);out.push(e.tagName+"."+String(e.className).slice(0,20)+" h="+Math.round(e.getBoundingClientRect().height)+" disp="+s.display+" pos="+s.position+" ovf="+s.overflowY)}return out.join(" | ")})()`));
+console.log("docH", await ev("document.documentElement.scrollHeight"), "winH", await ev("innerHeight"));
+await ev(`[...document.querySelectorAll('*')].filter(e=>/(auto|scroll)/.test(getComputedStyle(e).overflowY)&&e.scrollHeight>e.clientHeight+5).forEach(e=>e.scrollTop=1e6); window.scrollTo(0,1e6)`); await sleep(500);
+console.log("last card bottom vs window:", await ev(`(()=>{const c=[...document.querySelectorAll('.shelf-voice')];const l=c[c.length-1];const r=l.getBoundingClientRect();return {n:c.length,bottom:Math.round(r.bottom),win:innerHeight}})()`));
+const r = await send("Page.captureScreenshot", { format: "jpeg", quality: 80 });
+writeFileSync("layout1.jpg", Buffer.from(r.result.data, "base64"));
+ws.close(); chrome.kill(); process.exit(0);
