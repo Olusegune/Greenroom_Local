@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { api } from "../api";
 import { Avatar } from "../avatar";
 import { addCustom, AGE_LABEL, AGES, assignAvatar, COLLECTION_LABEL, COLLECTIONS, EXPRESSIONS, expressionFor, facets, filterAvatars, isCustomId, progress, removeCustom, STYLE_LABEL, suggestAvatars, toggleFavorite, touchRecent, type AvatarEntry, type CustomAvatar, type Expression } from "../avatarLibrary";
@@ -32,7 +33,7 @@ export function CharacterFace({ character, voice, size = 44, emotion, editable =
       <button className="avatar-btn" aria-label={`Choose an avatar for ${character.name}`} title="Choose an avatar" onClick={() => setOpen(true)} style={{ background: "none", border: 0, cursor: "pointer", borderRadius: "50%" }}>
         {inner}
       </button>
-      {open && <AvatarBrowser character={character} voice={voice} onClose={() => setOpen(false)} />}
+      {open && createPortal(<AvatarBrowser character={character} voice={voice} onClose={() => setOpen(false)} />, document.body)}
     </>
   );
 }

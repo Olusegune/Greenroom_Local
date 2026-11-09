@@ -369,23 +369,46 @@ export function progress(manifest: AvatarManifest | null): { have: number; previ
 // ---- Automatic faces ----
 // A voice or character with no chosen picture shows a built-in portrait instead of a drawn cartoon. The pick is steady (the
 // same voice always gets the same face) and is only a default: nothing is saved, and choosing an avatar replaces it.
+// It reads what the voice says about itself (gender, age, and where it is from or what it is described as) and only offers
+// portraits that fit; the portraits themselves still carry no voice, accent or personality. The look of each portrait was
+// judged by eye by the person who built the library and is kept here, apart from the manifest.
 
-/** Built-in portraits whose subject is a woman or girl, used only to match a voice's stated gender. */
-const FEMALE_FACES = new Set([
-  "ancient_queen_001", "ancient_athenian_001", "ancient_oracle_001", "medieval_abbess_001", "renaissance_noblewoman_001", "renaissance_court_lady_001",
-  "victorian_governess_001", "edwardian_music_hall_star_001", "edwardian_suffragette_001", "victorian_dowager_001", "western_homesteader_001",
-  "historical_field_nurse_001", "fantasy_woodland_ranger_001", "fantasy_sorceress_001", "fantasy_druid_001", "fantasy_shieldmaiden_001", "fantasy_dryad_001",
-  "fantasy_elven_scout_001", "cyberpunk_net_courier_001", "scifi_station_director_001", "scifi_wasteland_mechanic_001", "scifi_android_001",
-  "horror_medium_001", "horror_veiled_mourner_001", "stylized_inventor_gran_001", "stylized_music_kid_001", "stylized_tea_grandma_001",
-  "global_festival_dancer_001", "global_market_matriarch_001", "global_village_elder_001", "global_village_weaver_001",
-]);
-/** Creatures, robots and portraits whose gender was not judged: never used as an automatic face for a gendered voice. */
-const UNSURE_FACES = new Set([
-  "stylized_bear_chef_001", "stylized_little_robot_001", "stylized_fox_scout_001", "stylized_baby_dragon_001", "fantasy_horned_beastman_001", "scifi_ambassador_001",
-  "stylized_space_cadet_001", "stylized_young_explorer_001", "horror_ghoul_001",
-  "scifi_runner_001", "contemporary_editor_001", "contemporary_entrepreneur_001", "contemporary_executive_001", "scifi_guardian_001", "contemporary_analyst_001",
-]);
-const CREATURE_FACES = new Set(["stylized_bear_chef_001", "stylized_little_robot_001", "stylized_fox_scout_001", "stylized_baby_dragon_001", "fantasy_horned_beastman_001", "scifi_ambassador_001"]);
+export type Heritage = "black" | "white" | "east_asian" | "south_asian" | "middle_eastern" | "latino" | "indigenous";
+type Look = { g: "m" | "f" | "n"; h?: Heritage };
+const m = (h?: Heritage): Look => ({ g: "m", h });
+const f = (h?: Heritage): Look => ({ g: "f", h });
+const NONE: Look = { g: "n" };
+
+/** What each built-in portrait shows: the gender presented and the heritage, for matching a voice to a face. "n" is a creature, robot or alien. */
+export const LOOKS: Record<string, Look> = {
+  fantasy_adventurer_001: m("east_asian"), contemporary_silver_fox_001: m("white"), scifi_runner_001: f("black"), contemporary_editor_001: f("black"),
+  contemporary_entrepreneur_001: f("black"), contemporary_mentor_001: m("white"), contemporary_executive_001: f("east_asian"), scifi_guardian_001: f("south_asian"),
+  contemporary_veteran_001: m("latino"), contemporary_analyst_001: f("east_asian"), contemporary_professor_001: m("east_asian"), contemporary_elder_001: m("white"),
+  contemporary_traveler_001: m("white"),
+  ancient_priest_001: m("black"), ancient_scribe_001: m("black"), ancient_queen_001: f("middle_eastern"), ancient_pharaoh_001: m("middle_eastern"),
+  ancient_athenian_001: f("middle_eastern"), ancient_senator_001: m("white"), ancient_centurion_001: m("white"), ancient_king_001: m("middle_eastern"),
+  ancient_oracle_001: f("white"), ancient_philosopher_001: m("white"),
+  medieval_man_in_mail_001: m("white"), medieval_abbess_001: f("white"), medieval_blacksmith_001: m("white"), medieval_jester_001: m("white"),
+  renaissance_noblewoman_001: f("white"), renaissance_scholar_001: m("white"), medieval_man_at_arms_001: m("white"), medieval_squire_001: m("white"),
+  renaissance_court_lady_001: f("white"), renaissance_navigator_001: m("white"),
+  victorian_patriarch_001: m("white"), victorian_foreman_001: m("white"), victorian_governess_001: f("white"), victorian_steam_engineer_001: m("white"),
+  edwardian_music_hall_star_001: f("white"), edwardian_suffragette_001: f("white"), victorian_street_urchin_001: m("white"), victorian_physician_001: m("white"),
+  victorian_dowager_001: f("white"), victorian_clockwork_gentleman_001: m("black"),
+  western_sheriff_001: m("white"), western_gambler_001: m("white"), western_prospector_001: m("white"), western_rancher_001: m("white"),
+  western_frontier_scout_001: m("white"), western_homesteader_001: f("white"), historical_aviator_001: m("white"), historical_field_nurse_001: f("white"),
+  historical_revolutionary_001: m("white"), historical_privateer_001: m("black"),
+  fantasy_woodland_ranger_001: f("white"), fantasy_dwarf_smith_001: m("white"), fantasy_sorceress_001: f("white"), fantasy_druid_001: f("white"),
+  fantasy_shieldmaiden_001: f("white"), fantasy_dryad_001: f("white"), fantasy_dragon_knight_001: m("white"), fantasy_elven_scout_001: f(), fantasy_horned_beastman_001: NONE,
+  scifi_android_001: f("white"), cyberpunk_tinkerer_001: m("white"), cyberpunk_net_courier_001: f("white"), scifi_station_director_001: f("white"),
+  scifi_wasteland_mechanic_001: f("white"), scifi_ambassador_001: NONE, scifi_refinery_engineer_001: m("white"), cyberpunk_operative_001: m("east_asian"),
+  horror_pale_archivist_001: m("white"), horror_count_001: m("white"), horror_monster_hunter_001: m("white"), horror_medium_001: f("white"), horror_exorcist_001: m("white"),
+  horror_scarecrow_farmer_001: m("white"), horror_veiled_mourner_001: f("white"), horror_lighthouse_keeper_001: m("white"), horror_occult_professor_001: m("white"), horror_ghoul_001: NONE,
+  stylized_bear_chef_001: NONE, stylized_little_robot_001: NONE, stylized_fox_scout_001: NONE, stylized_inventor_gran_001: f("white"), stylized_young_explorer_001: m("white"),
+  stylized_baby_dragon_001: NONE, stylized_space_cadet_001: m("east_asian"), stylized_music_kid_001: f("black"), stylized_jazz_grandpa_001: m("black"), stylized_tea_grandma_001: f("east_asian"),
+  global_highland_traveller_001: m("indigenous"), global_court_official_001: m("east_asian"), global_andean_elder_001: m("indigenous"), global_storyteller_001: m("indigenous"),
+  global_festival_dancer_001: f("latino"), global_tea_master_001: m("east_asian"), global_desert_nomad_001: m("middle_eastern"), global_market_matriarch_001: f("black"),
+  global_village_elder_001: f("black"), global_village_weaver_001: f("east_asian"),
+};
 
 const seedHash = (s: string) => {
   let h = 2166136261;
@@ -393,14 +416,56 @@ const seedHash = (s: string) => {
   return h >>> 0;
 };
 
-/** A steady built-in portrait for a voice with no chosen picture. A male voice never gets a portrait of a woman and the reverse. */
-export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string): AvatarEntry | null {
+export type VoiceAge = "child" | "young" | "mid" | "old";
+
+/** Gender, age and heritage a voice states about itself, read from its fields and description. Anything not stated is left open. */
+export function readVoice(gender: string | undefined, hint: string | undefined): { g?: "m" | "f"; age?: VoiceAge; h?: Heritage } {
+  const t = ` ${gender ?? ""} ${hint ?? ""} `.toLowerCase();
+  let g: "m" | "f" | undefined;
+  if (/\b(female|woman|women|girl|lady|she|her|feminine|mother|grandmother|actress)\b/.test(t)) g = "f";
+  else if (/\b(male|man|men|boy|guy|he|his|masculine|father|grandfather|baritone)\b/.test(t)) g = "m";
+  let age: VoiceAge | undefined;
+  if (/\b(child|kid|kids|little (boy|girl)|boy|toddler|pre-?teen|young girl)\b/.test(t)) age = "child";
+  else if (/\b(elderly|old|senior|aged|grand(father|mother|pa|ma)|70s|80s|60s|seventies|eighties|sixties)\b/.test(t)) age = "old";
+  else if (/\b(young|teen|teenage|youth|early[- ]?20s|20s|twenties)\b/.test(t)) age = "young";
+  else if (/\b(middle[- ]aged|mature|40s|50s|mid[- ]?40s|late 40s|forties|fifties|30s|thirties)\b/.test(t)) age = "mid";
+  let h: Heritage | undefined;
+  if (/(nigeri|african|ghana|kenya|south africa|jamaic|caribbean|\bblack\b|haiti|ethiop|swahili|congo|zulu|yoruba|igbo|hausa|uganda|tanzan|senegal|cameroon)/.test(t)) h = "black";
+  else if (/(\bindian\b|pakistan|bengal|hindi|tamil|sri lank|nepal|punjab|urdu|south asian)/.test(t)) h = "south_asian";
+  else if (/(chinese|japan|korean|filipino|tagalog|vietnam|\bthai\b|mandarin|cantonese|indonesia|malay|east asian|\basian\b)/.test(t)) h = "east_asian";
+  else if (/(arab|egypt|iran|persian|turk|middle east|lebanon|saudi|moroc|algeria|israel|hebrew|farsi)/.test(t)) h = "middle_eastern";
+  else if (/(mexic|spanish|latin|brazil|portugu|colomb|argentin|cuban|hispanic)/.test(t)) h = "latino";
+  else if (/(\bwhite\b|caucasian|european|swedish|norwegian|german|russian|polish)/.test(t)) h = "white";
+  return { g, age, h };
+}
+
+const AGE_FIT: Record<VoiceAge, Age[]> = {
+  child: ["child", "teen"],
+  young: ["teen", "young_adult", "adult"],
+  mid: ["adult", "middle_aged", "older_adult"],
+  old: ["older_adult", "elderly"],
+};
+
+/**
+ * A steady built-in portrait for a voice with no chosen picture. It never crosses gender. It uses the stated age and
+ * heritage when a portrait fits; when none does it loosens age first, then heritage, but never gender. A voice that states
+ * nothing gets any adult human portrait, and children only appear for a voice that says it is a child.
+ */
+export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string): AvatarEntry | null {
   if (!manifest) return null;
-  const g = (gender ?? "").toLowerCase();
-  const masters = manifest.avatars.filter((a) => a.tier !== "preview" && !CREATURE_FACES.has(a.id));
-  let pool = masters;
-  if (g.startsWith("f")) pool = masters.filter((a) => FEMALE_FACES.has(a.id));
-  else if (g.startsWith("m")) pool = masters.filter((a) => !FEMALE_FACES.has(a.id) && !UNSURE_FACES.has(a.id));
-  if (!pool.length) pool = masters;
+  const want = readVoice(gender, hint);
+  const humans = manifest.avatars.filter((a) => a.tier !== "preview" && (LOOKS[a.id]?.g ?? "n") !== "n");
+  const byGender = want.g ? humans.filter((a) => LOOKS[a.id]!.g === want.g) : humans;
+  const adult = (a: AvatarEntry) => a.age_category !== "child" && a.age_category !== "teen";
+  const ageOk = (a: AvatarEntry) => (want.age ? AGE_FIT[want.age].includes(a.age_category) : adult(a));
+  const heritageOk = (a: AvatarEntry) => !want.h || LOOKS[a.id]!.h === want.h;
+  const tiers = [
+    byGender.filter((a) => ageOk(a) && heritageOk(a)),
+    byGender.filter((a) => heritageOk(a) && (want.age === "child" ? !adult(a) : adult(a))),
+    byGender.filter(heritageOk),
+    byGender.filter(ageOk),
+    byGender,
+  ];
+  const pool = tiers.find((t) => t.length) ?? [];
   return pool.length ? pool[seedHash(seed) % pool.length]! : null;
 }

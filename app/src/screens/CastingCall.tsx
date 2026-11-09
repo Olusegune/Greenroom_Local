@@ -90,7 +90,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
 
       <div className="chips" role="group" aria-label="Accent filter">{accents.map((a) => <button key={a} className="chip" aria-pressed={accent === a} onClick={() => setAccent(a)}>{a}</button>)}</div>
       <div className="shelf-grid">{shown.map((r) => <article className="shelf-voice" key={r.key}>
-        <Avatar seed={r.key} size={54} />
+        <Avatar seed={r.key} size={54} hint={`${r.accent} ${r.language}`} />
         <div className="shelf-info"><strong>{r.name}</strong><span>{r.accent} · {r.language}</span><small>{r.use} · {r.mb} MB</small></div>
         <div className="shelf-actions">
           <button className="sm" disabled={busy === r.key} onClick={() => void preview(r)} aria-label={`${playing === r.key ? "Pause" : paused === r.key ? "Resume" : "Hear"} ${r.name}`}>{playing === r.key ? "Pause" : paused === r.key ? "Resume" : "Hear"}</button>
@@ -109,7 +109,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
       <div className="stack">
         <div><h3>DESIGN RECIPES · ELEVENLABS (PAID)</h3><p className="muted small">Ready-written descriptions for characters the local voices cannot cover. Opening one fills Design a voice. Nothing is spent until you press generate.</p></div>
         <div className="shelf-grid">{DESIGN_RECIPES.map((r) => <article className="shelf-voice" key={r.id}>
-          <Avatar seed={r.id} size={54} />
+          <Avatar seed={r.id} size={54} hint={`${r.accent} ${r.description}`} />
           <div className="shelf-info"><strong>{r.name}</strong><span>{r.accent}</span><small>{r.description.slice(0, 70)}…</small></div>
           <div className="shelf-actions"><button className="sm" onClick={() => onDesign(r.description, r.line)}>Open in Design</button></div>
         </article>)}</div>

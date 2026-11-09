@@ -10,12 +10,20 @@ import type { VoiceEntry } from "./types";
 export const voiceSeed = (v: Pick<VoiceEntry, "id" | "name">): string => v.id + v.name;
 
 const pictures = new Map<string, string>();
+const hints = new Map<string, string>();
 
 /** Rebuilds the lookup from the library. Cheap, and called whenever the library changes. */
-export function syncPortraits(library: Pick<VoiceEntry, "id" | "name" | "portrait">[]): void {
+export function syncPortraits(library: (Pick<VoiceEntry, "id" | "name" | "portrait"> & Partial<Pick<VoiceEntry, "gender" | "accent" | "language" | "notes">>)[]): void {
   pictures.clear();
-  for (const v of library) if (v.portrait && v.portrait.startsWith("data:image/")) pictures.set(voiceSeed(v), v.portrait);
+  hints.clear();
+  for (const v of library) {
+    if (v.portrait && v.portrait.startsWith("data:image/")) pictures.set(voiceSeed(v), v.portrait);
+    hints.set(voiceSeed(v), [v.gender, v.accent, v.language, v.notes].filter(Boolean).join(" "));
+  }
 }
+
+/** What a voice says about itself (accent, notes), used to pick an automatic face that fits it. */
+export const hintFor = (seed: string): string | undefined => hints.get(seed);
 
 export const portraitFor = (seed: string): string | undefined => pictures.get(seed);
 

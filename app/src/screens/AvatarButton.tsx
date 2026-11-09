@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { api } from "../api";
 import { Avatar } from "../avatar";
 import { useApp } from "../ctx";
@@ -14,7 +15,7 @@ export function AvatarButton({ voice, seed, gender, size = 44, role = "" }: { vo
       <button className="avatar-btn" aria-label={`Change the picture for ${voice.name}`} title="Change the picture" onClick={() => setOpen(true)} style={{ background: "none", border: 0, padding: 0, cursor: "pointer", borderRadius: "50%", lineHeight: 0 }}>
         <Avatar seed={seed} gender={gender} size={size} />
       </button>
-      {open && <PortraitDialog voice={voice} seed={seed} gender={gender} role={role} onClose={() => setOpen(false)} />}
+      {open && createPortal(<PortraitDialog voice={voice} seed={seed} gender={gender} role={role} onClose={() => setOpen(false)} />, document.body)}
     </>
   );
 }

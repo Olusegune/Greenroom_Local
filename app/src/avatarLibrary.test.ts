@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { addCustom, autoAvatar, COLLECTIONS, type AvatarManifest, assignAvatar, emptyStore, expressionFor, faceFor, facets, filterAvatars, migrateStore, progress, RECENT_MAX, removeCustom, suggestAvatars, toggleFavorite, touchRecent, validateManifest, type CustomAvatar } from "./avatarLibrary";
+import { addCustom, autoAvatar, LOOKS, readVoice, COLLECTIONS, type AvatarManifest, assignAvatar, emptyStore, expressionFor, faceFor, facets, filterAvatars, migrateStore, progress, RECENT_MAX, removeCustom, suggestAvatars, toggleFavorite, touchRecent, validateManifest, type CustomAvatar } from "./avatarLibrary";
 
 const PUB = join(__dirname, "..", "public", "avatars");
 const MASTERS = join(__dirname, "..", "..", "avatars", "masters");
@@ -276,5 +276,34 @@ describe("automatic faces", () => {
     }
     expect(ids.size).toBeGreaterThan(20);
     expect(autoAvatar(null, "x", "male")).toBeNull();
+  });
+});
+
+describe("automatic faces fit the voice", () => {
+  const mf = { version: 1, target: 100, count: list.length, collections: [...COLLECTIONS], avatars: list } as unknown as AvatarManifest;
+  const pick = (seed: string, gender: string, hint = "") => autoAvatar(mf, seed, gender, hint)!;
+  it("gives Nigerian voices Black portraits of the right gender", () => {
+    for (let i = 0; i < 40; i++) {
+      const male = pick("n" + i, "Male", "Nigerian EN Casual");
+      expect(LOOKS[male.id]).toMatchObject({ g: "m", h: "black" });
+      const female = pick("nf" + i, "Female", "Nigerian");
+      expect(LOOKS[female.id]).toMatchObject({ g: "f", h: "black" });
+    }
+  });
+  it("reads gender from the description when the field is empty, and never gives a woman to a male voice", () => {
+    for (let i = 0; i < 40; i++) expect(LOOKS[pick("s" + i, "", "A deep, resonant British male voice, late 40s").id]!.g).toBe("m");
+    expect(readVoice("", "bubbly BFF bright cheery female").g).toBe("f");
+  });
+  it("uses a child portrait only for a voice that says it is a child, and an adult otherwise", () => {
+    const kidAges = new Set(["child", "teen"]);
+    for (let i = 0; i < 40; i++) {
+      expect(kidAges.has(pick("a" + i, "Male", "adult male narrator").age_category)).toBe(false);
+      expect(kidAges.has(pick("b" + i, "Female", "").age_category)).toBe(false);
+    }
+    expect(kidAges.has(pick("k", "Female", "a young girl, child voice").age_category)).toBe(true);
+  });
+  it("every human portrait has a recorded look, and creatures are never used", () => {
+    for (const a of list.filter((x) => x.tier !== "preview")) expect(LOOKS[a.id], a.id).toBeDefined();
+    for (let i = 0; i < 200; i++) expect(LOOKS[pick("z" + i, i % 3 ? "male" : "").id]!.g).not.toBe("n");
   });
 });
