@@ -15,6 +15,7 @@ import { faceFor } from "../avatarLibrary";
 import { useAvatars } from "../avatarState";
 import { assignPresetFaces } from "../presets/portraits";
 import { useSample } from "../useSample";
+import { ageBandOf, isLocalVoice, pickStandIn } from "../localStandIn";
 import type { VoiceEntry } from "../types";
 
 const MAX_COMPARE = 3;
@@ -101,6 +102,9 @@ export default function Presets() {
       onFavorite={() => update(toggleFavorite(state, p.id))}
       onCompare={() => toggleCompare(p.id)}
       onAudition={(v) => { update(markRecent(state, p.id)); return sample(v, auditionPlan(p, v, engines.inworldModel).text); }}
+      standIn={pickStandIn({ gender: p.gender, language: p.language, age: ageBandOf(p.ageRange) }, library)}
+      localFirst={engines.localFirst === true}
+      onAuditionLocal={(s) => { update(markRecent(state, p.id)); return sample(s, p.audition); }}
       inworldModel={engines.inworldModel}
       onCast={() => { update(markRecent(state, p.id)); setCasting(p.id); }}
       onDuplicate={() => { const d = duplicatePreset(p, new Set(all.map((x) => x.id))); update(addCustom(state, [d])); toast(`Copied as "${d.name}". Find it under its genre.`); }}
@@ -218,7 +222,7 @@ function PresetFace({ src, name, size = 56 }: { src?: string; name: string; size
 
 function PresetCard(props: {
   test?: import("../presets/accentTests").AccentTest | undefined; reviews: AccentReview[]; onTest: () => void; inworldModel?: InworldModel | undefined; preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined;
-  onVoice: (id: string) => void; onFavorite: () => void; onCompare: () => void; onAudition: (v: VoiceEntry) => Promise<string>; onCast: () => void; onDuplicate: () => void; onRemove: (() => void) | undefined; go: (t: "voices" | "models") => void;
+  onVoice: (id: string) => void; onFavorite: () => void; onCompare: () => void; onAudition: (v: VoiceEntry) => Promise<string>; standIn: VoiceEntry | null; localFirst: boolean; onAuditionLocal: (v: VoiceEntry) => Promise<string>; onCast: () => void; onDuplicate: () => void; onRemove: (() => void) | undefined; go: (t: "voices" | "models") => void;
 }) {
   const { preset: p, voices } = props;
   const st = statusOf(p, props.ready, props.libraryEngines);
@@ -255,7 +259,12 @@ function PresetCard(props: {
       )}
       <div className="row wrap preset-actions">
         {r.state === "ready" && chosen
-          ? <PlayButton label="Audition" get={() => props.onAudition(chosen)} />
+          ? (props.standIn && !isLocalVoice(chosen)
+            ? (<>
+              <PlayButton label={props.localFirst ? "Audition (free, on this PC)" : "Free preview on this PC"} get={() => props.onAuditionLocal(props.standIn!)} />
+              <PlayButton label={props.localFirst ? "Hear the real voice (uses credits)" : "Audition"} get={() => props.onAudition(chosen)} />
+            </>)
+            : <PlayButton label="Audition" get={() => props.onAudition(chosen)} />)
           : r.state === "needs_voice"
             ? <button className="sm" onClick={() => props.go("voices")}>Pick a voice</button>
             : <button className="sm" onClick={() => props.go("models")}>Set up an engine</button>}
@@ -269,6 +278,7 @@ function PresetCard(props: {
           </div>
         </details>
       </div>
+      {r.state === "ready" && chosen && props.standIn && !isLocalVoice(chosen) && <div className="muted small">The free preview is {props.standIn.name}, a plain read on this PC. It matches the preset's language, gender and age only; it does not sound like {chosen.name}.</div>}
       {r.state === "ready" && chosen && (() => {
         const a = auditionPlan(p, chosen, props.inworldModel);
         return <div className="muted small">{a.directed ? "The audition reads “" + p.audition + "” with this preset's acting direction." : "The audition reads “" + p.audition + "” as a plain read."} {a.notSent.length ? "Not sent: " + a.notSent.join("; ") + "." : ""} Cloud voices ask before they spend.</div>;

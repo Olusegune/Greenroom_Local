@@ -40,6 +40,10 @@ On ElevenLabs an audition now carries the preset's acting direction through the 
 
 A card's More menu opens a listening test for its accent. See `ACCENT_VERIFICATION.md`. No label has moved yet because no review has been recorded.
 
+## Free preview on this computer
+
+When the voice chosen for a card is a cloud voice and the library holds a local voice (Piper, Chatterbox, Wazobia or your own server) in the same language, the card offers a free preview: a plain read of the audition line by the closest local voice. "Closest" means language (must match), then gender, age band and accent as the library states them. It is a stand-in, not a copy of the cloud voice, and the card says so. Settings, Local first, makes the free preview the main Audition button and moves the real cloud audition to a second button marked "uses credits". The cloud audition still asks first.
+
 ## Not built yet
 
 A Venomspur signature preset (his profile and portrait are not in the repository); editing a custom preset's fields in place (duplicate and import exist); portrait choice per preset (a preset's own `portraitId` is honoured but there is no picker); a regrouping of the library by capability.

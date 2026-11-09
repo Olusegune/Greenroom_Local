@@ -126,6 +126,8 @@ export interface EnginesCfg {
   quality: Quality;
   /** Look for a new Greenroom when it starts. Off means only when you press the button. Default on. */
   updateCheck?: boolean;
+  /** Prefer free voices on this computer for auditions and previews. A cloud voice is heard only when you ask for it. Default off. */
+  localFirst?: boolean;
   /** Which engine makes sound clips and the atmosphere. */
   soundEngine?: SoundEngine;
   /** ElevenLabs Sound Effects v3 is the default; v2 remains a compatibility fallback. */

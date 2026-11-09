@@ -77,6 +77,14 @@ export default function Settings() {
       </div>
 
       <div className="card stack">
+        <h2>Local first</h2>
+        <label className="row small">
+          <input type="checkbox" checked={engines.localFirst === true} onChange={(e) => saveEngines({ ...engines, localFirst: e.target.checked })} /> Prefer free voices on this computer for auditions
+        </label>
+        <p className="muted small">With this on, a preset audition on a cloud voice plays a plain-read stand-in from a local voice (no internet, no cost). The stand-in is not the cloud voice: it is only a voice of similar language, gender and age. Hearing the real cloud voice is a separate button and still asks before it uses credits.</p>
+      </div>
+
+      <div className="card stack">
         <h2>About</h2>
         <p className="muted small">
           Greenroom {APP_VERSION}. Everything you make (projects, takes, voices, backups and exports) is kept on this computer in Documents\Greenroom. Only the text of a line, a description or a style is sent to a provider, and only when you confirm.
