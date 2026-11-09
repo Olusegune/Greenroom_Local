@@ -4,6 +4,7 @@
 // engine will sound like the same person, and it says so when the engine changes.
 
 import { analyzeSamples, type TakeStats } from "./analysis";
+import { readProfile, type ProfileExtra } from "./characterProfile";
 import { ENGINES, type Engine } from "./engines";
 import type { Pronunciation, VoiceEntry } from "./types";
 
@@ -47,6 +48,8 @@ export interface VoiceDna {
   references: ActingReference[];
   /** The voice the owner approved for this character. Changing engine or voice later raises a warning. */
   identity: VoiceIdentity | null;
+  /** Background, how the voice is described, an audition line, a consent note and where the profile came from. Absent until filled in. */
+  profile?: ProfileExtra;
 }
 
 export const emptyDna = (): VoiceDna => ({ version: DNA_VERSION, timbre: "", accent: "", tendencies: "", range: "", presets: [], pronunciations: [], references: [], identity: null });
@@ -100,6 +103,7 @@ export function migrateDna(raw: unknown): VoiceDna | undefined {
       })
       .filter((x): x is ActingReference => x !== null)
       .slice(0, MAX_REFERENCES),
+    ...(readProfile(r.profile) ? { profile: readProfile(r.profile)! } : {}),
     identity: id && isEngine(id.engine) && typeof id.voiceId === "string" ? { engine: id.engine, voiceId: text(id.voiceId, 160), voiceName: text(id.voiceName, 80), modelId: typeof id.modelId === "string" ? text(id.modelId, 60) : null } : null,
   };
 }

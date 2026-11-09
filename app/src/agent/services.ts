@@ -3,6 +3,7 @@
 // project goes through `env.edit`, so the person's Undo reverts it, and every step reports what it did as plain data.
 
 import type { Engine } from "../engines";
+import { APP_VERSION } from "../version";
 import { applyPreset as applyToCharacter, voicesFor } from "../presets/cast";
 import { recommend, STARTER_PRESETS, type Genre, type VoicePreset } from "../presets";
 import type { Line, Project, Take, VoiceEntry } from "../types";
@@ -50,7 +51,7 @@ export function executors(env: Env): Executors {
         if (!pick) { missing.push(c.name); continue; }
         const voice = pick.voices[0]!;
         const avatarId = env.portraitFor?.(pick.r.preset.id);
-        const applied = applyToCharacter(c, pick.r.preset, { voice, ...(avatarId ? { avatarId } : {}) });
+        const applied = applyToCharacter(c, pick.r.preset, { voice, ...(avatarId ? { avatarId } : {}), now: new Date().toISOString(), appVersion: APP_VERSION });
         env.edit((p) => ({ ...p, characters: p.characters.map((x) => (x.id === c.id ? applied.character : x)) }));
         made.push({ character: c.name, voice: voice.name, preset: pick.r.preset.name });
       }

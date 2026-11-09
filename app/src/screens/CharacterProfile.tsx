@@ -4,6 +4,10 @@ import { CAPS, engineLabel, suggestEngines } from "../engineCaps";
 import { ENGINES, ENGINE_ORDER } from "../engines";
 import { useApp } from "../ctx";
 import type { Character, VoiceEntry } from "../types";
+import { emptyProfile, profileCompatibility, touch, type ProfileExtra } from "../characterProfile";
+import { duplicateCharacter, exportProfile, importProfile } from "../profileIO";
+import { APP_VERSION } from "../version";
+import { uid } from "../script";
 import { emptyDna, identityWarning, migrateDna, removeReference, setIdentity, type VoiceDna } from "../voiceDna";
 
 const parsePron = (t: string) =>
@@ -18,10 +22,34 @@ const parsePron = (t: string) =>
  * project. It records what the owner approved and gives starting points; it cannot make a different engine sound the same.
  */
 export function CharacterProfile({ character, voice, save }: { character: Character; voice?: VoiceEntry; save: (dna: VoiceDna) => void }) {
-  const { engines, library, keys } = useApp();
+  const { engines, library, keys, edit, toast } = useApp();
   const dna = migrateDna(character.dna) ?? emptyDna();
   const [pron, setPron] = useState(() => dna.pronunciations.map((p) => `${p.from} = ${p.to}`).join("\n"));
   const set = (patch: Partial<VoiceDna>) => save({ ...dna, ...patch });
+  const nowIso = () => new Date().toISOString();
+  const extra = dna.profile ?? emptyProfile(nowIso(), APP_VERSION);
+  const [sig, setSig] = useState(() => extra.signature.join("\n"));
+  const setExtra = (patch: Partial<ProfileExtra>) => set({ profile: touch({ ...extra, ...patch }, nowIso(), APP_VERSION) });
+  const compat = profileCompatibility(extra, dna);
+  const exportIt = () => {
+    const url = URL.createObjectURL(new Blob([exportProfile(character, voice, nowIso())], { type: "application/json" }));
+    const a = document.createElement("a"); a.href = url; a.download = character.name.replace(/[^\w-]+/g, "_") + ".character.json"; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const importIt = async (f: File | undefined) => {
+    if (!f) return;
+    const r = importProfile(await f.text(), nowIso(), APP_VERSION);
+    if (!r.ok) return toast(r.error, true);
+    // Into this character: its voice and its approved identity stay as they are; nothing about rights comes in.
+    save({ ...r.dna, identity: dna.identity, references: dna.references });
+    setSig(r.dna.profile?.signature.join("\n") ?? "");
+    toast(["Profile imported into " + character.name + ".", ...r.warnings].join(" "));
+  };
+  const duplicateIt = () => {
+    const copy = duplicateCharacter(character, uid(), nowIso(), APP_VERSION);
+    edit((p) => ({ ...p, characters: [...p.characters, copy] }));
+    toast(copy.name + " added. It has no lines yet.");
+  };
   const modelId = voice?.provider === "inworld" ? engines.inworldModel ?? "inworld-tts-2" : null;
   const warn = identityWarning(dna, voice, modelId);
   const ready = ENGINE_ORDER.filter((e) => (e === "elevenlabs" ? keys.elevenlabs : e === "voicekiller" ? keys.voicekiller : e === "inworld" ? keys.inworld : e === "kie" ? keys.kie : library.some((v) => v.provider === e)));
@@ -60,6 +88,56 @@ export function CharacterProfile({ character, voice, save }: { character: Charac
             </button>
           ))}
         </div>
+        <span className="eyebrow">About {character.name}</span>
+        <label className="field">
+          Background
+          <textarea rows={2} maxLength={600} value={extra.background} placeholder="Who they are, where they come from, what they want" onChange={(e) => setExtra({ background: e.target.value })} />
+        </label>
+        <div className="row wrap">
+          <label className="field">Age range
+            <select value={extra.ageRange ?? ""} onChange={(e) => setExtra({ ageRange: (e.target.value || undefined) as ProfileExtra["ageRange"] })}>
+              <option value="">Not stated</option>
+              {["child", "teen", "young_adult", "adult", "middle_aged", "older_adult", "elderly", "ageless"].map((a) => <option key={a} value={a}>{a.replace("_", " ")}</option>)}
+            </select>
+          </label>
+          <label className="field">Presentation
+            <select value={extra.presentation ?? ""} onChange={(e) => setExtra({ presentation: (e.target.value || undefined) as ProfileExtra["presentation"] })}>
+              <option value="">Not stated</option><option value="female">Female</option><option value="male">Male</option><option value="nonbinary">Nonbinary</option>
+            </select>
+          </label>
+          <label className="field">Pitch
+            <select value={extra.pitch ?? ""} onChange={(e) => setExtra({ pitch: (e.target.value || undefined) as ProfileExtra["pitch"] })}>
+              <option value="">Not stated</option><option value="low">Low</option><option value="mid">Mid</option><option value="high">High</option>
+            </select>
+          </label>
+          <label className="field" style={{ flex: 1, minWidth: 140 }}>Voice texture
+            <input type="text" maxLength={160} value={extra.texture} placeholder="smooth, dry" onChange={(e) => setExtra({ texture: e.target.value })} />
+          </label>
+        </div>
+        <label className="field">
+          Signature vocal behaviours (one per line)
+          <textarea rows={2} value={sig} onChange={(e) => setSig(e.target.value)} onBlur={() => setExtra({ signature: sig.split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 8) })} placeholder="a dry cough before bad news" />
+        </label>
+        <label className="field">
+          Audition script
+          <input type="text" maxLength={300} value={extra.audition} placeholder="A line that shows who they are" onChange={(e) => setExtra({ audition: e.target.value })} />
+        </label>
+        <label className="field">
+          Rights and consent note
+          <input type="text" maxLength={400} value={extra.consentNote} placeholder="Voice designed from text; no real person" onChange={(e) => setExtra({ consentNote: e.target.value })} />
+          <span className="muted small">A note for you. It is not a consent record: consent for a cloned voice is recorded on the voice.</span>
+        </label>
+        <p className="muted small">
+          Engines that can perform this profile: {compat.engines.map(engineLabel).join(", ") || "none"}. This is what each engine accepts, not how it sounds.
+          {extra.provenance.source === "preset" && extra.provenance.presetId ? ` Began from the preset “${extra.provenance.presetId}” (version ${extra.provenance.presetVersion ?? "?"}).` : extra.provenance.source === "import" ? " Imported from a file." : ""}
+          {extra.provenance.revision > 0 ? ` Revision ${extra.provenance.revision}.` : ""}
+        </p>
+        <div className="row wrap">
+          <button className="sm" onClick={exportIt}>Export profile</button>
+          <label className="sm ghost file-btn">Import profile<input type="file" accept="application/json,.json" hidden onChange={(e) => { void importIt(e.target.files?.[0]); e.target.value = ""; }} /></label>
+          <button className="sm ghost" onClick={duplicateIt}>Duplicate character</button>
+        </div>
+
         <label className="field">
           Pronunciations only for {character.name} (one per line: written = spoken)
           <textarea rows={2} value={pron} onChange={(e) => setPron(e.target.value)} onBlur={() => set({ pronunciations: parsePron(pron) })} placeholder="Nguyen = Win" />

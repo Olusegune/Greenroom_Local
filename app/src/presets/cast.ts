@@ -4,6 +4,7 @@
 import type { KeyStatus } from "../api";
 import { ENGINE_ORDER, type Engine } from "../engines";
 import type { Character, VoiceEntry } from "../types";
+import { emptyProfile, touch } from "../characterProfile";
 import { emptyDna, migrateDna, setIdentity } from "../voiceDna";
 import { compatibleEngines, type VoicePreset } from "./schema";
 
@@ -34,7 +35,7 @@ const ageLook: Record<string, NonNullable<Character["look"]>["age"]> = { child: 
  * Applies a preset to a character. With a voice, the character also gets that voice and the profile records it as the
  * approved identity. Without one, only the profile is filled in and the preset says it still needs a voice.
  */
-export function applyPreset(character: Character, preset: VoicePreset, opts: { voice?: VoiceEntry; replace?: boolean; modelId?: string | null; avatarId?: string } = {}): PresetApplication {
+export function applyPreset(character: Character, preset: VoicePreset, opts: { voice?: VoiceEntry; replace?: boolean; modelId?: string | null; avatarId?: string; now?: string; appVersion?: string } = {}): PresetApplication {
   const dna = migrateDna(character.dna) ?? emptyDna();
   const filled: string[] = [];
   const kept: string[] = [];
@@ -55,6 +56,22 @@ export function applyPreset(character: Character, preset: VoicePreset, opts: { v
     tendencies: put("tendencies", dna.tendencies, preset.acting.direction),
     range: put("emotional range", dna.range, preset.acting.emotionalRange.join(", ")),
   };
+  // The lasting profile: what this preset says about the character, with where it came from. Existing text is kept unless replacing.
+  const prof = next.profile ?? emptyProfile(opts.now ?? "", opts.appVersion ?? "");
+  const fill = <K extends "audition" | "texture">(k: K, v: string) => (prof[k] && !opts.replace ? prof[k] : v);
+  next = {
+    ...next,
+    profile: touch({
+      ...prof,
+      audition: fill("audition", preset.audition),
+      texture: fill("texture", preset.texture),
+      ...(!prof.pitch || opts.replace ? { pitch: preset.pitch } : {}),
+      ...(preset.ageRange[0] && (!prof.ageRange || opts.replace) ? { ageRange: preset.ageRange[0] } : {}),
+      ...(preset.gender && (!prof.presentation || opts.replace) ? { presentation: preset.gender } : {}),
+      provenance: { ...prof.provenance, source: "preset", presetId: preset.id, presetVersion: preset.version },
+    }, opts.now ?? "", opts.appVersion ?? ""),
+  };
+  filled.push("profile");
   if (opts.voice) {
     const compat = compatibleEngines(preset);
     if (!compat.includes(opts.voice.provider)) warnings.push(`${opts.voice.name} is on an engine that cannot perform everything this preset asks for.`);

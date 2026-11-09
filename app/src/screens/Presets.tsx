@@ -2,9 +2,11 @@ import { useMemo, useState } from "react";
 import { AGE_LABEL, type Age } from "../avatarLibrary";
 import { useApp } from "../ctx";
 import { engineLabel } from "../engineCaps";
-import type { Engine } from "../engines";
+import type { Engine, InworldModel } from "../engines";
 import { ACCENT_QUALITY, ACCENT_QUALITY_LABEL, compatibleEngines, duplicatePreset, exportPresets, filterPresets, GENRE_LABEL, GENRES, importPresets, readiness, STARTER_PRESETS, type AccentQuality, type Gender, type Genre, type VoicePreset } from "../presets";
 import { applyPreset, readyEnginesFrom, voicesFor } from "../presets/cast";
+import { auditionPlan } from "../presets/audition";
+import { APP_VERSION } from "../version";
 import { addCustom, loadState, markRecent, removeCustom, saveState, toggleFavorite, type PresetState } from "../presets/state";
 import { Empty, Note, PlayButton } from "../ui";
 import { faceFor } from "../avatarLibrary";
@@ -17,7 +19,7 @@ const MAX_COMPARE = 3;
 const store = (): Storage | null => { try { return window.localStorage; } catch { return null; } };
 
 export default function Presets() {
-  const { project, library, keys, edit, go, toast } = useApp();
+  const { project, library, keys, edit, go, toast, engines } = useApp();
   const sample = useSample();
   const [state, setState] = useState<PresetState>(() => loadState(store()));
   const [genre, setGenre] = useState<Genre | null>(null);
@@ -88,7 +90,8 @@ export default function Presets() {
       onVoice={(id) => setPicked((s) => ({ ...s, [p.id]: id }))}
       onFavorite={() => update(toggleFavorite(state, p.id))}
       onCompare={() => toggleCompare(p.id)}
-      onAudition={(v) => { update(markRecent(state, p.id)); return sample(v, p.audition); }}
+      onAudition={(v) => { update(markRecent(state, p.id)); return sample(v, auditionPlan(p, v, engines.inworldModel).text); }}
+      inworldModel={engines.inworldModel}
       onCast={() => { update(markRecent(state, p.id)); setCasting(p.id); }}
       onDuplicate={() => { const d = duplicatePreset(p, new Set(all.map((x) => x.id))); update(addCustom(state, [d])); toast(`Copied as "${d.name}". Find it under its genre.`); }}
       onRemove={p.availability === "starter" ? undefined : () => { update(removeCustom(state, p.id)); setCompare((c) => c.filter((x) => x !== p.id)); }}
@@ -165,7 +168,7 @@ export default function Presets() {
             const avatarId = faceOf(castPreset.id)?.id;
             const c = speakers.find((x) => x.id === characterId);
             if (!c) return;
-            const res = applyPreset(c, castPreset, { ...(voice ? { voice } : {}), replace, ...(avatarId ? { avatarId } : {}) });
+            const res = applyPreset(c, castPreset, { ...(voice ? { voice } : {}), replace, ...(avatarId ? { avatarId } : {}), now: new Date().toISOString(), appVersion: APP_VERSION });
             edit((p) => ({ ...p, characters: p.characters.map((x) => (x.id === characterId ? res.character : x)) }), "preset-apply");
             toast(`${c.name} now follows "${castPreset.name}". ${voice ? `Voice: ${voice.name}.` : "No voice chosen yet."} Press Undo to revert.`);
             setCasting(null);
@@ -189,7 +192,7 @@ function PresetFace({ src, name, size = 56 }: { src?: string; name: string; size
 }
 
 function PresetCard(props: {
-  preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined;
+  inworldModel?: InworldModel | undefined; preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined;
   onVoice: (id: string) => void; onFavorite: () => void; onCompare: () => void; onAudition: (v: VoiceEntry) => Promise<string>; onCast: () => void; onDuplicate: () => void; onRemove: (() => void) | undefined; go: (t: "voices" | "models") => void;
 }) {
   const { preset: p, voices } = props;
@@ -238,7 +241,10 @@ function PresetCard(props: {
           </div>
         </details>
       </div>
-      {r.state === "ready" && <div className="muted small">The audition reads “{p.audition}” in a plain voice, without this preset's acting direction. Cloud voices ask before they spend.</div>}
+      {r.state === "ready" && chosen && (() => {
+        const a = auditionPlan(p, chosen, props.inworldModel);
+        return <div className="muted small">{a.directed ? "The audition reads “" + p.audition + "” with this preset's acting direction." : "The audition reads “" + p.audition + "” as a plain read."} {a.notSent.length ? "Not sent: " + a.notSent.join("; ") + "." : ""} Cloud voices ask before they spend.</div>;
+      })()}
     </article>
   );
 }
