@@ -5,6 +5,7 @@ import { useApp } from "../ctx";
 import WazobiaSetup from "./WazobiaSetup";
 import AcestepSetup from "./AcestepSetup";
 import SfxSetup from "./SfxSetup";
+import SetupWizard from "./SetupWizard";
 import DirectorSetup from "./DirectorSetup";
 import { CardArt } from "../cardArt";
 import { MODEL_CATALOG, modelArt, recommendedModels, shortDescription, type HardwareProfile, type InstallState, type ModelKind } from "../models";
@@ -27,13 +28,16 @@ export default function Models() {
   const [qwenRuntime, setQwenRuntime] = useState<LocalRuntimeStatus | null>(null);
   const openSource = (url: string) => { void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl(url)).catch(() => window.open(url, "_blank", "noopener")); };
 
-  useEffect(() => {
+  const refreshAll = () => {
     void api.modelHardware().then(setProfile).catch(() => undefined);
     void api.piperStatus().then((s) => setPiperInstalled(s.installed)).catch(() => undefined);
     void api.chatterboxRuntimeStatus().then(setChatterboxRuntime).catch(() => undefined);
     void api.kokoroRuntimeStatus().then(setKokoroRuntime).catch(() => undefined);
     void api.qwenRuntimeStatus().then(setQwenRuntime).catch(() => undefined);
     void api.modelStates(MODEL_CATALOG.map((m) => m.id)).then((rows) => setStates(Object.fromEntries(rows.map((r) => [r.id, r.state])))).catch(() => undefined);
+  };
+  useEffect(() => {
+    refreshAll();
     if (!inApp()) return;
     let stop: (() => void) | undefined;
     void import("@tauri-apps/api/event").then(({ listen }) => listen<{ id: string; percent: number }>("model-download-progress", (e) => setProgress((p) => ({ ...p, [e.payload.id]: e.payload.percent })))).then((fn) => { stop = fn; });
@@ -88,6 +92,7 @@ export default function Models() {
         <div><span className="eyebrow">START HERE</span><strong>Install a working local voice in two steps</strong><span>{piperInstalled ? "Piper is ready. Pick any voice from the library." : "Install Piper, then download a voice from the library. No terminal required."}</span></div>
         <div className="row wrap">{piperInstalled ? <button className="primary" onClick={() => go("voices")}>Browse local voices</button> : <button className="primary" disabled={piperBusy} onClick={() => void installPiper()}>{piperBusy ? "Installing Piper…" : "Install Piper"}</button>}<button onClick={() => go("voices")}>Voice library</button></div>
       </div>
+      <SetupWizard profile={profile} onChanged={refreshAll} />
       <p className="muted small">{suggested.length} packages suit this computer. Model cards open in your browser so you can review licences, hardware requirements and provider-specific download terms before downloading.</p>
 
       {GROUPS.map((group) => {

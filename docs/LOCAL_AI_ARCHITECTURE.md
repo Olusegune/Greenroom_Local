@@ -99,3 +99,7 @@ Yoruba, Igbo, Hausa, Nigerian Pidgin, Nigerian English, British varieties, Filip
 
 ## Real local audio path (0.12.0)
 The demo builder calls the Piper binary with the same arguments as the app's Piper route (`piper_args` in `local.rs`), and runs the Agent Studio's planner, steps, quality check and export around it. The export mixes takes with `planTimeline`, the loudness module and `encodeWav`, the same code the Export screen uses. Four Piper voices (Alan, Alba, Amy, Joe) are installed on the owner's PC for this.
+
+## Set up my PC
+
+Model Center, "Set up my PC" (`app/src/screens/SetupWizard.tsx`, logic in `app/src/setupPlan.ts`). `planSetup` reads the installed state (Piper, Piper voices on disk and in the library, Chatterbox runtime and model files) and returns only what is missing; `runSetup` runs the steps in order through the existing install commands. One confirmation sheet shows every step and size first. The Piper voices shown are estimates until the live catalogue loads, when its sizes are used. The Chatterbox runtime has no known size, so the total says "at least". Not automated: models that need a Hugging Face account (accept the licence on the model page first), ACE-Step (needs an NVIDIA card), and a free-disk-space check (no command for it exists yet; a full disk shows as a failed step).
