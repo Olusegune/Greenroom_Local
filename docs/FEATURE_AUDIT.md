@@ -66,7 +66,7 @@ Written 2026-11-09 on branch `feat/agent-studio-presets` (cut from `feat/cinemat
 |---|---|
 | Preset schema, validation, migration, search, filters, readiness, recommendation, import/export, duplicate (`app/src/presets/schema.ts`) | Built, 17 unit tests |
 | 120 starter presets across 12 genres (`app/src/presets/data*.ts`) | Built as data. Exactly 120 unique ids, counts per genre asserted by test. No audio, no portraits (none were invented), every accent marked unverified or experimental |
-| Preset UI, audition, Add to Cast, favourites, recents | **Not built** |
+| Preset browser (`Presets` screen): genre tiles, search, filters, favourites, recents, compare, readiness gate, plain-voice audition through the existing cost sheet, Add to Cast with preview and undo, duplicate, import, export | Built. 28 unit tests plus a headless-Chrome run of the demo build (19 checks, 0 console errors; `scripts/qa/presets_e2e.mjs`). **Not run in the installed app, not run with real audio.** Audition ignores the preset's acting direction (stated on the card). See `VOICE_PRESET_LIBRARY.md`. |
 | Free-text performance compiler | **Not built** |
 | Character voice profile extensions | **Not built** |
 | Agent Studio (job graph, tools, modes, production board) | **Not built** |

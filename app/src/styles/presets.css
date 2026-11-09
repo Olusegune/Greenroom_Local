@@ -1,0 +1,29 @@
+/* Voice presets screen. Uses the shared tokens; no new colours. */
+.presets { display: flex; flex-direction: column; gap: var(--s4); }
+.presets .grow { flex: 1; }
+.preset-bar input[type="search"] { flex: 1 1 260px; min-width: 200px; }
+.preset-bar button[aria-pressed="true"], .preset-actions button[aria-pressed="true"] { border-color: var(--accent-line); color: var(--accent-text); background: var(--accent-wash); }
+.preset-filters { padding: var(--s3); border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface-1); }
+.preset-filters label { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); color: var(--text-2); }
+.preset-filters label.check, .cast-panel label.check { flex-direction: row; align-items: center; gap: 8px; }
+.file-btn { display: inline-flex; align-items: center; cursor: pointer; border: 1px solid var(--line-strong); border-radius: var(--r-ctl, 6px); height: var(--ctl-sm); padding: 0 var(--s3); font-size: var(--fs-sm); }
+.file-btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.genre-grid { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.genre-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: var(--s4); min-height: 84px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-card); }
+.genre-tile:hover { border-color: var(--accent-line); }
+.preset-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.preset-card { display: flex; flex-direction: column; gap: var(--s2); }
+.preset-card h3 { margin: 0; font-size: 1.05rem; }
+.preset-card p { margin: 0; color: var(--text-2); }
+.preset-card .small, .presets .small { font-size: var(--fs-sm); }
+.preset-card .status { align-self: flex-start; }
+.preset-card .preset-actions { margin-top: auto; padding-top: var(--s2); }
+.preset-card label.small { display: flex; flex-direction: column; gap: 4px; color: var(--text-2); }
+.preset-card .stack { display: flex; flex-direction: column; gap: 4px; padding-top: 4px; }
+.compare .table-wrap { overflow-x: auto; }
+.compare table { width: 100%; border-collapse: collapse; min-width: 480px; }
+.compare th, .compare td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: var(--fs-sm); }
+.compare th[scope="row"] { color: var(--text-2); font-weight: 500; white-space: nowrap; }
+.cast-panel { display: flex; flex-direction: column; gap: var(--s3); }
+.cast-panel label { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); color: var(--text-2); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

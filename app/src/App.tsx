@@ -19,6 +19,7 @@ import History from "./screens/History";
 import { checkForUpdates, useUpdates } from "./updates";
 import Settings from "./screens/Settings";
 import Voices from "./screens/Voices";
+import Presets from "./screens/Presets";
 import Models from "./screens/Models";
 import Help from "./screens/Help";
 import SfxStudio from "./screens/SfxStudio";
@@ -104,7 +105,7 @@ function Shell() {
   const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem("greenroom-rail") === "collapsed"; } catch { return false; } });
   const toggleRail = () => setCollapsed((c) => { const next = !c; try { localStorage.setItem("greenroom-rail", next ? "collapsed" : "open"); } catch { /* not saved */ } return next; });
   const takes = project ? project.lines.filter((l) => l.takes.length > 0).length : 0;
-  const screens: Record<Tab, React.ReactNode> = { home: <Home />, write: <Write />, cast: <Cast />, perform: <Perform />, timeline: <Timeline />, picture: <PictureScreen />, export: <Export />, studio: <Studio />, history: <History />, voices: <Voices />, models: <Models />, engines: <Engines />, sfx: <SfxStudio />, lab: <Lab />, settings: <Settings />, help: <Help /> };
+  const screens: Record<Tab, React.ReactNode> = { home: <Home />, write: <Write />, cast: <Cast />, perform: <Perform />, timeline: <Timeline />, picture: <PictureScreen />, export: <Export />, studio: <Studio />, history: <History />, voices: <Voices />, presets: <Presets />, models: <Models />, engines: <Engines />, sfx: <SfxStudio />, lab: <Lab />, settings: <Settings />, help: <Help /> };
 
   return (
     <div className={collapsed ? "shell rail-collapsed" : "shell"}>
@@ -135,6 +136,7 @@ function Shell() {
           <Item id="timeline" label="Timeline" icon={<TimelineIcon size={18} />} />
         </>}
         <Item id="voices" label="Voices" icon={<VoicesIcon size={18} />} />
+        <Item id="presets" label="Presets" icon={<Sparkle size={18} />} />
         <Item id="models" label="Model Center" icon={<Cube size={18} />} />
         <Item id="engines" label="Engines" icon={<Chip size={18} />} />
         <Item id="sfx" label="SFX Studio" icon={<Sparkle size={18} />} />
