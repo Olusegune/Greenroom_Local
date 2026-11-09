@@ -53,3 +53,9 @@ Open **SFX Studio** in the left rail. Describe the sound, choose a script line a
 - Read the actual error message before trying again. A missing permission or account-plan limit cannot be fixed by repeatedly pressing a button.
 
 Never add or clone a real person's voice without their permission and an appropriate right to use it.
+
+## Start with a genre (0.11.0)
+1. Open **Presets** in the sidebar and choose a genre. Each preset says whether you can hear it now. "Requires voice selection" means you have no voice on a compatible engine yet: open Voices and add one.
+2. Press **Add to Cast** to give a preset to a character in your open project. You see what will change first, and Undo reverts it.
+3. In **Perform**, open "Direct in your own words" and describe the delivery. You see what your voice will be given before you make a take.
+4. Or open **Agent Studio**: write a brief, choose Guided Agent, plan, press Start and approve each checkpoint. Leave **Local only** on if nothing may leave your computer. Delivery is always your decision.

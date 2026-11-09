@@ -54,3 +54,13 @@ Do not publish if any of these are true:
 ## What automated QA cannot prove
 
 Automated tests cannot judge pronunciation, cultural authenticity, acting quality, paid-provider account permissions, commercial licensing or Windows SmartScreen reputation. Those require a listener, an account owner or a legal review.
+
+## 0.11.0 additions
+Automated: typecheck, 840 JavaScript tests, 121 Rust tests, clippy `-D warnings`, `rafter secrets`, `npm audit`, `cargo audit`, and three headless-Chrome runs against the demo backend (`scripts/qa/smoke.mjs`, `presets_e2e.mjs`, `agent_e2e.mjs`). Results and what was not checked: `docs/QA_RESULTS.md`.
+
+Manual, by the owner, before sharing widely:
+- Make a take from a preset's voice with a written brief on ElevenLabs and listen: do the tags (`[clears throat]`, `[chuckles]`, emotion cues) sound right?
+- Run Agent Studio in Guided mode on a real project with a small cloud limit and confirm the cost sheet matches what the provider billed.
+- Confirm a local-only run sends nothing (watch the network, or unplug it).
+- Confirm a cloned voice with no consent record is refused.
+- Listen to each Nigerian English, Yoruba, Igbo, Hausa and Pidgin starter before relying on its accent.

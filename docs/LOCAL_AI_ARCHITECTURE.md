@@ -89,3 +89,10 @@ Yoruba, Igbo, Hausa, Nigerian Pidgin, Nigerian English, British varieties, Filip
 6. Qwen3-TTS voice-design adapter
 7. Nigerian specialist evaluation packs
 8. Whisper alignment and clone-sample checks
+
+## Capability declarations and the new layers (0.11.0)
+- `engineCaps.ts` is the single table of what each engine accepts (written direction, sounds, speed, cloning, local or cloud). The preset library, the performance compiler and the Agent Studio all read it; nothing hard-codes an engine.
+- **Presets** (`presets/`) are engine-independent data. `compatibleEngines()` derives which engines can perform a preset from the table. No audio or model weights ship with them.
+- **Performance compiler** (`performanceCompiler.ts`) compiles free-text direction to the existing `PerformancePlan` and beats, then reports sent, approximated or not sent per engine. It runs offline.
+- **Agent Studio** (`agent/`) is a job graph over the existing services. It makes no provider call itself: takes go through `generate.ts` with the usual cost sheet, ledger and provenance.
+- Still true: Kokoro and Qwen3-TTS can be installed but have no speech route; Chatterbox speaks with its default voice only.

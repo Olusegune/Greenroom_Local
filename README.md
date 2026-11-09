@@ -78,3 +78,9 @@ Fountain/PDF/Word import, saved casts reused across projects, a translated inter
 ## Develop
 From `app/`: `npm install`, `npx tsc --noEmit`, `npx vitest run`, `cd src-tauri && cargo test`, `npx tauri build`.
 Opening the front end in a plain browser (`npx vite`) uses a free demo backend, so every screen can be viewed without spending.
+
+## New in 0.11.0
+- **Voice presets** (sidebar: Presets): 120 starter character voices in 12 genres, with search, filters, compare, favourites, readiness ("Requires voice selection" until a compatible voice exists) and Add to Cast. See `docs/VOICE_PRESET_LIBRARY.md` and `docs/PRESET_SCHEMA.md`.
+- **Performance compiler**: type how a line should be played ("begins politely, clears his throat, chuckles quietly, pauses, then delivers the final sentence with restrained menace") under Perform. Greenroom shows exactly what the chosen voice will get, what is approximated and what cannot be sent. See `docs/PERFORMANCE_ENGINE.md`.
+- **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
+- Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.

@@ -82,3 +82,14 @@ Foley from picture, local Acting Director, speech-to-speech, performance compile
 | ThinkSound | Apache-2.0 code and weights, **but its pipeline loads MetaCLIP-huge (CC-BY-NC 4.0)** as the video encoder and a ~34 GB T5-XL, and its VAE is a Stability AI Community fine-tune | Installs and imports on an RTX 3060 (tested), but the non-commercial component rules it out |
 
 So there is no commercially usable one-model "video in, sound out" option today. A possible alternative built only from licensed parts: sample frames, have a local vision-language model (Apache-2.0) list the sound events with times, then make each sound with the existing local or cloud sound-effects engine and place it on the timeline. It is coarser than a true video-to-audio model (timing comes from sampled frames), and it needs a vision model through the already-managed llama.cpp.
+
+## Status at 0.11.0 (2026-11-09)
+Done in this release: voice preset library (120 starters), performance compiler, Agent Studio (plan, gates, budget, local-only, resume, selective regeneration, audio check). Tested with unit tests, fake engines and the demo backend; **not run against live engines, and nothing was judged by ear.**
+
+Next, in order:
+1. Run a real production through the Agent Studio with the owner's keys and listen: confirm which sound tags and directions actually work per engine, and record it in `DECISIONS.md`.
+2. Map presets to avatar-library portraits and add a per-accent listening test (Nigerian English, Yoruba, Igbo, Hausa, Pidgin first) so accent labels can honestly move up from "unverified".
+3. Agent audition step (comparison clips), agent-generated ambience and effects, whole-scene re-voice.
+4. A Venomspur signature preset once his profile and portrait are in the repository.
+5. Persistent character profile fields (background, audition script, consent note, model compatibility) and profile import/export. Voice DNA covers timbre, accent, tendencies, range, pronunciations, references and the approved voice today.
+6. Code-signing certificate and updater key.

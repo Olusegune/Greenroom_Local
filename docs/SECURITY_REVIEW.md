@@ -76,3 +76,15 @@ Not tested: files over the size cap through the real file picker (the cap is a u
 
 Tests added: 6 Rust importer tests, 5 Rust provider tests (fake server), and 38 JavaScript tests (converter 21, AI reply parsing 8, casting 7, provider choice 4, source checks) plus a real-browser run of the whole import flow (no console errors).
 Not tested: a live OpenAI or Gemini call; very large real-world PDFs; the installed build.
+
+## 0.11.0: presets, performance compiler, Agent Studio (2026-11-09)
+| Surface | Decision |
+|---|---|
+| Keys | The new code never reads, writes or logs a key; a test scans every new file for key access, `fetch`, `WebSocket` and secret storage. Cloud use goes only through the existing generation path and cost sheet. `rafter secrets .` clean; a regex scan of tracked files for common key formats found nothing. |
+| Typed text into tags | The compiler writes only tags from a fixed vocabulary into the sent text. A brief containing brackets, script or template text cannot add a tag (tested). Objective and subtext are length-limited with control characters removed. |
+| Imported and saved data | Preset files: id and field validation, 500 presets maximum, clashing ids renamed, imports marked, starters never overwritten. Saved Agent runs: strict reader (`persist.ts`) caps nodes, text, audit and outputs, refuses odd ids, resets "running" to "ready", and reads a missing privacy flag as local-only. |
+| Spending and privacy | The cloud limit and local-only switch are checked before each step; paid steps are not retried automatically; rights and delivery gates cannot be skipped in any mode. |
+| Rendering | Preset and agent text is rendered as text; a test fails if `innerHTML` or `dangerouslySetInnerHTML` appears in the new screens. |
+
+Tests: 12 security tests (`agent/security.test.ts`), 6 saved-run tests, import and validation tests. Dependencies: `npm audit` 0 vulnerabilities; `cargo audit` 0 vulnerabilities (6 allowed warnings from Tauri's Linux stack, as before).
+Not done: `rafter run` remote scan (quota, as before); a live OpenAI or Gemini call; the installed build was not penetration-tested.
