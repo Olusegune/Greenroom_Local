@@ -1,8 +1,8 @@
 {
   "version": 1,
   "target": 100,
-  "count": 160,
-  "masters": 100,
+  "count": 194,
+  "masters": 134,
   "previews": 60,
   "collections": [
     "contemporary_everyday",
@@ -5378,6 +5378,1094 @@
       "assets": {
         "card_small": "cards256/everyday_boy_cap_001.webp",
         "thumbnail": "thumbs/everyday_boy_cap_001.webp"
+      }
+    },
+    {
+      "id": "everyday_indigo_elder_001",
+      "name": "The Elder in Indigo",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "indigo embroidered agbada and cap",
+      "tags": [
+        "everyday",
+        "white beard",
+        "dignified"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_indigo_elder_001.png",
+        "card": "cards/everyday_indigo_elder_001.webp",
+        "card_small": "cards256/everyday_indigo_elder_001.webp",
+        "thumbnail": "thumbs/everyday_indigo_elder_001.webp"
+      }
+    },
+    {
+      "id": "everyday_barrister_001",
+      "name": "The Barrister",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "everyday",
+      "clothing": "black robe with white bands",
+      "tags": [
+        "everyday",
+        "short beard",
+        "legal"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_barrister_001.png",
+        "card": "cards/everyday_barrister_001.webp",
+        "card_small": "cards256/everyday_barrister_001.webp",
+        "thumbnail": "thumbs/everyday_barrister_001.webp"
+      }
+    },
+    {
+      "id": "everyday_trumpeter_001",
+      "name": "The Trumpeter",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "tweed jacket and fedora, holding a trumpet",
+      "tags": [
+        "everyday",
+        "glasses",
+        "jazz"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_trumpeter_001.png",
+        "card": "cards/everyday_trumpeter_001.webp",
+        "card_small": "cards256/everyday_trumpeter_001.webp",
+        "thumbnail": "thumbs/everyday_trumpeter_001.webp"
+      }
+    },
+    {
+      "id": "everyday_lab_researcher_001",
+      "name": "The Lab Researcher",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "everyday",
+      "clothing": "grey zip jacket and glasses",
+      "tags": [
+        "everyday",
+        "glasses",
+        "scientist"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_lab_researcher_001.png",
+        "card": "cards/everyday_lab_researcher_001.webp",
+        "card_small": "cards256/everyday_lab_researcher_001.webp",
+        "thumbnail": "thumbs/everyday_lab_researcher_001.webp"
+      }
+    },
+    {
+      "id": "everyday_grey_locs_seaman_001",
+      "name": "The Grey-Locked Seaman",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "everyday",
+      "clothing": "navy coat",
+      "tags": [
+        "everyday",
+        "locs",
+        "weathered"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_grey_locs_seaman_001.png",
+        "card": "cards/everyday_grey_locs_seaman_001.webp",
+        "card_small": "cards256/everyday_grey_locs_seaman_001.webp",
+        "thumbnail": "thumbs/everyday_grey_locs_seaman_001.webp"
+      }
+    },
+    {
+      "id": "everyday_retired_professor_001",
+      "name": "The Retired Professor",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "brown tweed jacket and dark sweater",
+      "tags": [
+        "everyday",
+        "white beard",
+        "glasses"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_retired_professor_001.png",
+        "card": "cards/everyday_retired_professor_001.webp",
+        "card_small": "cards256/everyday_retired_professor_001.webp",
+        "thumbnail": "thumbs/everyday_retired_professor_001.webp"
+      }
+    },
+    {
+      "id": "everyday_hoodie_man_001",
+      "name": "The Young Man in a Hoodie",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "young_adult",
+      "archetype": "everyday",
+      "clothing": "black hooded jacket",
+      "tags": [
+        "everyday",
+        "short hair",
+        "relaxed"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_hoodie_man_001.png",
+        "card": "cards/everyday_hoodie_man_001.webp",
+        "card_small": "cards256/everyday_hoodie_man_001.webp",
+        "thumbnail": "thumbs/everyday_hoodie_man_001.webp"
+      }
+    },
+    {
+      "id": "everyday_blue_agbada_elder_001",
+      "name": "The Elder in Blue",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "blue embroidered agbada, cap and coral beads",
+      "tags": [
+        "everyday",
+        "white beard",
+        "traditional"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_blue_agbada_elder_001.png",
+        "card": "cards/everyday_blue_agbada_elder_001.webp",
+        "card_small": "cards256/everyday_blue_agbada_elder_001.webp",
+        "thumbnail": "thumbs/everyday_blue_agbada_elder_001.webp"
+      }
+    },
+    {
+      "id": "everyday_indigo_storyteller_001",
+      "name": "The Storyteller in Indigo",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "indigo adire robe, cap and beads",
+      "tags": [
+        "everyday",
+        "gesturing",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_indigo_storyteller_001.png",
+        "card": "cards/everyday_indigo_storyteller_001.webp",
+        "card_small": "cards256/everyday_indigo_storyteller_001.webp",
+        "thumbnail": "thumbs/everyday_indigo_storyteller_001.webp"
+      }
+    },
+    {
+      "id": "everyday_blazer_beard_001",
+      "name": "The Man in a Blazer",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "grey blazer and black top",
+      "tags": [
+        "everyday",
+        "beard",
+        "friendly"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_blazer_beard_001.png",
+        "card": "cards/everyday_blazer_beard_001.webp",
+        "card_small": "cards256/everyday_blazer_beard_001.webp",
+        "thumbnail": "thumbs/everyday_blazer_beard_001.webp"
+      }
+    },
+    {
+      "id": "everyday_bold_jacket_001",
+      "name": "The Man in a Bold Jacket",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "bright patterned jacket",
+      "tags": [
+        "everyday",
+        "locs",
+        "expressive"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_bold_jacket_001.png",
+        "card": "cards/everyday_bold_jacket_001.webp",
+        "card_small": "cards256/everyday_bold_jacket_001.webp",
+        "thumbnail": "thumbs/everyday_bold_jacket_001.webp"
+      }
+    },
+    {
+      "id": "everyday_suit_man_001",
+      "name": "The Man in a Suit",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "dark suit and white open collar",
+      "tags": [
+        "everyday",
+        "beard",
+        "confident"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_suit_man_001.png",
+        "card": "cards/everyday_suit_man_001.webp",
+        "card_small": "cards256/everyday_suit_man_001.webp",
+        "thumbnail": "thumbs/everyday_suit_man_001.webp"
+      }
+    },
+    {
+      "id": "everyday_singer_001",
+      "name": "The Singer",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "everyday",
+      "clothing": "patterned shirt, singing into a microphone",
+      "tags": [
+        "everyday",
+        "stage",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_singer_001.png",
+        "card": "cards/everyday_singer_001.webp",
+        "card_small": "cards256/everyday_singer_001.webp",
+        "thumbnail": "thumbs/everyday_singer_001.webp"
+      }
+    },
+    {
+      "id": "everyday_white_agbada_001",
+      "name": "The Man in White",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "cream embroidered robe and cap",
+      "tags": [
+        "everyday",
+        "white beard",
+        "calm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_white_agbada_001.png",
+        "card": "cards/everyday_white_agbada_001.webp",
+        "card_small": "cards256/everyday_white_agbada_001.webp",
+        "thumbnail": "thumbs/everyday_white_agbada_001.webp"
+      }
+    },
+    {
+      "id": "everyday_teen_glasses_001",
+      "name": "The Teen in Glasses",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "teen",
+      "archetype": "everyday",
+      "clothing": "navy tunic top and glasses",
+      "tags": [
+        "everyday",
+        "glasses",
+        "earnest"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_teen_glasses_001.png",
+        "card": "cards/everyday_teen_glasses_001.webp",
+        "card_small": "cards256/everyday_teen_glasses_001.webp",
+        "thumbnail": "thumbs/everyday_teen_glasses_001.webp"
+      }
+    },
+    {
+      "id": "everyday_gele_woman_001",
+      "name": "The Woman in a Gele",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "everyday",
+      "clothing": "orange patterned gele and dress with coral beads",
+      "tags": [
+        "everyday",
+        "smiling",
+        "traditional"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_gele_woman_001.png",
+        "card": "cards/everyday_gele_woman_001.webp",
+        "card_small": "cards256/everyday_gele_woman_001.webp",
+        "thumbnail": "thumbs/everyday_gele_woman_001.webp"
+      }
+    },
+    {
+      "id": "everyday_doctor_woman_001",
+      "name": "The Doctor",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "white coat and stethoscope",
+      "tags": [
+        "everyday",
+        "braids",
+        "calm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_doctor_woman_001.png",
+        "card": "cards/everyday_doctor_woman_001.webp",
+        "card_small": "cards256/everyday_doctor_woman_001.webp",
+        "thumbnail": "thumbs/everyday_doctor_woman_001.webp"
+      }
+    },
+    {
+      "id": "everyday_gele_elder_001",
+      "name": "The Elder in a Gele",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "everyday",
+      "clothing": "blue gele and lace with coral beads",
+      "tags": [
+        "everyday",
+        "dignified",
+        "traditional"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_gele_elder_001.png",
+        "card": "cards/everyday_gele_elder_001.webp",
+        "card_small": "cards256/everyday_gele_elder_001.webp",
+        "thumbnail": "thumbs/everyday_gele_elder_001.webp"
+      }
+    },
+    {
+      "id": "everyday_glasses_elder_woman_001",
+      "name": "The Woman in Glasses",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "everyday",
+      "clothing": "patterned jacket",
+      "tags": [
+        "everyday",
+        "grey hair",
+        "glasses"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_glasses_elder_woman_001.png",
+        "card": "cards/everyday_glasses_elder_woman_001.webp",
+        "card_small": "cards256/everyday_glasses_elder_woman_001.webp",
+        "thumbnail": "thumbs/everyday_glasses_elder_woman_001.webp"
+      }
+    },
+    {
+      "id": "everyday_headwrap_gran_001",
+      "name": "The Grandmother",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "orange headwrap and red wrapper",
+      "tags": [
+        "everyday",
+        "wise",
+        "weathered"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_headwrap_gran_001.png",
+        "card": "cards/everyday_headwrap_gran_001.webp",
+        "card_small": "cards256/everyday_headwrap_gran_001.webp",
+        "thumbnail": "thumbs/everyday_headwrap_gran_001.webp"
+      }
+    },
+    {
+      "id": "everyday_scarf_woman_001",
+      "name": "The Woman in a Headscarf",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "middle_aged",
+      "archetype": "everyday",
+      "clothing": "gold-patterned scarf and embroidered black tunic",
+      "tags": [
+        "everyday",
+        "composed",
+        "warm"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_scarf_woman_001.png",
+        "card": "cards/everyday_scarf_woman_001.webp",
+        "card_small": "cards256/everyday_scarf_woman_001.webp",
+        "thumbnail": "thumbs/everyday_scarf_woman_001.webp"
+      }
+    },
+    {
+      "id": "everyday_hijab_doctor_001",
+      "name": "The Doctor in a Hijab",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "navy hijab and white coat",
+      "tags": [
+        "everyday",
+        "stethoscope",
+        "kind"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_hijab_doctor_001.png",
+        "card": "cards/everyday_hijab_doctor_001.webp",
+        "card_small": "cards256/everyday_hijab_doctor_001.webp",
+        "thumbnail": "thumbs/everyday_hijab_doctor_001.webp"
+      }
+    },
+    {
+      "id": "everyday_boy_teal_001",
+      "name": "The Boy in Overalls",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "teal t-shirt and denim overalls",
+      "tags": [
+        "everyday",
+        "smiling",
+        "curly hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_boy_teal_001.png",
+        "card": "cards/everyday_boy_teal_001.webp",
+        "card_small": "cards256/everyday_boy_teal_001.webp",
+        "thumbnail": "thumbs/everyday_boy_teal_001.webp"
+      }
+    },
+    {
+      "id": "everyday_girl_beads_001",
+      "name": "The Girl with Beaded Braids",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "denim jacket",
+      "tags": [
+        "everyday",
+        "braids",
+        "beads"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_girl_beads_001.png",
+        "card": "cards/everyday_girl_beads_001.webp",
+        "card_small": "cards256/everyday_girl_beads_001.webp",
+        "thumbnail": "thumbs/everyday_girl_beads_001.webp"
+      }
+    },
+    {
+      "id": "everyday_girl_hijab_001",
+      "name": "The Girl in a Turquoise Hijab",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "turquoise hijab and patterned top",
+      "tags": [
+        "everyday",
+        "smiling",
+        "shy"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_girl_hijab_001.png",
+        "card": "cards/everyday_girl_hijab_001.webp",
+        "card_small": "cards256/everyday_girl_hijab_001.webp",
+        "thumbnail": "thumbs/everyday_girl_hijab_001.webp"
+      }
+    },
+    {
+      "id": "everyday_boy_hoodie_001",
+      "name": "The Boy in an Orange Hoodie",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "orange hoodie and backpack",
+      "tags": [
+        "everyday",
+        "smiling",
+        "short hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_boy_hoodie_001.png",
+        "card": "cards/everyday_boy_hoodie_001.webp",
+        "card_small": "cards256/everyday_boy_hoodie_001.webp",
+        "thumbnail": "thumbs/everyday_boy_hoodie_001.webp"
+      }
+    },
+    {
+      "id": "everyday_boy_mustard_001",
+      "name": "The Boy in a Mustard Hoodie",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "mustard hoodie",
+      "tags": [
+        "everyday",
+        "curly hair",
+        "thoughtful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_boy_mustard_001.png",
+        "card": "cards/everyday_boy_mustard_001.webp",
+        "card_small": "cards256/everyday_boy_mustard_001.webp",
+        "thumbnail": "thumbs/everyday_boy_mustard_001.webp"
+      }
+    },
+    {
+      "id": "everyday_girl_glasses_001",
+      "name": "The Girl in Glasses",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "coral jacket and glasses",
+      "tags": [
+        "everyday",
+        "bob",
+        "curious"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_girl_glasses_001.png",
+        "card": "cards/everyday_girl_glasses_001.webp",
+        "card_small": "cards256/everyday_girl_glasses_001.webp",
+        "thumbnail": "thumbs/everyday_girl_glasses_001.webp"
+      }
+    },
+    {
+      "id": "everyday_laughing_boy_001",
+      "name": "The Laughing Boy",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "green striped top",
+      "tags": [
+        "everyday",
+        "laughing",
+        "brown hair"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_laughing_boy_001.png",
+        "card": "cards/everyday_laughing_boy_001.webp",
+        "card_small": "cards256/everyday_laughing_boy_001.webp",
+        "thumbnail": "thumbs/everyday_laughing_boy_001.webp"
+      }
+    },
+    {
+      "id": "everyday_girl_journal_001",
+      "name": "The Girl with a Journal",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "teen",
+      "archetype": "everyday",
+      "clothing": "lilac denim jacket and scarf",
+      "tags": [
+        "everyday",
+        "ponytail",
+        "thoughtful"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_girl_journal_001.png",
+        "card": "cards/everyday_girl_journal_001.webp",
+        "card_small": "cards256/everyday_girl_journal_001.webp",
+        "thumbnail": "thumbs/everyday_girl_journal_001.webp"
+      }
+    },
+    {
+      "id": "everyday_redhead_girl_001",
+      "name": "The Girl with Red Curls",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "child",
+      "archetype": "everyday",
+      "clothing": "yellow top and denim overalls",
+      "tags": [
+        "everyday",
+        "red curls",
+        "delighted"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_redhead_girl_001.png",
+        "card": "cards/everyday_redhead_girl_001.webp",
+        "card_small": "cards256/everyday_redhead_girl_001.webp",
+        "thumbnail": "thumbs/everyday_redhead_girl_001.webp"
+      }
+    },
+    {
+      "id": "everyday_silver_bun_woman_001",
+      "name": "The Woman with a Silver Bun",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "older_adult",
+      "archetype": "everyday",
+      "clothing": "black high-collared dress with a cameo",
+      "tags": [
+        "everyday",
+        "glasses",
+        "stern"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_silver_bun_woman_001.png",
+        "card": "cards/everyday_silver_bun_woman_001.webp",
+        "card_small": "cards256/everyday_silver_bun_woman_001.webp",
+        "thumbnail": "thumbs/everyday_silver_bun_woman_001.webp"
+      }
+    },
+    {
+      "id": "everyday_grey_suit_woman_001",
+      "name": "The Woman in a Grey Suit",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "adult",
+      "archetype": "everyday",
+      "clothing": "grey suit jacket",
+      "tags": [
+        "everyday",
+        "dark hair",
+        "composed"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_grey_suit_woman_001.png",
+        "card": "cards/everyday_grey_suit_woman_001.webp",
+        "card_small": "cards256/everyday_grey_suit_woman_001.webp",
+        "thumbnail": "thumbs/everyday_grey_suit_woman_001.webp"
+      }
+    },
+    {
+      "id": "everyday_curly_elder_001",
+      "name": "The Curly-Haired Elder",
+      "collection": "contemporary_everyday",
+      "period": "contemporary",
+      "genre": [
+        "drama"
+      ],
+      "style": "cinematic_realism",
+      "age_category": "elderly",
+      "archetype": "everyday",
+      "clothing": "tweed jacket and scarf",
+      "tags": [
+        "everyday",
+        "curly grey hair",
+        "gentle"
+      ],
+      "license": {
+        "type": "owner_supplied",
+        "source": "Supplied by the Greenroom owner, who states the images belong to them (2026-11-08)",
+        "generator": "not recorded",
+        "commercial_use": "confirmed",
+        "note": "Confirmed on the owner's statement of ownership. The tool that made the images and its terms were not recorded. Delivered as a 1024 px WebP; reduced to the 1024 px master without upscaling."
+      },
+      "tier": "master",
+      "assets": {
+        "master": "masters/everyday_curly_elder_001.png",
+        "card": "cards/everyday_curly_elder_001.webp",
+        "card_small": "cards256/everyday_curly_elder_001.webp",
+        "thumbnail": "thumbs/everyday_curly_elder_001.webp"
       }
     }
   ]

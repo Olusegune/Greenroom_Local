@@ -122,3 +122,7 @@ A voice or character with no chosen avatar shows a built-in portrait, not a cart
 - Age: a child's portrait only for a voice that says it is a child. Heritage: used when the voice states it (Black and East Asian are strict, others allow close groups). When nothing fits, age loosens first, then heritage within the allowed groups, never gender.
 - What each portrait shows (gender, heritage) was judged by eye by the person who built the library and lives in `LOOKS`, apart from the manifest; a portrait still carries no voice, accent or personality.
 - The 38 added previews are 512 px images cut to 256 px. They count in the browser as previews, not toward the 100.
+
+### Version 0.8.4: 34 more everyday portraits
+
+The owner supplied 51 more 1024 px images (folder "Greenroom Avatar Images Vs 2 - 22101221"). 34 everyday portraits were added as full-resolution masters (15 Black men and 7 Black women of different ages, 9 children, 3 other adults), giving 134 full-resolution portraits (the 100 target is met and passed). Left out: the horned demon, devil and mad-scientist fantasy characters, a black-and-white fedora portrait, a rider on a horse, a chief in full regalia, and a Scottish warrior. They remain on the owner's disk and can be added. The pharaoh/priest-type costume portraits are still never chosen automatically (see Automatic faces).

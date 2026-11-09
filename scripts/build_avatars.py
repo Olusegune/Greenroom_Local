@@ -198,7 +198,7 @@ def check():
             problems.append(f"{e['id']}: rights not recorded")
         ok += 1
     unconfirmed = [e["id"] for e in lib["avatars"] if isinstance(e.get("license"), dict) and e["license"].get("commercial_use") != "confirmed"]
-    print(f"{masters} of {TARGET} full-resolution portraits (1024 master) exist and passed file checks; {TARGET - masters} still to make (see avatars/plan.json)")
+    print(f"{masters} of {TARGET} full-resolution portraits (1024 master) exist and passed file checks; {max(0, TARGET - masters)} still to make (see avatars/plan.json)")
     print(f"{ok - masters} preview-resolution portraits (256 px, no master) also exist; they do not count toward the {TARGET}")
     if unconfirmed:
         print(f"rights NOT yet confirmed for commercial use on {len(unconfirmed)} portrait(s): the supplier must confirm before release")

@@ -217,7 +217,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
             ) : (
               <VirtualGrid items={items} itemW={view === "grid" ? 124 : 320} itemH={view === "grid" ? 150 : 56} height={360} label="Avatars" render={cell} />
             )}
-            <p className="muted small">{items.length} shown · {p.have} of {p.target} full-resolution portraits made{p.missing > 0 ? ` (${p.missing} still to make)` : ""}, plus {p.previews} at preview resolution. Double-press a face to use it.</p>
+            <p className="muted small">{items.length} shown · {p.missing > 0 ? `${p.have} of ${p.target} full-resolution portraits made (${p.missing} still to make)` : `${p.have} full-resolution portraits (the ${p.target} target is met)`}, plus {p.previews} at preview resolution. Double-press a face to use it.</p>
           </div>
           <div className="av-preview">
             {picked ? (

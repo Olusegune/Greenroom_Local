@@ -87,7 +87,8 @@ describe("the built-in library on disk", () => {
 
   it("does not claim the 100-portrait target before 100 full-resolution portraits exist", () => {
     const p = progress(check.manifest);
-    expect(p.have + p.missing).toBe(p.target);
+    expect(p.have + p.missing).toBeGreaterThanOrEqual(p.target);
+    expect(p.missing).toBe(Math.max(0, p.target - p.have));
     expect(p.target).toBe(100);
     if (p.have < 100) expect(p.missing).toBeGreaterThan(0);
   });
