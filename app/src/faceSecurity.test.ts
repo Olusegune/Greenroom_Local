@@ -104,12 +104,38 @@ describe("source hygiene", () => {
     for (const [f, s] of src) expect(s, f).not.toMatch(/dangerouslySetInnerHTML|\.innerHTML\s*=|\beval\(|new Function\(|document\.write\(/);
   });
   it("the avatar and voice-face code makes no network request of its own", () => {
-    for (const f of ["avatar.tsx", "avatarLibrary.ts", "portrait.ts", "importer.ts", "screens/AvatarButton.tsx", "screens/PortraitImporter.tsx"]) {
+    for (const f of ["avatar.tsx", "avatarLibrary.ts", "portrait.ts", "importer.ts", "scriptImport.ts", "scriptAi.ts", "screens/AvatarButton.tsx", "screens/PortraitImporter.tsx", "screens/CharacterLooks.tsx"]) {
       const s = readFileSync(join(__dirname, f), "utf8");
       expect(s.replace(/fetch\(`data:/g, ""), f).not.toMatch(/\bfetch\(|XMLHttpRequest|WebSocket|navigator\.sendBeacon|https?:\/\//);
     }
   });
   it("no key, token or secret is written into the source", () => {
     for (const [f, s] of src) expect(s, f).not.toMatch(/(sk-[A-Za-z0-9]{20,}|xi-api-key:\s*["'][A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY)/);
+  });
+});
+
+describe("the script importer and the cloud text providers", () => {
+  const rust = (f: string) => readFileSync(join(__dirname, "..", "src-tauri", "src", f), "utf8");
+  it("reading a script file uses no network and runs no program", () => {
+    const s = rust("script_import.rs").split("#[cfg(test)]")[0]!;
+    expect(s).not.toMatch(/ureq|reqwest|TcpStream|std::process|Command::new|net::/);
+    expect(s).not.toMatch(/File::create|fs::write|create_dir|extract\(|unpack/);
+  });
+  it("the providers are fixed addresses, the key travels in a header and never in an address or a log", () => {
+    const s = rust("llm.rs").split("#[cfg(test)]")[0]!;
+    const urls = s.match(/https?:\/\/[a-z0-9.-]+/gi)?.filter((u) => !/developers\.openai|aistudio\.google/.test(u)) ?? [];
+    expect([...new Set(urls)].sort()).toEqual(["https://api.openai.com", "https://generativelanguage.googleapis.com"]);
+    expect(s).not.toMatch(/key=|\?key|println!|eprintln!|dbg!|log::/);
+    expect(s).toMatch(/Authorization/);
+    expect(s).toMatch(/x-goog-api-key/);
+  });
+  it("the keys are stored only in the system credential store, under names the Rust side allows", () => {
+    const lib = rust("lib.rs");
+    expect(lib).toMatch(/"inworld" \| "huggingface" \| "openai" \| "gemini"/);
+    expect(lib).not.toMatch(/^.*get_key\("(?:openai|gemini)"\).*(?:fs::write|atomic_write|File::create).*$/m);
+    expect(lib).toMatch(/keyring::Entry::new\(SERVICE, name\)/);
+  });
+  it("a character's description is shown as text only", () => {
+    for (const f of ["screens/CharacterLooks.tsx", "screens/ScriptImporter.tsx", "screens/Write.tsx"]) expect(readFileSync(join(__dirname, f), "utf8"), f).not.toMatch(/dangerouslySetInnerHTML|innerHTML/);
   });
 });

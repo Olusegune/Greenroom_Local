@@ -16,7 +16,8 @@ import { VARIATIONS, type VariationId } from "../acting";
 import { applyPreset, chosenTake, cleanNote, ALL_SOUND_TAGS, EMOTIONS, hasStyle, MORE_SOUNDS, NOTE_MAX, PRESETS, pushHistory, SOUNDS, STYLES, toggleIn, toggleStyle, vkUnsupported } from "../direct";
 import { VisualLine } from "../VisualLine";
 import { api } from "../api";
-import { ENGINES, ENGINE_ORDER, directorReady, qualityFormat, soundEngineOf } from "../engines";
+import { ENGINES, ENGINE_ORDER, directorLabel, directorReady, qualityFormat, soundEngineOf } from "../engines";
+import { askCloud } from "../directorCall";
 import { useLocalDirectorReady } from "../localDirector";
 import { makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type Model } from "../generate";
 import { beatsFor, hasBeats, isAssembled } from "../beats";
@@ -167,13 +168,13 @@ export default function Perform() {
     const local = engines.directorEngine === "local";
     const price = priceLines([{ kind: "director" }]);
     if (!local) {
-      const ok = await confirmSpend({ title: "Ask the AI Director?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters) to a Kie text model`, "It only suggests. You review everything before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
+      const ok = await confirmSpend({ title: "Ask the AI Director?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters) to ${directorLabel(engines)}`, "It only suggests. You review everything before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
       if (!ok) return;
     }
     setThinking(true);
     try {
-      const reply = local ? await api.directorLocalComplete(systemPrompt(), userPrompt(project)) : await api.directorComplete(systemPrompt(), userPrompt(project));
-      if (!local) addLedger({ kind: "director", engine: "Kie text model", chars, items: [{ kind: "director" }] });
+      const reply = local ? await api.directorLocalComplete(systemPrompt(), userPrompt(project)) : await askCloud(engines, systemPrompt(), userPrompt(project));
+      if (!local) addLedger({ kind: "director", engine: directorLabel(engines), chars, items: [{ kind: "director" }] });
       setReview(parseDirector(reply, project.lines.map((l) => l.id)));
     } catch (e) {
       toast((e as Error).message, true);
@@ -188,7 +189,7 @@ export default function Perform() {
     const chars = groups.reduce((n, g) => n + userPrompt({ ...project, lines: g }).length + sys.length, 0);
     if (!local) {
       const price = priceLines(groups.map(() => ({ kind: "director" as const })));
-      const ok = await confirmSpend({ title: "Direct the whole scene with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to a Kie text model`, "It writes a full direction for every line. You review and edit them before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
+      const ok = await confirmSpend({ title: "Direct the whole scene with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to ${directorLabel(engines)}`, "It writes a full direction for every line. You review and edit them before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
       if (!ok) return;
     }
     setSceneThinking(true);
@@ -196,8 +197,8 @@ export default function Perform() {
       const found: SceneDirection[] = [];
       for (const g of groups) {
         const usr = userPrompt({ ...project, lines: g });
-        const reply = local ? await api.directorLocalComplete(sys, usr) : await api.directorComplete(sys, usr);
-        if (!local) addLedger({ kind: "director", engine: "Kie text model", chars: sys.length + usr.length, items: [{ kind: "director" }] });
+        const reply = local ? await api.directorLocalComplete(sys, usr) : await askCloud(engines, sys, usr);
+        if (!local) addLedger({ kind: "director", engine: directorLabel(engines), chars: sys.length + usr.length, items: [{ kind: "director" }] });
         found.push(...parseSceneDirections(reply, g.map((l) => l.id)));
       }
       if (found.length === 0) throw new Error("The director did not write any directions. Try again.");
@@ -215,7 +216,7 @@ export default function Perform() {
     const chars = groups.reduce((n, g) => n + userPrompt({ ...project, lines: g }).length + sys.length, 0);
     if (!local) {
       const price = priceLines(groups.map(() => ({ kind: "director" as const })));
-      const ok = await confirmSpend({ title: "Plan the performance with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to a Kie text model`, "It plans what each character wants, hides and does with their body. You review and edit before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
+      const ok = await confirmSpend({ title: "Plan the performance with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to ${directorLabel(engines)}`, "It plans what each character wants, hides and does with their body. You review and edit before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
       if (!ok) return;
     }
     setPlanThinking(true);
@@ -223,8 +224,8 @@ export default function Perform() {
       const found: PlanSuggestion[] = [];
       for (const g of groups) {
         const usr = userPrompt({ ...project, lines: g });
-        const reply = local ? await api.directorLocalComplete(sys, usr) : await api.directorComplete(sys, usr);
-        if (!local) addLedger({ kind: "director", engine: "Kie text model", chars: sys.length + usr.length, items: [{ kind: "director" }] });
+        const reply = local ? await api.directorLocalComplete(sys, usr) : await askCloud(engines, sys, usr);
+        if (!local) addLedger({ kind: "director", engine: directorLabel(engines), chars: sys.length + usr.length, items: [{ kind: "director" }] });
         found.push(...parsePlans(reply, g.map((l) => l.id)));
       }
       if (found.length === 0) throw new Error("The director did not plan anything for these lines. Try again.");
@@ -693,13 +694,13 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
     const usr = writeDirectionUser(character?.name ?? "?", line.text, note);
     if (!local) {
       const price = priceLines([{ kind: "director" }]);
-      const ok = await confirmSpend({ title: "Write this direction with AI?", lines: [`Sends this one line and your idea (about ${sys.length + usr.length} characters) to a Kie text model`, "The result lands in the Direction box for you to edit. Nothing is spoken yet.", ...price.lines], warn: price.warn, skipKey: "write-direction" });
+      const ok = await confirmSpend({ title: "Write this direction with AI?", lines: [`Sends this one line and your idea (about ${sys.length + usr.length} characters) to ${directorLabel(engines)}`, "The result lands in the Direction box for you to edit. Nothing is spoken yet.", ...price.lines], warn: price.warn, skipKey: "write-direction" });
       if (!ok) return;
     }
     setWriting(true);
     try {
-      const reply = local ? await api.directorLocalComplete(sys, usr) : await api.directorComplete(sys, usr);
-      if (!local) addLedger({ kind: "director", engine: "Kie text model", chars: sys.length + usr.length, items: [{ kind: "director" }] });
+      const reply = local ? await api.directorLocalComplete(sys, usr) : await askCloud(engines, sys, usr);
+      if (!local) addLedger({ kind: "director", engine: directorLabel(engines), chars: sys.length + usr.length, items: [{ kind: "director" }] });
       const out = cleanWritten(reply);
       if (!out) throw new Error("The director sent back nothing usable. Try again.");
       setDir((x) => ({ ...x, note: out }));

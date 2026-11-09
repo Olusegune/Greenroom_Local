@@ -1,4 +1,5 @@
 import { PIPER_ROLES, type PiperRole } from "./castcall";
+import { readVoice } from "./avatarLibrary";
 import type { Character, VoiceEntry } from "./types";
 
 /** Names that usually mean a storyteller or announcer rather than a person in the scene. */
@@ -13,6 +14,26 @@ function suits(v: Pick<VoiceEntry, "notes" | "name">, narration: boolean): boole
   return /narrat|documentary|audiobook|announcer|presenter|lecturer/.test(text) === narration;
 }
 
+/** What is STATED about a character: its look, else what its own description says (never its name). */
+function statedLook(c: Character): { g?: "m" | "f"; age?: string; h?: string } {
+  const r = c.about ? readVoice("", c.about) : {};
+  return { g: c.look?.gender ?? r.g, age: c.look?.age ?? r.age, h: c.look?.heritage ?? r.h };
+}
+
+/** How well a voice's own recorded gender, age and heritage fit what is stated about a character. Unknown on either side scores nothing. */
+function fit(want: { g?: "m" | "f"; age?: string; h?: string }, v: VoiceEntry): number {
+  if (!want.g && !want.age && !want.h) return 0;
+  const have = readVoice(v.gender, `${v.accent} ${v.notes}`);
+  let n = 0;
+  const vg = /^f/i.test(v.gender) ? "f" : /^m/i.test(v.gender) ? "m" : undefined;
+  if (want.g && vg) n += want.g === vg ? 60 : -400;
+  const va = v.age ?? have.age;
+  if (want.age && va) n += want.age === va ? 25 : (want.age === "child") !== (va === "child") ? -200 : -30;
+  const vh = v.heritage ?? have.h;
+  if (want.h && vh) n += want.h === vh ? 30 : 0;
+  return n;
+}
+
 export interface CastPlan {
   /** Character id to library voice id, for characters that had none. */
   assign: Record<string, string>;
@@ -23,8 +44,9 @@ export interface CastPlan {
 /**
  * Picks a distinct voice for every character that has none. Existing choices are never touched. A voice is reused only
  * when the library has fewer voices than characters. It prefers the character's language, then a different accent from
- * those already used, then free local voices. Narration names get narration voices. Gender is never guessed from a name:
- * only a voice's own recorded gender is ever shown, and it is not used to match characters.
+ * those already used, then free local voices. Narration names get narration voices. Gender is never guessed from a name.
+ * A gender, age or heritage the script or the owner STATED for a character (its look, or its description) is matched against
+ * the voice's own recorded gender, age and heritage: a female character is not given a male voice while another voice exists.
  */
 export function planCast(characters: Character[], library: VoiceEntry[], options: { roles?: PiperRole[]; preferLocal?: boolean } = {}): CastPlan {
   const roles = options.roles ?? PIPER_ROLES;
@@ -49,7 +71,9 @@ export function planCast(characters: Character[], library: VoiceEntry[], options
       if (fresh) { plan.suggestions.push({ characterId: c.id, role: fresh }); usedRoles.add(fresh.key); }
     }
     if (pool.length === 0) continue;
+    const want = statedLook(c);
     const score = (v: VoiceEntry) =>
+      fit(want, v) +
       (norm(v.language) === norm(c.language) ? 100 : 0) +
       (suits(v, narration) ? 20 : 0) +
       (v.accent && !accents.has(norm(v.accent)) ? 10 : 0) +

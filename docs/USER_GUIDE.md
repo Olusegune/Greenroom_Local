@@ -228,3 +228,14 @@ Add your Inworld Base64 credential in **Settings**, press **Test Inworld connect
 ## Adding your own portraits
 
 In the avatar browser press **Add portraits...**, choose pictures (PNG, JPEG or WebP, up to 24), adjust the cut, name each one, and say who it shows (gender, age, heritage). Tick "Use as an automatic face" and voices with no picture can use it. Pictures stay on your computer.
+
+
+## Importing a script
+
+On **Script** press **Import a script...** and choose a plain text, Markdown, Fountain, Word (.docx) or PDF file. Greenroom reads it on your computer, works out who is speaking (screenplay style names in capitals, or `NAME: line`), and shows the scenes, lines and characters before adding anything. For each character it picks up what the script says ("ADA (60s, Nigerian) ... She ..."), fills in gender, age and heritage when the script states them, and lets you edit them. Choose to replace the current script or add to its end. A scanned PDF with no selectable text cannot be read; save a text version instead.
+
+**Read the characters with AI** (optional) asks OpenAI, Gemini or Kie to describe each character from the script. It shows a cost sheet first, then fills in only what you have not already set; you review everything.
+
+## Choosing the AI provider
+
+**Engines > AI Director**: Kie, OpenAI, Google Gemini or the local Director. Add the key in Settings. Pick a model or leave the default.

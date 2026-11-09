@@ -6,8 +6,10 @@ import { mock } from "./mock";
 import type { EnginesCfg } from "./engines";
 import type { HardwareProfile, InstalledModel } from "./models";
 
-export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "inworld" | "huggingface";
-export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean; inworld: boolean; huggingface: boolean };
+export type KeyName = "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "inworld" | "huggingface" | "openai" | "gemini";
+export type KeyStatus = { elevenlabs: boolean; kie: boolean; voicekiller: boolean; inworld: boolean; huggingface: boolean; openai: boolean; gemini: boolean };
+export type ScriptFile = { name: string; format: "text" | "fountain" | "word" | "pdf"; text: string; truncated: boolean };
+export type LlmModels = { openai: { models: string[]; default: string }; gemini: { models: string[]; default: string } };
 export type Provider = "eleven-v4" | "eleven-tts" | "eleven-sfx" | "voicekiller" | "voicekiller-clone" | "inworld" | "kie-tts" | "kie-dialogue" | "kie-sfx" | "piper" | "local" | "chatterbox" | "wazobia" | "local-sfx";
 
 export interface ClipOut {
@@ -239,7 +241,14 @@ const real = {
   directorLocalStatus: () => call<LocalRuntimeStatus>("director_local_status"),
   directorLocalInstall: () => call<LocalRuntimeStatus>("director_local_install"),
   directorLocalComplete: (system: string, user: string) => call<string>("director_local_complete", { system, user }),
-  directorComplete: (system: string, user: string) => call<string>("director_complete", { system, user }),
+  directorComplete: (system: string, user: string, provider?: "kie" | "openai" | "gemini", model?: string) => call<string>("director_complete", { system, user, provider: provider ?? null, model: model ?? null }),
+  llmModels: () => call<LlmModels>("llm_models"),
+  /** The file the owner picks as a script, or null if they cancel. */
+  pickScript: async (): Promise<string | null> => {
+    const r = await openDialog({ multiple: false, directory: false, filters: [{ name: "Scripts", extensions: ["txt", "md", "markdown", "fountain", "docx", "pdf"] }] });
+    return typeof r === "string" ? r : null;
+  },
+  scriptOpen: (path: string) => call<ScriptFile>("script_open", { path }),
   musicGenerate: (project: string, req: MusicReq) => call<MadeMusic[]>("music_generate", { project, req }),
   sfxStatus: () => call<LocalRuntimeStatus>("sfx_status_cmd"),
   sfxRuntimeInstall: () => call<LocalRuntimeStatus>("sfx_runtime_install"),

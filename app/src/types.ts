@@ -11,6 +11,10 @@ export interface Character {
   voiceId?: string;
   /** Free label such as "English", "Yoruba" or "Taglish": a reminder and a voice-search filter, not a switch sent to the model. */
   language: string;
+  /** What the script (or the owner) says about this character. Used only to choose its picture and a fitting voice; never sent anywhere unless the owner asks an AI to read the script. */
+  about?: string;
+  /** Who the character is, as stated. Gender is never guessed from a name. */
+  look?: { gender?: "m" | "f"; age?: "child" | "teen" | "young" | "mid" | "old"; heritage?: "black" | "white" | "east_asian" | "south_asian" | "middle_eastern" | "latino" | "indigenous" };
   /** Which avatar shows for this character: a built-in id or a custom one ("custom:..."). Separate from the voice: changing one never changes the other. Absent on older projects. */
   avatarId?: string;
   /** The character's recurring profile: timbre, tendencies, preferred presets, pronunciations, approved reference takes. Absent until the owner fills it in. */

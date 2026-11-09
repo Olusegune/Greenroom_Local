@@ -1,5 +1,6 @@
+import type { DirectorEngine } from "../engines";
 import { useEffect, useState } from "react";
-import { api, type PiperStatus } from "../api";
+import { api, type LlmModels, type PiperStatus } from "../api";
 import { useApp } from "../ctx";
 import { useLocalSfxReady } from "../localSfx";
 import { useLocalDirectorReady } from "../localDirector";
@@ -31,6 +32,10 @@ function EngineCard({ mark, tone, title, status, ok, blurb, children, open }: { 
 export default function Engines() {
   const localSfx = useLocalSfxReady();
   const localDirector = useLocalDirectorReady();
+  const [llm, setLlm] = useState<LlmModels | null>(null);
+  useEffect(() => {
+    void api.llmModels().then(setLlm).catch(() => undefined);
+  }, []);
   const { keys, engines, saveEngines, go } = useApp();
   return (
     <section>
@@ -93,15 +98,31 @@ export default function Engines() {
       </EngineCard>
       <Simple mark="V" tone="e2" title={ENGINES.voicekiller.label} ready={keys.voicekiller} short="About two thousand voices; no inline sound tags" blurb={ENGINES.voicekiller.blurb} extra={<VkClone />} />
       <Simple mark="K" tone="e3" title={ENGINES.kie.label} ready={keys.kie} short="Preset voices, sound effects, the AI Director and Suno music" blurb={ENGINES.kie.blurb} />
-      <EngineCard mark="D" tone="e5" title="AI Director" status={engines.directorEngine === "local" ? "On this PC" : "Kie"} ok={directorReady(engines, keys, localDirector)} blurb="Suggests emotion, sounds and notes for every line">
+      <EngineCard mark="D" tone="e5" title="AI Director" status={engines.directorEngine === "local" ? "On this PC" : engines.directorEngine === "openai" ? "OpenAI" : engines.directorEngine === "gemini" ? "Gemini" : "Kie"} ok={directorReady(engines, keys, localDirector)} blurb="Suggests emotion, sounds and notes for every line">
         <p className="muted small">The Director reads your script and suggests how each line should be performed. It only suggests: you review before anything changes. Choose where it runs.</p>
         <label className="field" style={{ maxWidth: 360 }}>
           Director engine
-          <select value={engines.directorEngine ?? "kie"} onChange={(e) => saveEngines({ ...engines, directorEngine: e.target.value as "kie" | "local" })}>
+          <select value={engines.directorEngine ?? "kie"} onChange={(e) => saveEngines({ ...engines, directorEngine: e.target.value as DirectorEngine, directorModel: undefined })}>
             <option value="kie">Kie text model (cloud, uses credits){keys.kie ? "" : " (needs a key)"}</option>
+            <option value="openai">OpenAI (cloud, billed by OpenAI){keys.openai ? "" : " (needs a key)"}</option>
+            <option value="gemini">Google Gemini (cloud, billed by Google){keys.gemini ? "" : " (needs a key)"}</option>
             <option value="local">Local Director (on this PC, free){localDirector ? "" : " (install in Model Center)"}</option>
           </select>
         </label>
+        {(engines.directorEngine === "openai" || engines.directorEngine === "gemini") && llm && (
+          <label className="field" style={{ maxWidth: 360 }}>
+            Model
+            <select value={engines.directorModel ?? ""} onChange={(e) => saveEngines({ ...engines, directorModel: e.target.value || undefined })}>
+              <option value="">{`Default (${llm[engines.directorEngine].default})`}</option>
+              {llm[engines.directorEngine].models.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {(engines.directorEngine === "openai" || engines.directorEngine === "gemini") && <p className="muted small">Your script text is sent to {engines.directorEngine === "openai" ? "OpenAI" : "Google"} for each request and billed to your own account there. Greenroom shows a cost sheet first and only sends after you agree. Model names come from the provider's own list (checked 2026-11-08) and can change.</p>}
         {!directorReady(engines, keys, localDirector) && (
           <div>{engines.directorEngine === "local" ? <button onClick={() => go("models")}>Install in Model Center</button> : <button onClick={() => go("settings")}>Add the key in Settings</button>}</div>
         )}

@@ -7,10 +7,13 @@ import { NARRATOR, parseScript, SAMPLE_SCRIPT } from "../script";
 import { Empty } from "../ui";
 import { voiceLine } from "../useSample";
 import DesignCharacterVoice from "./DesignCharacterVoice";
+import { CharacterLooks } from "./CharacterLooks";
+import { ScriptImporter } from "./ScriptImporter";
 
 export default function Write() {
   const { project, edit, go, library } = useApp();
   const [designFor, setDesignFor] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
   if (!project) return null;
 
   const set = (script: string) =>
@@ -43,6 +46,9 @@ export default function Write() {
         <div style={{ flex: 1, minWidth: 0 }} className="stack">
           <textarea className="script-area" aria-label="Script" spellCheck={false} value={project.script} onChange={(e) => set(e.target.value)} placeholder={"Just type a line, or:\n\n# Scene 1\nADA: Hello there.\nTUNDE (laughing): Hello yourself!"} />
           <div className="row wrap">
+            <button className="sm primary" onClick={() => setImporting(true)}>
+              Import a script…
+            </button>
             <button className="sm" onClick={() => set(SAMPLE_SCRIPT)} disabled={project.script.trim().length > 0}>
               Insert a sample scene
             </button>
@@ -81,6 +87,10 @@ export default function Write() {
                     ))}
                   </select>
                   <button type="button" className="sm ghost" onClick={() => setDesignFor(c.id)} aria-label={`Design a voice for ${c.name}`}>Design a voice for {c.name}</button>
+                  <details>
+                    <summary className="small">Who is {c.name}? (picture and casting)</summary>
+                    <CharacterLooks name={c.name} about={c.about} look={c.look} onChange={(q) => edit((p) => ({ ...p, characters: p.characters.map((x) => (x.id === c.id ? { ...x, ...("about" in q ? { about: q.about } : {}), ...("look" in q ? { look: q.look } : {}) } : x)) }))} />
+                  </details>
                 </div>
               ))}
               {library.length === 0 && (
@@ -94,6 +104,7 @@ export default function Write() {
         const c = project.characters.find((x) => x.id === designFor);
         return c ? <DesignCharacterVoice character={c} lines={project.lines.filter((l) => l.characterId === c.id)} onClose={() => setDesignFor(null)} onUse={(id) => patch(c.id, id)} /> : null;
       })()}
+      {importing && <ScriptImporter onClose={() => setImporting(false)} />}
     </section>
   );
 }

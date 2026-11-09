@@ -27,7 +27,12 @@ export function CharacterFace({ character, voice, size = 44, emotion, editable =
   const face = currentFace(character?.avatarId, emotion ? expressionFor(emotion) : undefined);
   const src = face ? (size >= 96 ? face.card : size >= 48 ? face.small : face.thumb) : null;
   const seed = (voice?.id ?? character?.id ?? "x") + (voice?.name ?? character?.name ?? "");
-  const inner = src ? <img className="avatar" src={src} alt={character?.name ?? ""} width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} /> : <Avatar seed={seed} gender={voice?.gender} size={size} hint={`${character?.name ?? ""} ${character?.language ?? ""}`} />;
+  // a character the script or the owner has described is shown as that person; otherwise it shares its voice's face
+  const look = character?.look;
+  const described = !!(look?.gender || look?.age || look?.heritage || character?.about);
+  const cGender = look?.gender === "f" ? "female" : look?.gender === "m" ? "male" : voice?.gender;
+  const cHint = `${character?.name ?? ""} ${character?.language ?? ""} ${character?.about ?? ""}`;
+  const inner = src ? <img className="avatar" src={src} alt={character?.name ?? ""} width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} /> : <Avatar seed={described && character ? `char:${character.id}${character.name}` : seed} gender={cGender} size={size} hint={cHint} own={described} meta={described ? { age: look?.age, heritage: look?.heritage } : undefined} />;
   if (!character || !editable) return inner;
   return (
     <>

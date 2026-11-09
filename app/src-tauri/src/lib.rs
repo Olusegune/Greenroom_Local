@@ -5,11 +5,13 @@ mod eleven;
 mod kie;
 mod history;
 mod inworld;
+mod llm;
 mod local;
 mod model_manager;
 mod managed_python;
 mod mux;
 mod net;
+mod script_import;
 mod store;
 mod video;
 mod voicekiller;
@@ -25,7 +27,7 @@ use tauri::Manager;
 const SERVICE: &str = "Greenroom Local";
 
 fn entry(name: &str) -> Result<keyring::Entry, String> {
-    if !matches!(name, "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "inworld" | "huggingface") {
+    if !matches!(name, "elevenlabs" | "kie" | "voicekiller" | "voicekiller-userid" | "inworld" | "huggingface" | "openai" | "gemini") {
         return Err("Unknown provider.".into());
     }
     keyring::Entry::new(SERVICE, name).map_err(|e| format!("Could not reach the system credential store: {e}"))
@@ -35,6 +37,8 @@ fn get_key(name: &str) -> Result<String, String> {
     let who = match name {
         "kie" => "Kie",
         "inworld" => "Inworld",
+        "openai" => "OpenAI",
+        "gemini" => "Gemini",
         "voicekiller" | "voicekiller-userid" => "VoiceKiller",
         _ => "ElevenLabs",
     };
@@ -82,12 +86,14 @@ struct KeyStatus {
     voicekiller: bool,
     inworld: bool,
     huggingface: bool,
+    openai: bool,
+    gemini: bool,
 }
 
 #[tauri::command]
 fn key_status() -> KeyStatus {
     let has = |n: &str| entry(n).ok().and_then(|e| e.get_password().ok()).map(|k| !k.trim().is_empty()).unwrap_or(false);
-    KeyStatus { elevenlabs: has("elevenlabs"), kie: has("kie"), voicekiller: has("voicekiller") && has("voicekiller-userid"), inworld: has("inworld"), huggingface: has("huggingface") }
+    KeyStatus { elevenlabs: has("elevenlabs"), kie: has("kie"), voicekiller: has("voicekiller") && has("voicekiller-userid"), inworld: has("inworld"), huggingface: has("huggingface"), openai: has("openai"), gemini: has("gemini") }
 }
 
 #[tauri::command]
@@ -781,13 +787,61 @@ fn save_report(app: tauri::AppHandle, text: String) -> Result<String, String> {
     Ok(file.to_string_lossy().into_owned())
 }
 
-/// The AI Director: one question to a Kie text model. The prompt is built in the app; this only carries it.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ScriptFile {
+    name: String,
+    format: String,
+    text: String,
+    truncated: bool,
+}
+
+/// Reads a script file the owner chose (text, Markdown, Fountain, Word or PDF) and returns its text. Nothing is written to disk.
 #[tauri::command]
-async fn director_complete(system: String, user: String) -> Result<String, String> {
-    if system.len() > 20_000 || user.len() > 60_000 {
-        return Err("That scene is too long to send in one go. Try one scene at a time.".into());
+async fn script_open(path: String) -> Result<ScriptFile, String> {
+    if path.len() > 1024 || path.contains(' ') {
+        return Err("That file name is not valid.".into());
     }
-    blocking(move || kie::Client::new(kie::BASE, &get_key("kie")?).chat(kie::DIRECTOR_MODEL, &system, &user)).await
+    blocking(move || {
+        let p = PathBuf::from(&path);
+        let got = script_import::read_script(&p)?;
+        let name: String = p.file_name().and_then(|n| n.to_str()).unwrap_or("script").chars().filter(|c| !c.is_control()).take(120).collect();
+        Ok(ScriptFile { name, format: got.format.to_string(), text: got.text, truncated: got.truncated })
+    })
+    .await
+}
+
+/// The model ids the app offers for OpenAI and Gemini (and each default), so the screen shows one list and the check stays here.
+#[tauri::command]
+fn llm_models() -> serde_json::Value {
+    serde_json::json!({
+        "openai": { "models": llm::OPENAI_MODELS, "default": llm::OPENAI_DEFAULT },
+        "gemini": { "models": llm::GEMINI_MODELS, "default": llm::GEMINI_DEFAULT },
+    })
+}
+
+/// The AI Director and script reading: one question to a cloud text model (Kie by default, or OpenAI or Gemini). The prompt is
+/// built in the app; this only carries it. The model name is checked here, whatever the screen sent.
+#[tauri::command]
+async fn director_complete(system: String, user: String, provider: Option<String>, model: Option<String>) -> Result<String, String> {
+    if system.len() > 20_000 || user.len() > 200_000 {
+        return Err("That is too long to send in one go. Try one scene at a time.".into());
+    }
+    let model = model.unwrap_or_default();
+    if !model.is_empty() && !llm::valid_model(&model) {
+        return Err("That model name is not valid.".into());
+    }
+    match provider.as_deref().unwrap_or("kie") {
+        "openai" => blocking(move || llm::Client::new(llm::OPENAI_BASE, &get_key("openai")?).openai(if model.is_empty() { llm::OPENAI_DEFAULT } else { &model }, &system, &user)).await,
+        "gemini" => blocking(move || llm::Client::new(llm::GEMINI_BASE, &get_key("gemini")?).gemini(if model.is_empty() { llm::GEMINI_DEFAULT } else { &model }, &system, &user)).await,
+        "kie" => {
+            if user.len() > 60_000 {
+                return Err("That scene is too long to send in one go. Try one scene at a time.".into());
+            }
+            blocking(move || kie::Client::new(kie::BASE, &get_key("kie")?).chat(kie::DIRECTOR_MODEL, &system, &user)).await
+        }
+        _ => Err("Unknown AI provider.".into()),
+    }
 }
 
 // ---- engines: local server settings, Piper ---------------------------------------------------------------------
@@ -1655,7 +1709,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
-            save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
+            save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
             model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
         ])
         .build(tauri::generate_context!())
