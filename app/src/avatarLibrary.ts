@@ -380,7 +380,7 @@ const f = (h?: Heritage): Look => ({ g: "f", h });
 const NONE: Look = { g: "n" };
 
 /** What each built-in portrait shows: the gender presented and the heritage, for matching a voice to a face. "n" is a creature, robot or alien. */
-export const LOOKS: Record<string, Look> = {
+const LOOKS_DATA: Record<string, Look> = {
   fantasy_adventurer_001: m("east_asian"), contemporary_silver_fox_001: m("white"), scifi_runner_001: f("black"), contemporary_editor_001: f("black"),
   contemporary_entrepreneur_001: f("black"), contemporary_mentor_001: m("white"), contemporary_executive_001: f("east_asian"), scifi_guardian_001: f("south_asian"),
   contemporary_veteran_001: m("latino"), contemporary_analyst_001: f("east_asian"), contemporary_professor_001: m("east_asian"), contemporary_elder_001: m("white"),
@@ -528,6 +528,7 @@ export const LOOKS: Record<string, Look> = {
   everyday_green_blazer_woman_001: f("black"),
   everyday_blue_gele_woman_001: f("black"),
 };
+export const LOOKS: Record<string, Look> = Object.assign(Object.create(null) as Record<string, Look>, LOOKS_DATA);
 
 const seedHash = (s: string) => {
   let h = 2166136261;
@@ -580,26 +581,47 @@ const STORY: [RegExp, string[]][] = [
   [/\b(victorian|steampunk)\b/, ["victorian_patriarch_001", "victorian_governess_001", "victorian_steam_engineer_001", "victorian_physician_001", "victorian_dowager_001"]],
 ];
 
+/**
+ * "Great for kids' stories", "a voice for women" and "young adult fiction" say who a voice is FOR, not who it is. Reading them as
+ * the voice's own age or gender made narrators look like children. They are removed before the description is read.
+ */
+export function withoutAudience(text: string): string {
+  return text
+    .slice(0, 2000)
+    .toLowerCase()
+    .replace(/\b(for|to|with|about|of|around|among|by|from)\s+(the\s+)?(young\s+|little\s+)?(children|child|kids|kid|toddlers|teens|teenagers|teenager|youth|boys|girls|women|men|ladies|gentlemen|moms|mums|mothers|dads|fathers|seniors|elders|adults|students|learners|audiences|listeners)\b/g, " ")
+    .replace(/\b(children|kids|kid|child|teens|women|men)(?:'s|s'|\u2019s)?\s+(stories|story|content|books|shows|audiobooks|programming|games|learning|education|tv|health|products|fiction|literature|channels?|videos?|podcasts?)\b/g, " ")
+    .replace(/\b(kid|child|family|teen)[- ]friendly\b/g, " ")
+    .replace(/\byoung adult (fiction|novels?|books?|audiences?|content|genre|literature)\b/g, " ");
+}
+
 /** Gender, age, heritage and any story role a voice or character states about itself. Anything not stated is left open. */
 export function readVoice(gender: string | undefined, hint: string | undefined): VoiceReading {
-  const t = ` ${gender ?? ""} ${hint ?? ""} `.toLowerCase();
+  const genderText = typeof gender === "string" ? gender.slice(0, 40) : "";
+  const t = ` ${genderText} ${withoutAudience(typeof hint === "string" ? hint : "")} `.toLowerCase();
   let g: "m" | "f" | undefined;
-  const field = (gender ?? "").trim().toLowerCase();
+  const field = genderText.trim().toLowerCase();
   if (/^(f|female|woman)$/.test(field)) g = "f";
   else if (/^(m|male|man)$/.test(field)) g = "m";
   else if (/\b(female|woman|women|girl|girls|lady|she|her|hers|feminine|mother|mum|mom|grandmother|granny|gran|aunt|auntie|sister|daughter|wife|queen|princess|actress|schoolgirl|heroine|girlfriend)\b/.test(t)) g = "f";
   else if (/\b(male|man|men|boy|boys|guy|he|his|him|masculine|father|dad|grandfather|grandpa|uncle|brother|son|husband|king|prince|baritone|schoolboy|gentleman)\b/.test(t)) g = "m";
   let age: VoiceAge | undefined;
   const num = /\b(\d{1,2})[- ]?(?:years?[- ]old|yo|y\/o|yrs?)\b/.exec(t) ?? /\bage[d ]*(\d{1,2})\b/.exec(t);
+  const decade = /\b([1-9])0'?s\b/.exec(t);
   if (num) {
     const n = Number(num[1]);
     age = n < 13 ? "child" : n < 20 ? "teen" : n < 36 ? "young" : n < 60 ? "mid" : "old";
+  } else if (decade) {
+    // the first decade named: "late 40s to early 60s" is a man in his forties
+    const d = Number(decade[1]);
+    age = d <= 1 ? "teen" : d <= 3 ? "young" : d <= 5 ? "mid" : "old";
   } else if (/\b(child|children|kid|kids|childlike|child-like|little (boy|girl)|young (boy|girl)|toddler|pre-?teen|tween|infant|baby|youngster|schoolchild)\b/.test(t)) age = "child";
-  else if (/\b(teen|teens|teenage|teenager|adolescent|youth|youthful|high[- ]school)\b/.test(t)) age = "teen";
+  else if (/\b(teen|teens|teenage|teenager|adolescent|youth|high[- ]school)\b/.test(t)) age = "teen";
   else if (/\b(boy|girl)\b/.test(t) && !/\b(bff|girlfriend|girl next door|good girl|girl power|tomboy)\b/.test(t)) age = "child";
-  else if (/\b(elderly|old|older|senior|aged|grandfather|grandmother|grandpa|granny|gran|70s|80s|60s|seventies|eighties|sixties|retired)\b/.test(t) && !/\bold[- ](school|fashioned|time)\b/.test(t)) age = "old";
-  else if (/\b(young|early[- ]?20s|20s|twenties|early[- ]?30s|millennial|gen[- ]?z)\b/.test(t)) age = "young";
-  else if (/\b(middle[- ]aged|mature|40s|50s|mid[- ]?40s|late 40s|forties|fifties|30s|thirties)\b/.test(t)) age = "mid";
+  else if (/\bmiddle[- ]aged\b/.test(t)) age = "mid";
+  else if (/\b(elderly|old|older|elder|senior|grandfather|grandmother|grandpa|granny|gran|seventies|eighties|sixties|retired)\b/.test(t) && !/\bold[- ](school|fashioned|time|world|soul|radio)\b|\bolden\b/.test(t)) age = "old";
+  else if (/\b(young|youthful|twenties|thirties|millennial|gen[- ]?z)\b/.test(t)) age = "young";
+  else if (/\b(middle[- ]aged|mature|forties|fifties)\b/.test(t)) age = "mid";
   let h: Heritage | undefined;
   if (/(nigeri|african|ghana|kenya|south africa|jamaic|caribbean|\bblack\b|haiti|ethiop|swahili|congo|zulu|yoruba|igbo|hausa|uganda|tanzan|senegal|cameroon|twi\b|amharic|pidgin|bahamas|trinidad)/.test(t)) h = "black";
   else if (/(\bindian\b|india\b|pakistan|bengal|hindi|tamil|telugu|malayalam|marathi|gujarati|punjab|urdu|nepal|sri lank|south asian)/.test(t)) h = "south_asian";
@@ -632,16 +654,17 @@ export const isPlainFace = (a: Pick<AvatarEntry, "id" | "tier">): boolean => a.i
  * Genders of the local (Piper) voices, which come with none. From the voice model cards as remembered by the person who
  * built the library, not verified by ear; a voice not listed gets any adult portrait.
  */
-const PIPER_GENDER: Record<string, "f" | "m"> = {
+const PIPER_DATA: Record<string, "f" | "m"> = {
   alan: "m", alba: "f", jenny_dioco: "f", northern_english_male: "m", cori: "f", lessac: "f", amy: "f", joe: "m", john: "m", kristin: "f", bryce: "m", kusal: "m", ryan: "m",
   claude: "m", ald: "m", kareem: "m", daniela: "f", davefx: "m", carlfm: "m", siwis: "f", tom: "m", thorsten: "m", eva_k: "f", faber: "m", edresson: "m",
   priyamvada: "f", rohan: "m", pratham: "m", kss: "f", huayan: "f", chaowen: "f", xiao_ya: "f", meera: "f", arjun: "m", maya: "f", venkatesh: "m",
 };
+const PIPER_GENDER: Record<string, "f" | "m"> = Object.assign(Object.create(null) as Record<string, "f" | "m">, PIPER_DATA);
 /** "m", "f" or undefined, for a Piper voice key such as "en_GB-alan-low" or a name such as "Alan". */
 export function pipergender(keyOrName: string): "m" | "f" | undefined {
   const k = keyOrName.toLowerCase();
   const mid = k.includes("-") ? k.split("-")[1]! : k;
-  return PIPER_GENDER[mid] ?? PIPER_GENDER[k.replace(/\s+/g, "_")];
+  return PIPER_GENDER[mid.slice(0, 40)] ?? PIPER_GENDER[k.slice(0, 80).replace(/\s+/g, "_")];
 }
 
 /** What the owner (or ElevenLabs) says about a voice. Used only to choose the picture, and it outranks the description. */
@@ -649,6 +672,8 @@ export interface VoiceMeta {
   age?: VoiceAge;
   heritage?: Heritage;
 }
+
+const HERITAGES: Record<Heritage, true> = { black: true, white: true, east_asian: true, south_asian: true, middle_eastern: true, latino: true, indigenous: true };
 
 const UNSTATED_AGE: Age[] = ["young_adult", "adult", "middle_aged"];
 
@@ -691,12 +716,12 @@ const isChildish = (a: Pick<AvatarEntry, "age_category">) => a.age_category === 
  * matched exactly and only dropped when no portrait of that gender and age exists. A creature or story role (a dragon, a robot,
  * a pharaoh) gets the matching portrait; everything else gets an ordinary person in everyday dress.
  */
-export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string, meta?: VoiceMeta): AvatarEntry | null {
+export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender?: string, hint?: string, meta?: VoiceMeta, usage?: Map<string, number>): AvatarEntry | null {
   if (!manifest) return null;
   const want = readVoice(gender, hint);
   // what the owner or the voice service states about the voice outranks anything guessed from its description
-  if (meta?.age) want.age = meta.age;
-  if (meta?.heritage) want.h = meta.heritage;
+  if (meta?.age && Object.prototype.hasOwnProperty.call(AGE_FIT, meta.age)) want.age = meta.age;
+  if (meta?.heritage && Object.prototype.hasOwnProperty.call(HERITAGES, meta.heritage)) want.h = meta.heritage;
   const known = manifest.avatars.filter((a) => LOOKS[a.id]);
   const pick = (pool: AvatarEntry[]) => pool[seedHash(seed) % pool.length]!;
   if (want.story) {
@@ -714,6 +739,11 @@ export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender
   const ageOk = (a: AvatarEntry) => (want.age ? AGE_FIT[want.age].includes(a.age_category) : UNSTATED_AGE.includes(a.age_category));
   const heritageOk = (a: AvatarEntry) => !want.h || LOOKS[a.id]!.h === want.h;
   const tiers = [life.filter((a) => ageOk(a) && heritageOk(a)), life.filter(heritageOk), life.filter(ageOk), life];
-  const pool = tiers.find((t) => t.length) ?? [];
+  let pool = tiers.find((t) => t.length) ?? [];
+  if (usage && pool.length > 1) {
+    // spread: among the fitting faces, prefer the ones given to the fewest voices so far
+    const least = Math.min(...pool.map((a) => usage.get(a.id) ?? 0));
+    pool = pool.filter((a) => (usage.get(a.id) ?? 0) === least);
+  }
   return pool.length ? pick(pool) : null;
 }

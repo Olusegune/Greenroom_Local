@@ -1,0 +1,371 @@
+[
+ {
+  "id": "fixture-0",
+  "name": "Voice 00 - Casual",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": ""
+ },
+ {
+  "id": "fixture-1",
+  "name": "Voice 01",
+  "provider": "chatterbox",
+  "gender": "",
+  "accent": "",
+  "language": "English",
+  "notes": "Default local voice. Plain English speech; acting and cloning controls are not connected."
+ },
+ {
+  "id": "fixture-2",
+  "name": "Voice 02",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": "A natural, casual, and engaging voice with a friendly, confident delivery, ideal for conversational content and informal narration."
+ },
+ {
+  "id": "fixture-3",
+  "name": "Voice 03 - Mature, Natural",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": "A mature African male voice with a natural Nigerian English accent, warm, moderately deep tone and confident presence. Clear articulation, steady pacing and expressive intonation c"
+ },
+ {
+  "id": "fixture-4",
+  "name": "Voice 04 - Clear & Calm for Tutorials",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": "A warm, confident African English voice with a clear Nigerian English accent. Steady and easy to follow, it makes every step feel simple and keeps listeners engaged from start to f"
+ },
+ {
+  "id": "fixture-5",
+  "name": "Voice 05",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": "Middle-aged Narrator."
+ },
+ {
+  "id": "fixture-6",
+  "name": "Voice 06 - Deep baritone",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": "Deep baritone voice with a cosmopolitan accent."
+ },
+ {
+  "id": "fixture-7",
+  "name": "Voice 07 - Informative",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": "Clear, calm English narration for medical lectures."
+ },
+ {
+  "id": "fixture-8",
+  "name": "Voice 08 - Clear, Conversational Nigerian",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": "This voice is a friendly, clear Nigerian male voice with a natural Nigerian English accent, made for conversational AI agents, customer support and explainers. Warm, patient and profes"
+ },
+ {
+  "id": "fixture-9",
+  "name": "Voice 09 - chill, natural, real, low podcaster voice",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "american",
+  "language": "en",
+  "notes": "Here is a great lower female voice, all the better to sound really chill and realistic for uses like podcasts, commercials, social media, videos and other voiceovers."
+ },
+ {
+  "id": "fixture-10",
+  "name": "Voice 10 - bubbly BFF bright cheery storytime gossiper",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "american",
+  "language": "en",
+  "notes": "This voice delivers the perfect energetic female voiceover for YouTube automation channels, specializing in viral top 10s, facts videos, and story time content that keeps viewers watchin"
+ },
+ {
+  "id": "fixture-11",
+  "name": "Voice 11 - Professional, Bright, Warm",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "american",
+  "language": "en",
+  "notes": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and "
+ },
+ {
+  "id": "fixture-12",
+  "name": "Voice 12",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "en-american",
+  "language": "en",
+  "notes": "Generate a This voice American male voice, mid-30s, tired but hopeful. Soft rasp from burnout. Measured pacing, occasional sigh, slight Midwestern vowels. Tone shifts brighter on Jesus’"
+ },
+ {
+  "id": "fixture-13",
+  "name": "Voice 13",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "en-filipino",
+  "language": "en",
+  "notes": "Generate a This voice male voice, early-20s, soft and earnest. Slight Tagalog cadence in English, rounded vowels, respectful tone. Pacing: thoughtful, gentle pauses before Scripture."
+ },
+ {
+  "id": "fixture-14",
+  "name": "Voice 14",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "en-received-pronunciation",
+  "language": "en",
+  "notes": "A deep, compassionate male voice, mid-40s, with a hint of Middle Eastern cadence. Full-bodied resonance that carries quiet majesty, but softened by a deep empathy. Slight pauses be"
+ },
+ {
+  "id": "fixture-15",
+  "name": "Voice 15",
+  "provider": "elevenlabs",
+  "gender": "",
+  "accent": "",
+  "language": "en",
+  "notes": "A deep, resonant British male This voice, late 40s to early 60s, with an undertone of gravel and menace. Pacing is slow, calculated, and heavy with implication, as if every sentence hid"
+ },
+ {
+  "id": "fixture-16",
+  "name": "Voice 16",
+  "provider": "elevenlabs",
+  "gender": "",
+  "accent": "",
+  "language": "en",
+  "notes": "A smooth, articulate British male This voice, mid-to-late 50s, with a velvety yet sardonic tone. Slightly posh, as if educated at Oxford, with every word chosen like a finely honed blad"
+ },
+ {
+  "id": "fixture-17",
+  "name": "Voice 17",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "en-american",
+  "language": "en",
+  "notes": "This voice This voice"
+ },
+ {
+  "id": "fixture-18",
+  "name": "Voice 18",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "en-american",
+  "language": "en",
+  "notes": "Happy This This voice"
+ },
+ {
+  "id": "fixture-19",
+  "name": "Voice 19",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "",
+  "language": "en",
+  "notes": "This voice in Summit Sprout"
+ },
+ {
+  "id": "fixture-20",
+  "name": "Voice 20 - Laid-Back, Casual, Resonant",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "Easy going and perfect for casual conversations."
+ },
+ {
+  "id": "fixture-21",
+  "name": "Voice 21 - Mature, Reassuring, Confident",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "american",
+  "language": "en",
+  "notes": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone."
+ },
+ {
+  "id": "fixture-22",
+  "name": "Voice 22 - Enthusiast, Quirky Attitude",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "american",
+  "language": "en",
+  "notes": "This young adult female voice delivers sunny enthusiasm with a quirky attitude."
+ },
+ {
+  "id": "fixture-23",
+  "name": "Voice 23 - Deep, Confident, Energetic",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "australian",
+  "language": "en",
+  "notes": "A young Australian male with a confident and energetic voice."
+ },
+ {
+  "id": "fixture-24",
+  "name": "Voice 24 - Warm, Captivating Storyteller",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "british",
+  "language": "en",
+  "notes": "Warm resonance that instantly captivates listeners."
+ },
+ {
+  "id": "fixture-25",
+  "name": "Voice 25 - Husky Trickster",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "Deceptively gravelly, yet unsettling edge."
+ },
+ {
+  "id": "fixture-26",
+  "name": "Voice 26 - Relaxed, Neutral, Informative",
+  "provider": "elevenlabs",
+  "gender": "neutral",
+  "accent": "american",
+  "language": "en",
+  "notes": "A relaxed, neutral voice ready for narrations or conversational projects."
+ },
+ {
+  "id": "fixture-27",
+  "name": "Voice 27 - Fierce Warrior",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "An animated warrior ready to charge forward."
+ },
+ {
+  "id": "fixture-28",
+  "name": "Voice 28 - Energetic, Social Media Creator",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "A young adult with energy and warmth - suitable for reels and shorts."
+ },
+ {
+  "id": "fixture-29",
+  "name": "Voice 29 - Clear, Engaging Educator",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "british",
+  "language": "en",
+  "notes": "Clear and engaging, friendly woman with a British accent suitable for e-learning."
+ },
+ {
+  "id": "fixture-30",
+  "name": "Voice 30 - Knowledgable, Professional",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "american",
+  "language": "en",
+  "notes": "A professional woman with a pleasing alto pitch. Suitable for many use cases."
+ },
+ {
+  "id": "fixture-31",
+  "name": "Voice 31 - Relaxed Optimist",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "Conversational and laid back."
+ },
+ {
+  "id": "fixture-32",
+  "name": "Voice 32 - Playful, Bright, Warm",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "american",
+  "language": "en",
+  "notes": "Young and popular, this playful American female voice is perfect for trendy content."
+ },
+ {
+  "id": "fixture-33",
+  "name": "Voice 33 - Smooth, Trustworthy",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases."
+ },
+ {
+  "id": "fixture-34",
+  "name": "Voice 34 - Charming, Down-to-Earth",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "Natural and real, this down-to-earth voice is great across many use-cases."
+ },
+ {
+  "id": "fixture-35",
+  "name": "Voice 35 - Deep, Resonant and Comforting",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements."
+ },
+ {
+  "id": "fixture-36",
+  "name": "Voice 36 - Steady Broadcaster",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "british",
+  "language": "en",
+  "notes": "A strong voice perfect for delivering a professional broadcast or news story."
+ },
+ {
+  "id": "fixture-37",
+  "name": "Voice 37 - Velvety Actress",
+  "provider": "elevenlabs",
+  "gender": "female",
+  "accent": "british",
+  "language": "en",
+  "notes": "Velvety British female voice delivers news and narrations with warmth and clarity."
+ },
+ {
+  "id": "fixture-38",
+  "name": "Voice 38 - Dominant, Firm",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "A bright tenor pitch that immediately cuts through. The delivery is brash and openly confident, speaking with unwavering certainty and a slightly aggressive self-assurance."
+ },
+ {
+  "id": "fixture-39",
+  "name": "Voice 39 - Wise, Mature, Balanced",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "american",
+  "language": "en",
+  "notes": "Friendly and comforting voice ready to narrate your stories."
+ },
+ {
+  "id": "fixture-40",
+  "name": "Voice 40 - Narrator",
+  "provider": "elevenlabs",
+  "gender": "male",
+  "accent": "nigerian",
+  "language": "en",
+  "notes": ""
+ }
+]

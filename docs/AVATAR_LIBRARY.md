@@ -151,3 +151,9 @@ The owner asked that voices have age, gender and so on, so pictures are allocate
 - A voice that states **no age** gets a young-adult, adult or middle-aged face, never an elderly one or a child. Before, an unstated voice could get anyone (a "Happy Chloe" voice got an old woman).
 - 12 more portraits from the owner's "mideastern" folder fill the remaining gaps: Middle Eastern and South Asian boys and a Middle Eastern girl, elders of both genders in several heritages, and two adult men. Every combination of gender (2) x heritage (6) x age (child, adult, elderly) now has an everyday portrait, and a test checks all 36 combinations.
 - No Southeast Asian portraits were in that folder: the East Asian group has the existing ones (Chinese, Japanese, Korean, Filipino-looking); more would help.
+
+## Version 0.8.8: tested against the owner's real library
+
+- The face rules were run over the owner's actual 41 ElevenLabs voices (an anonymised fixture, `app/src/fixtures/voices.sample.json`), each with a hand-labelled expected gender, heritage and age. This found and fixed: "middle-aged" read as old (the word "aged"), "late 40s to early 60s" read as old, the tags in a voice name ("Mature, Natural") ignored, and audience phrases ("for kids", "women's health", "young adult fiction") read as the voice's own age or gender.
+- Faces are now assigned across the whole library in order, each voice taking the least-used fitting face, so the 41 voices show 22 different faces and none is used more than four times (before: one face six times). A voice keeps its face when voices are added after it.
+- Security tests and fixes are in `docs/SECURITY_REVIEW.md`; ideas for what to build next are in `docs/IDEAS.md`.

@@ -4,27 +4,71 @@
 // the prompt asks for a person who is not real and resembles nobody.
 
 import { hash, lookFor } from "./avatar";
-import { pipergender, type VoiceMeta } from "./avatarLibrary";
+import { autoAvatar, pipergender, type AvatarEntry, type AvatarManifest, type VoiceMeta } from "./avatarLibrary";
 import type { VoiceEntry } from "./types";
 
 /** The seed a voice's drawn face uses everywhere, so a picture can be found for the same voice on every screen. */
-export const voiceSeed = (v: Pick<VoiceEntry, "id" | "name">): string => v.id + v.name;
+export const voiceSeed = (v: Pick<VoiceEntry, "id" | "name">): string => String(v.id ?? "") + String(v.name ?? "");
 
 const pictures = new Map<string, string>();
 const hints = new Map<string, string>();
 const metas = new Map<string, VoiceMeta>();
+interface Cast {
+  seed: string;
+  gender?: string;
+  hint: string;
+  meta?: VoiceMeta;
+}
+let order: Cast[] = [];
+let version = 0;
+let cache: { manifest: AvatarManifest | null; version: number; map: Map<string, string> } | null = null;
 
 /** Rebuilds the lookup from the library. Cheap, and called whenever the library changes. */
+/** Everything a voice says about itself, in one string: its gender, accent, language, the tags after the dash in its name, and its notes. */
+export function voiceHint(v: Partial<Pick<VoiceEntry, "id" | "name" | "gender" | "accent" | "language" | "notes">>): string {
+  // a stored voice is untrusted data: only strings are read, and each is cut short before any pattern runs on it
+  const str = (x: unknown, n: number) => (typeof x === "string" ? x.slice(0, n) : "");
+  const gender = str(v.gender, 40);
+  const pg = gender ? undefined : pipergender(str(v.id, 120));
+  const tags = str(v.name, 200).split(/ +[-\u2013\u2014] +/).slice(1).join(" ");
+  return [gender || (pg === "f" ? "female" : pg === "m" ? "male" : ""), str(v.accent, 80), str(v.language, 80), tags, str(v.notes, 1500)].filter(Boolean).join(" ").slice(0, 2000);
+}
+
 export function syncPortraits(library: (Pick<VoiceEntry, "id" | "name" | "portrait"> & Partial<Pick<VoiceEntry, "gender" | "accent" | "language" | "notes" | "age" | "heritage">>)[]): void {
   pictures.clear();
   hints.clear();
   metas.clear();
+  order = [];
+  version++;
   for (const v of library) {
     if (v.portrait && v.portrait.startsWith("data:image/")) pictures.set(voiceSeed(v), v.portrait);
-    if (v.age || v.heritage) metas.set(voiceSeed(v), { age: v.age, heritage: v.heritage });
-    const pg = v.gender ? undefined : v.id ? pipergender(v.id) : undefined;
-    hints.set(voiceSeed(v), [v.gender || (pg === "f" ? "female" : pg === "m" ? "male" : ""), v.accent, v.language, v.notes].filter(Boolean).join(" "));
+    if (v.age || v.heritage) metas.set(voiceSeed(v), { age: typeof v.age === "string" ? v.age : undefined, heritage: typeof v.heritage === "string" ? v.heritage : undefined });
+    hints.set(voiceSeed(v), voiceHint(v));
+    if (!(v.portrait && v.portrait.startsWith("data:image/"))) order.push({ seed: voiceSeed(v), gender: v.gender, hint: voiceHint(v), meta: v.age || v.heritage ? { age: typeof v.age === "string" ? v.age : undefined, heritage: typeof v.heritage === "string" ? v.heritage : undefined } : undefined });
   }
+}
+
+/**
+ * The automatic face of a voice in the library. Every voice is placed in library order, each taking the least-used fitting face,
+ * so a library of forty voices shows a spread of faces and not the same one six times. Voices keep their faces when new voices
+ * are added at the end. Returns null for a seed that is not a library voice.
+ */
+export function assignedFace(manifest: AvatarManifest | null, seed: string): AvatarEntry | null {
+  if (!manifest) return null;
+  if (!cache || cache.manifest !== manifest || cache.version !== version) {
+    const usage = new Map<string, number>();
+    const map = new Map<string, string>();
+    for (const o of order) {
+      const a = autoAvatar(manifest, o.seed, o.gender, o.hint, o.meta, usage);
+      if (a) {
+        map.set(o.seed, a.id);
+        usage.set(a.id, (usage.get(a.id) ?? 0) + 1);
+      }
+    }
+    cache = { manifest, version, map };
+  }
+  const id = cache.map.get(seed);
+  return id ? (manifest.avatars.find((a) => a.id === id) ?? null) : null;
 }
 
 /** What a voice says about itself (accent, notes), used to pick an automatic face that fits it. */

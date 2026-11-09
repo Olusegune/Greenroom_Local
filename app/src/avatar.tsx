@@ -1,6 +1,6 @@
-import { autoAvatar } from "./avatarLibrary";
+import { autoAvatar, readVoice } from "./avatarLibrary";
 import { useAvatars } from "./avatarState";
-import { hintFor, metaFor, portraitFor } from "./portrait";
+import { assignedFace, hintFor, metaFor, portraitFor } from "./portrait";
 
 // Cute clay-style 3D portraits for voices and characters. They are drawn from a seed (the voice's id and name), so the same
 // voice always has the same face. They are original illustrations made of shaded shapes: not photographs, and not meant to
@@ -122,7 +122,7 @@ export function Avatar({ seed, gender, size = 64, label, hint }: { seed: string;
   if (photo) return <img className="avatar" src={photo} alt={label ?? ""} width={size} height={size} style={{ objectFit: "cover", borderRadius: "50%" }} />;
   // No chosen picture: a steady built-in portrait (never saved; choosing an avatar replaces it). The drawn face is only the
   // fallback while the library has not loaded or cannot be read.
-  const auto = autoAvatar(manifest, seed, gender, [hintFor(seed), hint].filter(Boolean).join(" "), metaFor(seed));
+  const auto = (hint && readVoice(gender, hint).story ? null : assignedFace(manifest, seed)) ?? autoAvatar(manifest, seed, gender, [hintFor(seed), hint].filter(Boolean).join(" "), metaFor(seed));
   if (auto) {
     const p = size >= 96 ? auto.assets.card ?? auto.assets.card_small : size >= 48 ? auto.assets.card_small : auto.assets.thumbnail;
     return <img className="avatar" src={`./avatars/${p}`} alt={label ?? ""} width={size} height={size} decoding="async" loading="lazy" style={{ objectFit: "cover", borderRadius: "50%" }} />;
