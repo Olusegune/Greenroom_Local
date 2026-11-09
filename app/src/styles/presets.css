@@ -54,3 +54,10 @@
 .preset-face.fallback { display: inline-flex; align-items: center; justify-content: center; color: var(--text-2); font-weight: 600; }
 .preset-card > header { gap: var(--s3); align-items: center; }
 .compare th .preset-face { vertical-align: middle; margin-right: 6px; }
+
+.accent-panel { display: flex; flex-direction: column; gap: var(--s3); }
+.accent-panel .phrases { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.accent-panel .review-form { border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--s3); display: flex; flex-direction: column; gap: var(--s2); }
+.accent-panel label { display: flex; flex-direction: column; gap: 4px; }
+.accent-panel label.criterion { flex-direction: row; align-items: center; }
+.accent-panel textarea, .accent-panel input[type=text] { width: 100%; }

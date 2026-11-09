@@ -309,12 +309,17 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { box-shadow:0
   color-scheme:light;
   --bg:#f4f7f4; --surface-1:#ffffff; --surface-2:#f8fbf8; --surface-3:#eaf0eb; --surface-4:#dce7de;
   --line:rgba(24,55,38,.13); --line-strong:rgba(24,55,38,.25); --control-line:#94a99a;
-  --text:#17251b; --text-2:#536758; --text-3:#718174;
+  --text:#17251b; --text-2:#536758; --text-3:#5e6f62;
   --accent-rgb:25 135 84; --accent:#198754; --accent-hi:#2ca96d; --on-accent:#ffffff; --accent-text:#117143;
   --accent-wash:rgba(25,135,84,.11); --accent-line:rgba(25,135,84,.42);
   --ok:#137a58; --warn:#ad620f; --err:#b6403b; --ok-wash:rgba(19,122,88,.10); --warn-wash:rgba(173,98,15,.10); --err-wash:rgba(182,64,59,.10);
   --focus:#0b6b42; --shadow-2:0 16px 40px rgba(28,50,35,.16), 0 0 0 1px var(--line); --scrim:rgba(25,35,28,.25);
 }
+/* Accessibility (WCAG AA): the bright green made for the dark theme is too light for white text and for small labels on white. */
+:root[data-theme="light"] button.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+:root[data-theme="light"] button.primary:hover:not(:disabled) { background:var(--accent-text); border-color:var(--accent-text); }
+:root[data-theme="light"] .eyebrow { color:var(--accent-text); }
+:root[data-theme="light"] .vtag { color:color-mix(in srgb, var(--tag) 40%, #17251b); }
 :root[data-theme="light"] body { background:#f4f7f4; background-image:radial-gradient(900px 420px at 20% -120px, rgba(78,170,115,.18), transparent 70%), radial-gradient(800px 520px at 100% 100%, rgba(241,210,138,.18), transparent 70%); }
 :root[data-theme="light"] .rail { background:#eef4ef; }
 :root[data-theme="light"] .app-menu { background:rgba(255,255,255,.8); }

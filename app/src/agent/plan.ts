@@ -3,6 +3,7 @@
 // revision never throws approved work away.
 
 import { ENGINES } from "../engines";
+import { foleyPlan } from "../foley";
 import type { Line, Project, VoiceEntry } from "../types";
 import type { AgentRun, JobNode, Mode } from "./graph";
 
@@ -15,7 +16,12 @@ export interface PlanOptions {
   now: string;
   /** Estimated cost of speaking `chars` characters on an engine. Free and local engines are 0. */
   price: (engine: VoiceEntry["provider"], chars: number) => number;
+  /** Cost of making `count` sound clips with the chosen sound engine, and whether that engine is a cloud one. */
+  sound?: { price: (count: number) => number; cloud: boolean };
 }
+
+/** The most sound clips the agent makes in one run, so a long script cannot run up a bill. */
+export const MAX_SOUNDS = 6;
 
 /** A small stable hash, so a node's key changes exactly when its inputs change. */
 export function hash(s: string): string {
@@ -36,6 +42,7 @@ export function planProduction(project: Project, library: VoiceEntry[], o: PlanO
 
   nodes.push(node({ id: "analyze", kind: "analyze", title: "Analyze the script", detail: `${project.characters.length} characters, ${speaking.length} lines, ${project.scenes.length || 1} scene(s)`, deps: [], gate: "none", key: hash(project.script || JSON.stringify(speaking.map((l) => l.text))) }));
   nodes.push(node({ id: "cast", kind: "cast", title: "Recommend and approve the cast", detail: cloned.length ? `Includes ${cloned.length} cloned voice(s): you confirm the voice rights.` : "Pick a voice for each character from your presets and library.", deps: ["analyze"], gate: cloned.length ? "rights" : "creative", key: castKey }));
+  nodes.push(node({ id: "audition", kind: "audition", title: "Line up voice auditions", detail: "For each character, the voices in your library that suit their preset, ready for you to hear. Playing one is your choice; local voices are free, cloud voices ask first.", deps: ["cast"], gate: "none", key: castKey }));
   nodes.push(node({ id: "direct", kind: "direct", title: "Compile acting direction", detail: "Turn your notes and the brief into line-level direction for each voice.", deps: ["cast"], gate: "creative", key: hash(o.brief + JSON.stringify(speaking.map((l) => [l.id, l.acting ?? "", l.direction.note ?? ""]))) }));
 
   const takeIds: string[] = [];
@@ -53,9 +60,11 @@ export function planProduction(project: Project, library: VoiceEntry[], o: PlanO
     nodes.push(have ? { ...n, status: "completed", approved: true, output: { takeId: have.id, kept: true } } : n);
   }
   nodes.push(node({ id: "qc", kind: "qc", title: "Check the audio", detail: "Clipping, silence, missing lines, unsupported sounds. Subjective problems are flagged for you to listen to.", deps: takeIds.length ? takeIds : ["direct"], gate: "none", key: hash(takeIds.join(",")) }));
-  nodes.push(node({ id: "sound", kind: "sound", title: "Plan ambience and sound effects", detail: "Suggests sounds from the stage directions. Generating them is a separate, paid step you start yourself.", deps: ["direct"], gate: "none", enabled: false, key: hash(project.script) }));
+  const ideas = foleyPlan(project.script, project.lines).slice(0, MAX_SOUNDS);
+  const soundCloud = !!o.sound?.cloud && ideas.length > 0;
+  nodes.push(node({ id: "sound", kind: "sound", title: "Make ambience and sound effects", detail: ideas.length ? `${ideas.length} sound${ideas.length === 1 ? "" : "s"} read from your stage directions (at most ${MAX_SOUNDS}). Off until you turn it on.` : "No sounds were found in the stage directions.", deps: ["direct"], gate: soundCloud ? "spend" : "none", cloud: soundCloud, estimate: soundCloud ? (o.sound?.price(ideas.length) ?? 0) : 0, enabled: false, key: hash(ideas.map((i) => i.prompt + i.lineId).join("|")) }));
   nodes.push(node({ id: "timeline", kind: "timeline", title: "Assemble the timeline", detail: "Put the approved takes in order on the timeline.", deps: ["qc"], gate: "creative", key: hash(takeIds.join(",")) }));
-  nodes.push(node({ id: "export", kind: "export", title: "Prepare the export", detail: "Checks everything is ready, then opens Export. Delivery is always your decision.", deps: ["timeline"], gate: "final", key: hash(o.brief) }));
+  nodes.push(node({ id: "export", kind: "export", title: "Export the full scene", detail: "After your approval: mixes the approved takes, applies your loudness target and writes one WAV. Stems, OTIO and the report are on the Export screen.", deps: ["timeline"], gate: "final", key: hash(o.brief) }));
 
   return { version: 1, id: o.id, mode: o.mode, brief: o.brief.slice(0, 2000), localOnly: o.localOnly, cloudLimit: Math.max(0, o.cloudLimit), spent: 0, nodes, audit: [{ at: o.now, nodeId: "-", event: "planned", by: "agent", note: `${nodes.length} steps` }], createdAt: o.now, updatedAt: o.now };
 }

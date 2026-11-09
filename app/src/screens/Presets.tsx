@@ -6,6 +6,8 @@ import type { Engine, InworldModel } from "../engines";
 import { ACCENT_QUALITY, ACCENT_QUALITY_LABEL, compatibleEngines, duplicatePreset, exportPresets, filterPresets, GENRE_LABEL, GENRES, importPresets, readiness, STARTER_PRESETS, type AccentQuality, type Gender, type Genre, type VoicePreset } from "../presets";
 import { applyPreset, readyEnginesFrom, voicesFor } from "../presets/cast";
 import { auditionPlan } from "../presets/audition";
+import AccentPanel from "./AccentPanel";
+import { addReview, buildAccentTests, earnedQuality, exportReviews, importReviews, loadReviews, saveReviews, type AccentReview } from "../presets/accentTests";
 import { APP_VERSION } from "../version";
 import { addCustom, loadState, markRecent, removeCustom, saveState, toggleFavorite, type PresetState } from "../presets/state";
 import { Empty, Note, PlayButton } from "../ui";
@@ -22,6 +24,8 @@ export default function Presets() {
   const { project, library, keys, edit, go, toast, engines } = useApp();
   const sample = useSample();
   const [state, setState] = useState<PresetState>(() => loadState(store()));
+  const [reviews, setReviews] = useState<AccentReview[]>(() => loadReviews(store()));
+  const [testing, setTesting] = useState<string | null>(null);
   const [genre, setGenre] = useState<Genre | null>(null);
   const [query, setQuery] = useState("");
   const [advanced, setAdvanced] = useState(false);
@@ -43,6 +47,9 @@ export default function Presets() {
   const ready = useMemo(() => readyEnginesFrom(keys, library), [keys, library]);
   const libraryEngines = useMemo(() => [...new Set(library.map((v) => v.provider))] as Engine[], [library]);
   const kept = useMemo(() => new Set(state.favorites), [state.favorites]);
+  const accentTests = useMemo(() => buildAccentTests(all), [all]);
+  const testOf = (presetId: string) => accentTests.find((t) => t.presetIds.includes(presetId));
+  const saveReview = (next: AccentReview[]) => { setReviews(next); if (!saveReviews(store(), next)) toast("Could not save the review on this computer. It will be lost when Greenroom closes.", true); };
 
   const update = (next: PresetState) => {
     setState(next);
@@ -88,6 +95,9 @@ export default function Presets() {
       voices={voicesFor(p, library, ready)}
       voiceId={picked[p.id]}
       onVoice={(id) => setPicked((s) => ({ ...s, [p.id]: id }))}
+      test={testOf(p.id)}
+      reviews={reviews}
+      onTest={() => setTesting(p.id)}
       onFavorite={() => update(toggleFavorite(state, p.id))}
       onCompare={() => toggleCompare(p.id)}
       onAudition={(v) => { update(markRecent(state, p.id)); return sample(v, auditionPlan(p, v, engines.inworldModel).text); }}
@@ -154,6 +164,21 @@ export default function Presets() {
 
       {compare.length > 0 && <CompareTable faceOf={(id) => faceOf(id)?.src} presets={compare.map((id) => byId.get(id)).filter((p): p is VoicePreset => !!p)} ready={ready} libraryEngines={libraryEngines} onClose={() => setCompare([])} />}
 
+      {testing && (() => {
+        const tp = byId.get(testing); const t = tp && testOf(tp.id);
+        if (!tp || !t) return null;
+        return (
+          <AccentPanel
+            test={t} base={tp.accent.quality} voices={voicesFor(tp, library, ready)} reviews={reviews}
+            hear={(v, phrase) => sample(v, phrase)}
+            onSave={(r) => saveReview(addReview(reviews, r))}
+            onClose={() => setTesting(null)}
+            onExport={() => { const url = URL.createObjectURL(new Blob([exportReviews(reviews)], { type: "application/json" })); const a = document.createElement("a"); a.href = url; a.download = "accent-reviews.json"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }}
+            onImport={(f) => { void f.text().then((txt) => { const r = importReviews(txt); let next = reviews; for (const x of r.reviews) next = addReview(next, x); saveReview(next); toast(`${r.reviews.length} review${r.reviews.length === 1 ? "" : "s"} imported${r.skipped ? `, ${r.skipped} skipped` : ""}. They count as community reviews at most.`, r.reviews.length === 0); }); }}
+          />
+        );
+      })()}
+
       {castPreset && (
         <CastPanel
           preset={castPreset}
@@ -192,7 +217,7 @@ function PresetFace({ src, name, size = 56 }: { src?: string; name: string; size
 }
 
 function PresetCard(props: {
-  inworldModel?: InworldModel | undefined; preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined;
+  test?: import("../presets/accentTests").AccentTest | undefined; reviews: AccentReview[]; onTest: () => void; inworldModel?: InworldModel | undefined; preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined;
   onVoice: (id: string) => void; onFavorite: () => void; onCompare: () => void; onAudition: (v: VoiceEntry) => Promise<string>; onCast: () => void; onDuplicate: () => void; onRemove: (() => void) | undefined; go: (t: "voices" | "models") => void;
 }) {
   const { preset: p, voices } = props;
@@ -200,6 +225,8 @@ function PresetCard(props: {
   const r = readiness(p, props.ready, props.libraryEngines);
   const chosen = voices.find((v) => v.id === props.voiceId) ?? voices[0];
   const engines = compatibleEngines(p);
+  // The label a voice has earned from recorded reviews; without a review it is the label the preset shipped with.
+  const quality = props.test && chosen ? earnedQuality(props.reviews, props.test.id, chosen.provider, chosen.name, p.accent.quality).quality : p.accent.quality;
   return (
     <article className="card preset-card" aria-label={p.name}>
       <header className="row between top">
@@ -214,7 +241,7 @@ function PresetCard(props: {
       <div className="row wrap preset-tags">
         <span className="badge">{p.language}</span>
         <span className="badge" title={ACCENT_QUALITY_LABEL[p.accent.quality]}>{p.accent.label}</span>
-        <span className={p.accent.quality === "experimental" || p.accent.quality === "unsupported" ? "badge warn" : "badge"}>{ACCENT_QUALITY_LABEL[p.accent.quality]}</span>
+        <span className={quality === "experimental" || quality === "unsupported" ? "badge warn" : "badge"} title={props.test && chosen ? earnedQuality(props.reviews, props.test.id, chosen.provider, chosen.name, p.accent.quality).because : undefined}>{ACCENT_QUALITY_LABEL[quality]}</span>
         <span className="badge">{p.ageRange.map((a) => AGE_LABEL[a]).join(", ")}</span>
       </div>
       <div className="muted small">Works on: {engines.length ? engines.map(engineLabel).join(", ") : "no engine"}</div>
@@ -236,6 +263,7 @@ function PresetCard(props: {
         <button className="sm" aria-pressed={props.comparing} onClick={props.onCompare}>{props.comparing ? "Comparing" : "Compare"}</button>
         <details className="vc-more"><summary className="sm">More</summary>
           <div className="stack">
+            {props.test && <button className="sm ghost" onClick={props.onTest}>Listening test for this accent</button>}
             <button className="sm ghost" onClick={props.onDuplicate}>Duplicate to edit</button>
             {props.onRemove && <button className="sm ghost" onClick={props.onRemove}>Remove this preset</button>}
           </div>

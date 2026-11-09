@@ -1,14 +1,15 @@
 import { useMemo, useRef, useState } from "react";
 import { agentEnv } from "./agentEnv";
 import { useApp } from "../ctx";
-import { DEFAULT_PRICES } from "../engines";
+import { DEFAULT_PRICES, soundEngineOf } from "../engines";
+import { useSample } from "../useSample";
+import { Empty, Note, PlayButton } from "../ui";
 import { approve, estimateRemaining, MODES, progress, regenerate, reject, resume, retry, setEnabled, step, merge, type AgentRun, type JobNode, type Mode } from "../agent/graph";
 import { interpret, settingsFrom } from "../agent/brief";
 import { migrateRun } from "../agent/persist";
 import { planProblems, planProduction } from "../agent/plan";
 import { executors } from "../agent/services";
 import { estimateCost } from "../trust";
-import { Empty, Note } from "../ui";
 
 const COLUMNS: { id: string; label: string; of: (n: JobNode) => boolean }[] = [
   { id: "planned", label: "Planned", of: (n) => n.status === "planned" || n.status === "ready" },
@@ -20,8 +21,30 @@ const COLUMNS: { id: string; label: string; of: (n: JobNode) => boolean }[] = [
 
 const GATE_WORD: Record<string, string> = { creative: "creative check", spend: "spends money", rights: "voice rights", final: "delivery" };
 
+type Candidates = { candidates?: { character: string; preset: string | null; line: string; voices: { id: string; name: string; engine: string; cloud: boolean }[] }[] };
+
+/** The auditions the agent lined up. Nothing is generated until you press Play; cloud voices ask before they spend. */
+function AuditionList({ output, hear, library }: { output: unknown; hear: (v: import("../types").VoiceEntry, text: string) => Promise<string>; library: import("../types").VoiceEntry[] }) {
+  const rows = (output as Candidates)?.candidates ?? [];
+  if (!rows.length) return null;
+  return (
+    <div className="small">
+      {rows.map((r) => (
+        <div key={r.character}>
+          <strong>{r.character}</strong>{r.preset ? <span className="muted"> · {r.preset}</span> : null}
+          {r.voices.length === 0 ? <div className="muted">No suitable voice in your library.</div> : r.voices.map((v) => {
+            const entry = library.find((x) => x.id === v.id);
+            return <div key={v.id} className="row">{entry ? <PlayButton label={`Hear ${v.name}`} get={() => hear(entry, r.line)} /> : null}<span className="grow">{v.name}</span>{v.cloud ? <span className="badge warn">cloud</span> : <span className="badge">local</span>}</div>;
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function AgentStudio() {
   const app = useApp();
+  const sample = useSample();
   const { project, library, engines, edit, confirmSpend, toast, go } = app;
   const [brief, setBrief] = useState("");
   const [mode, setMode] = useState<Mode>("guided");
@@ -51,7 +74,7 @@ export default function AgentStudio() {
 
   const makePlan = () => {
     const cloudLimit = localOnly ? 0 : Math.max(0, Number(limit) || 0);
-    const fresh = planProduction(live.current!, library, { id: run?.id ?? "run-" + Date.now().toString(36), brief, mode, localOnly, cloudLimit, now: now(), price: price as never });
+    const fresh = planProduction(live.current!, library, { id: run?.id ?? "run-" + Date.now().toString(36), brief, mode, localOnly, cloudLimit, now: now(), price: price as never, sound: { cloud: !soundEngineOf(engines).free, price: (n) => estimateCost(prices, [{ kind: "sound", count: n }]).cost } });
     const next = run ? { ...merge(run, fresh, now()), mode, localOnly, cloudLimit, brief } : fresh;
     save(next);
     toast(run ? "Plan updated. Finished steps whose inputs did not change were kept." : "Plan ready. Review it, then press Start.");
@@ -159,6 +182,8 @@ export default function AgentStudio() {
                       {!n.enabled && <span className="badge">off</span>}
                     </div>
                     {n.error && <div className="small err-text">{n.error}</div>}
+                    {n.kind === "audition" && n.status === "completed" && <AuditionList output={n.output} hear={(v, text) => sample(v, text)} library={library} />}
+                    {n.kind === "export" && n.status === "completed" && !!(n.output as { path?: string })?.path && <p className="small ok-text">Written: {(n.output as { path: string }).path}</p>}
                     {n.output !== undefined && n.status === "completed" && <details className="small"><summary>Result</summary><pre>{JSON.stringify(n.output, null, 1).slice(0, 700)}</pre></details>}
                     <div className="row wrap">
                       {n.status === "awaiting_approval" && <><button className="sm primary" onClick={() => void approveNode(n)}>Approve</button><button className="sm" onClick={() => save(reject(run, n.id, now()))}>Reject</button></>}

@@ -8,6 +8,9 @@ import { applyPreset as applyToCharacter, voicesFor } from "../presets/cast";
 import { recommend, STARTER_PRESETS, type Genre, type VoicePreset } from "../presets";
 import type { Line, Project, Take, VoiceEntry } from "../types";
 import { foleyPlan } from "../foley";
+import type { SceneExport } from "../exportScene";
+import { MAX_SOUNDS } from "./plan";
+import { auditionPlan } from "../presets/audition";
 import type { Executors } from "./graph";
 import { settingsFrom, type Interpretation } from "./brief";
 import { linesToRemake, qualityCheck, summarize, type Measured } from "./quality";
@@ -25,6 +28,10 @@ export interface Env {
   localOnly: boolean;
   /** A portrait id from the existing library for a preset, when the library is loaded. */
   portraitFor?: (presetId: string) => string | undefined;
+  /** Makes one sound clip (a cloud call unless the sound engine is local). The caller has already checked the limit. */
+  makeSound?: (prompt: string, seconds: number) => Promise<{ take: NonNullable<Line["events"][number]["take"]>; spent: number }>;
+  /** Mixes and writes the full scene. Only ever called after the person has approved delivery. */
+  exportScene?: (project: Project) => Promise<SceneExport>;
 }
 
 const genreOf = (i?: Interpretation): Genre | undefined => i?.proposals.find((p): p is Extract<typeof p, { kind: "genre" }> => p.kind === "genre")?.genre;
@@ -59,6 +66,22 @@ export function executors(env: Env): Executors {
       return { output: { cast: made } };
     },
 
+    async audition() {
+      const p = env.project();
+      const all = env.presets ?? STARTER_PRESETS;
+      const lib = env.library().filter((v) => !env.localOnly || ["piper", "chatterbox", "wazobia", "local"].includes(v.provider));
+      const ready = env.ready();
+      const rows = speaking().map((c) => {
+        const dna = c.dna;
+        const preset = all.find((x) => x.id === dna?.profile?.provenance.presetId);
+        const voices = (preset ? voicesFor(preset, lib, ready) : lib.filter((v) => ready.includes(v.provider))).slice(0, 4);
+        const first = p.lines.find((l) => l.characterId === c.id && l.text.trim());
+        const line = preset && voices[0] ? auditionPlan(preset, voices[0]).text : (first?.text ?? "").slice(0, 120);
+        return { character: c.name, preset: preset?.name ?? null, line, voices: voices.map((v) => ({ id: v.id, name: v.name, engine: v.provider, cloud: !["piper", "chatterbox", "wazobia", "local"].includes(v.provider) })) };
+      });
+      return { output: { candidates: rows, note: "Nothing was generated. Press Play on a voice to hear it; cloud voices ask before they spend." } };
+    },
+
     async direct() {
       const tone = (env.interpretation?.proposals ?? []).filter((p): p is Extract<typeof p, { kind: "tone" }> => p.kind === "tone").map((p) => p.direction);
       const natural = (env.interpretation?.proposals ?? []).some((p) => p.kind === "naturalness");
@@ -91,9 +114,25 @@ export function executors(env: Env): Executors {
       return { output: { ...summarize(findings), findings, remake: linesToRemake(findings) } };
     },
 
-    async sound() {
+    async sound(node) {
       const p = env.project();
-      return { output: { ideas: foleyPlan(p.script, p.lines).length, note: "Ideas only. Generating sounds is a separate paid step." } };
+      const ideas = foleyPlan(p.script, p.lines).slice(0, MAX_SOUNDS);
+      if (!ideas.length) return { output: { made: 0, note: "No sounds were found in the stage directions." } };
+      if (!env.makeSound) return { output: { ideas: ideas.length, made: 0, note: "Sound generation is not connected here." } };
+      let spent = 0;
+      let made = 0;
+      const skipped: string[] = [];
+      for (const idea of ideas) {
+        const line = env.project().lines.find((l) => l.id === idea.lineId);
+        if (!line) continue;
+        if (line.events.some((e) => e.prompt === idea.prompt)) { skipped.push(`${idea.prompt} (already there)`); continue; }
+        // Stay inside what this step was estimated and approved for.
+        if (node.cloud && spent >= node.estimate - 1e-9 && node.estimate > 0 && made >= ideas.length) break;
+        const r = await env.makeSound(idea.prompt, idea.seconds);
+        spent += r.spent; made++;
+        env.edit((pr) => ({ ...pr, lines: pr.lines.map((l) => (l.id === idea.lineId ? { ...l, events: [...l.events, { id: `ev-${idea.id}`, prompt: idea.prompt, placement: idea.placement, seconds: r.take.seconds, take: r.take }] } : l)) }));
+      }
+      return { output: { made, skipped, note: "Sounds are placed next to the lines they were read from. Listen to them in Perform or the timeline." }, spent };
     },
 
     async timeline() {
@@ -109,7 +148,10 @@ export function executors(env: Env): Executors {
       const f = qualityCheck(p, env.library());
       const bad = f.filter((x) => x.severity === "problem" && x.kind !== "listen");
       if (bad.length) throw new Error(`${bad.length} problem(s) must be fixed before export: ${bad[0]!.text}`);
-      return { output: { ready: true, note: "Open Export to choose a format and deliver. Greenroom never exports for you." } };
+      // This step is behind the delivery gate: it only runs after the person approved it.
+      if (!env.exportScene) return { output: { ready: true, note: "Ready. Open Export to choose a format and deliver." } };
+      const out = await env.exportScene(p);
+      return { output: { ...out, note: "Written. Stems, OTIO, EDL, cue sheet and the production report are on the Export screen." } };
     },
   };
 }

@@ -38,7 +38,7 @@ const status = (r: AgentRun, id: string) => r.nodes.find((n) => n.id === id)!.st
 describe("production planning", () => {
   const r = plan();
   it("plans every stage with dependencies and one take per line", () => {
-    expect(r.nodes.map((n) => n.kind)).toEqual(["analyze", "cast", "direct", "take", "take", "qc", "sound", "timeline", "export"]);
+    expect(r.nodes.map((n) => n.kind)).toEqual(["analyze", "cast", "audition", "direct", "take", "take", "qc", "sound", "timeline", "export"]);
     expect(r.nodes.find((n) => n.id === "take:l1")!.deps).toEqual(["direct"]);
     expect(r.nodes.find((n) => n.id === "qc")!.deps).toEqual(["take:l1", "take:l2"]);
   });

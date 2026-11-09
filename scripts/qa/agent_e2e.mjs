@@ -57,7 +57,7 @@ await shot("1-brief");
 await click("Plan the production"); await sleep(600);
 check("plan has the five columns", (await ev(`document.querySelectorAll('.board-col').length`)) === 5);
 check("analyze is planned", (await colOf("Analyze the script")) === "Planned");
-check("delivery step exists and is gated", (await ev(`[...document.querySelectorAll('.board-card')].some(x=>x.getAttribute('aria-label')==='Prepare the export'&&x.textContent.includes('delivery'))`)) === true);
+check("delivery step exists and is gated", (await ev(`[...document.querySelectorAll('.board-card')].some(x=>x.getAttribute('aria-label')==='Export the full scene'&&x.textContent.includes('delivery'))`)) === true);
 await click("Start"); await sleep(1500);
 check("analyze completed", (await colOf("Analyze the script")) === "Completed");
 check("guided: stops at the cast checkpoint", (await colOf("Recommend and approve the cast")) === "Awaiting your approval", await colsText());
@@ -82,16 +82,21 @@ for (let i = 0; i < 40; i++) {
     if (!(await click("Continue", "button.primary")) && !(await click("Start", "button.primary"))) break;
   }
   await sleep(1200);
-  if ((await colOf("Prepare the export")) === "Awaiting your approval") break;
+  if ((await colOf("Export the full scene")) === "Awaiting your approval") break;
 }
 await sleep(800);
 await shot("3-board");
 const final = await colsText();
 check("assembled the timeline", (await colOf("Assemble the timeline")) === "Completed", final);
-check("delivery waits for the person", (await colOf("Prepare the export")) === "Awaiting your approval");
+check("delivery waits for the person", (await colOf("Export the full scene")) === "Awaiting your approval");
 check("audio check ran and reports honestly", (await ev(`document.body.innerText.includes('The check measures; whether a performance sounds natural is your call.')`)) === true);
 check("audit log recorded the run", (await ev(`parseInt((document.body.innerText.match(/Audit log \\((\\d+)\\)/)||[])[1]||'0')`)) > 10);
 check("Undo is available for the agent's changes", (await ev(`[...document.querySelectorAll('.rail-foot button')].some(b=>b.textContent.trim()==='Undo'&&!b.disabled)`)) === true);
+
+// Approve delivery: the agent now mixes and writes the full scene (the demo backend stands in for the disk)
+await click("Approve", ".board-card button"); await sleep(4000);
+check("after approval the export step writes the full scene", (await colOf("Export the full scene")) === "Completed" && (await ev(`document.body.innerText.includes('Written:')`)) === true, await colsText());
+await shot("4-exported");
 
 console.log(checks.join("\n"));
 console.log("console errors / exceptions:", errors.length);
