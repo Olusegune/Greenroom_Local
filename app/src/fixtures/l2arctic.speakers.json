@@ -1,0 +1,31 @@
+{
+  "source": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/l2arctic/medium/en_US-l2arctic-medium.onnx.json",
+  "checked": "2026-11-10",
+  "note": "speaker_id_map only: which number the model gives each L2-ARCTIC speaker. Gender and native language are from the corpus documentation and were not checked here.",
+  "speakers": {
+    "0": "TXHC",
+    "1": "THV",
+    "2": "SVBI",
+    "3": "ZHAA",
+    "4": "PNV",
+    "5": "TLV",
+    "6": "ERMS",
+    "7": "MBMPS",
+    "8": "HQTV",
+    "9": "TNI",
+    "10": "ASI",
+    "11": "HJK",
+    "12": "LXC",
+    "13": "NCC",
+    "14": "YKWK",
+    "15": "YDCK",
+    "16": "HKK",
+    "17": "NJS",
+    "18": "YBAA",
+    "19": "RRBI",
+    "20": "BWC",
+    "21": "ABA",
+    "22": "EBVS",
+    "23": "SKA"
+  }
+}

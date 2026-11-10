@@ -1,0 +1,52 @@
+/* Casting: status chips, the casting panel, the voice review screen, the genre tiles. Loaded after presets.css, before polish.css. */
+
+/* ---- status chips: one colour per MatchStatus, always with a word, never colour alone -------------------------------- */
+.status-chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: var(--fs-xs); font-weight: 600; border: 1px solid var(--line-strong); background: var(--surface-3); color: var(--text); white-space: nowrap; }
+.status-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .85; }
+.status-chip.s-verified_match, .status-chip.s-fact-verified { border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 16%, var(--surface-2)); }
+.status-chip.s-compatible_with_limitations { border-color: color-mix(in srgb, #7dc4f0 50%, transparent); background: color-mix(in srgb, #7dc4f0 14%, var(--surface-2)); }
+.status-chip.s-needs_audition, .status-chip.s-fact-unverified { border-color: color-mix(in srgb, #f0c674 55%, transparent); background: color-mix(in srgb, #f0c674 14%, var(--surface-2)); }
+.status-chip.s-unknown_metadata, .status-chip.s-fact-unknown { border-style: dashed; }
+.status-chip.s-incompatible, .status-chip.s-unavailable { border-color: color-mix(in srgb, #ff8a80 55%, transparent); background: color-mix(in srgb, #ff8a80 13%, var(--surface-2)); }
+:root[data-theme="light"] .status-chip { color: #17251b; background: #eef3ef; }
+:root[data-theme="light"] .status-chip.s-verified_match, :root[data-theme="light"] .status-chip.s-fact-verified { background: #d9f0e2; }
+:root[data-theme="light"] .status-chip.s-needs_audition, :root[data-theme="light"] .status-chip.s-fact-unverified { background: #f8ecd0; }
+:root[data-theme="light"] .status-chip.s-compatible_with_limitations { background: #dcecf8; }
+:root[data-theme="light"] .status-chip.s-incompatible, :root[data-theme="light"] .status-chip.s-unavailable { background: #fadcd8; }
+
+/* ---- the casting panel on a character card ------------------------------------------------------------------------- */
+.casting-panel { border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s2); display: flex; flex-direction: column; gap: var(--s3); }
+.cast-req { border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--s3); display: flex; flex-direction: column; gap: var(--s2); }
+.cast-req legend { padding: 0 var(--s2); font-weight: 600; }
+.cast-cands { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); }
+.cast-cand { border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--r-card); padding: var(--s3); background: var(--surface-2); display: flex; flex-direction: column; gap: var(--s2); }
+.cast-cand.s-verified_match { border-left-color: var(--accent); }
+.cast-cand.s-compatible_with_limitations { border-left-color: #7dc4f0; }
+.cast-cand.s-needs_audition { border-left-color: #f0c674; }
+.cast-cand.s-unknown_metadata { border-left-style: dashed; }
+.cast-cand p { margin: 0; }
+.ruled-out .cast-cand { opacity: .85; }
+.cast-prop { border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--s3); }
+.cast-prop ul { margin: var(--s2) 0 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s2); }
+
+/* ---- the voice review screen -------------------------------------------------------------------------------------- */
+.review-grid { display: grid; grid-template-columns: minmax(240px, 320px) 1fr; gap: var(--s4); align-items: start; }
+.review-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); max-height: 70vh; overflow: auto; }
+.review-item { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: var(--s3); background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-card); }
+.review-item.sel { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
+.review-fact { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--line); padding-top: var(--s2); }
+.review-fact p { margin: 0; }
+@media (max-width: 760px) { .review-grid { grid-template-columns: 1fr; } .review-list { max-height: 30vh; } }
+
+/* ---- genre tiles: an icon, a tint and a count ---------------------------------------------------------------------- */
+.genre-tile { --g: 160; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; gap: var(--s3); min-height: 92px; padding: var(--s4); background: linear-gradient(135deg, hsl(var(--g) 62% 52% / .20), hsl(var(--g) 62% 52% / 0) 62%), var(--surface-2); border: 1px solid color-mix(in srgb, hsl(var(--g) 60% 55%) 28%, var(--line)); transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease; }
+.genre-tile:hover { transform: translateY(-2px); border-color: hsl(var(--g) 60% 58% / .7); box-shadow: 0 6px 18px hsl(var(--g) 60% 40% / .22); }
+.genre-tile:focus-visible { outline: 2px solid hsl(var(--g) 70% 65%); outline-offset: 2px; }
+.genre-tile::after { content: ""; position: absolute; right: -18px; bottom: -22px; width: 88px; height: 88px; border-radius: 50%; background: radial-gradient(closest-side, hsl(var(--g) 70% 55% / .22), transparent); pointer-events: none; }
+.genre-icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: hsl(var(--g) 78% 76%); background: hsl(var(--g) 60% 50% / .22); border: 1px solid hsl(var(--g) 60% 60% / .35); }
+.genre-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.genre-text strong { line-height: 1.2; }
+.genre-count { align-self: flex-start; padding: 1px 8px; border-radius: 999px; font-size: var(--fs-xs); background: hsl(var(--g) 60% 50% / .18); color: var(--text); }
+:root[data-theme="light"] .genre-icon { color: hsl(var(--g) 62% 26%); background: hsl(var(--g) 70% 60% / .30); }
+:root[data-theme="light"] .genre-tile { background: linear-gradient(135deg, hsl(var(--g) 70% 60% / .26), hsl(var(--g) 70% 60% / 0) 62%), var(--surface-2); }
+@media (prefers-reduced-motion: reduce) { .genre-tile, .genre-tile:hover { transition: none; transform: none; } }

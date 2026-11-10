@@ -13,6 +13,7 @@ import { TILES, tileByName } from "../languages";
 import { uid } from "../script";
 import { Empty, Note, PlayButton } from "../ui";
 import AutoCast from "./AutoCast";
+import CastingPanel from "./CastingPanel";
 import { useSample, voiceLine } from "../useSample";
 
 export default function Cast() {
@@ -117,6 +118,7 @@ export default function Cast() {
                   </select>
                 </span>
               </label>
+              <CastingPanel character={c} />
               <CharacterProfile character={c} voice={voice} save={(dna) => patch(c.id, { dna })} />
               {voice && first && <PlayButton label={`Hear ${c.name}'s first line`} get={() => sample(voice, first.text.replace(/\[[^\]]*\]/g, "").trim() || first.text)} />}
             </div>

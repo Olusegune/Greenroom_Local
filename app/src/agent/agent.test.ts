@@ -274,7 +274,7 @@ describe("running for real against a project (fake engine)", () => {
   });
   it("the cast step lists candidates for a character with nothing stated, invents nothing, and never overrides a choice", async () => {
     const s = setup();
-    s.project.characters = s.project.characters.map((c) => (c.id === "bob" ? { ...c, voiceId: undefined, casting: undefined, about: "a dry noir detective, he is sixty" } : c));
+    s.project.characters = s.project.characters.map((c) => (c.id === "bob" ? { ...c, voiceId: undefined, casting: undefined, about: "a dry noir detective" } : c));
     const r = await drive(plan({ mode: "autonomous" }, s.project), executors(s.env));
     expect(s.project.characters.find((c) => c.id === "ada")!.voiceId).toBe("eleven1");
     // Nothing STATED about Bob's voice (the description is not a requirement), so nothing is assigned and the person decides.

@@ -9,7 +9,7 @@ import { DEFAULT_ENGINES_CFG, DEFAULT_PRICES, type EnginesCfg } from "./engines"
 import { readProjectCasting } from "./casting/persist";
 import { estimateCost, spendLines, type SpendItem } from "./trust";
 
-export type Tab = "home" | "write" | "cast" | "perform" | "timeline" | "picture" | "export" | "studio" | "history" | "voices" | "presets" | "agent" | "models" | "engines" | "sfx" | "lab" | "settings" | "help";
+export type Tab = "home" | "write" | "cast" | "perform" | "timeline" | "picture" | "export" | "studio" | "history" | "voices" | "review" | "presets" | "agent" | "models" | "engines" | "sfx" | "lab" | "settings" | "help";
 
 export interface SpendAsk {
   title: string;

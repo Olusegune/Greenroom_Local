@@ -1,3 +1,4 @@
+import VoiceReview from "./screens/VoiceReview";
 import { useEffect, useRef, useState } from "react";
 import { api, inApp } from "./api";
 import { engineChip } from "./engineStatus";
@@ -106,7 +107,7 @@ function Shell() {
   const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem("greenroom-rail") === "collapsed"; } catch { return false; } });
   const toggleRail = () => setCollapsed((c) => { const next = !c; try { localStorage.setItem("greenroom-rail", next ? "collapsed" : "open"); } catch { /* not saved */ } return next; });
   const takes = project ? project.lines.filter((l) => l.takes.length > 0).length : 0;
-  const screens: Record<Tab, React.ReactNode> = { home: <Home />, write: <Write />, cast: <Cast />, perform: <Perform />, timeline: <Timeline />, picture: <PictureScreen />, export: <Export />, studio: <Studio />, history: <History />, voices: <Voices />, presets: <Presets />, agent: <AgentStudio />, models: <Models />, engines: <Engines />, sfx: <SfxStudio />, lab: <Lab />, settings: <Settings />, help: <Help /> };
+  const screens: Record<Tab, React.ReactNode> = { home: <Home />, write: <Write />, cast: <Cast />, perform: <Perform />, timeline: <Timeline />, picture: <PictureScreen />, export: <Export />, studio: <Studio />, history: <History />, voices: <Voices />, review: <VoiceReview />, presets: <Presets />, agent: <AgentStudio />, models: <Models />, engines: <Engines />, sfx: <SfxStudio />, lab: <Lab />, settings: <Settings />, help: <Help /> };
 
   return (
     <div className={collapsed ? "shell rail-collapsed" : "shell"}>
@@ -138,6 +139,7 @@ function Shell() {
           <Item id="timeline" label="Timeline" icon={<TimelineIcon size={18} />} />
         </>}
         <Item id="voices" label="Voices" icon={<VoicesIcon size={18} />} />
+        <Item id="review" label="Voice metadata" icon={<Speaker size={18} />} />
         <Item id="presets" label="Presets" icon={<Sparkle size={18} />} />
         <Item id="models" label="Model Center" icon={<Cube size={18} />} />
         <Item id="engines" label="Engines" icon={<Chip size={18} />} />

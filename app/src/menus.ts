@@ -63,6 +63,7 @@ export function buildMenus(a: MenuActions): MenuDef[] {
         { label: "Timeline", disabled: p, run: () => a.go("timeline") },
         { sep: true },
         { label: "Voice library", run: () => a.go("voices") },
+        { label: "Voice metadata", run: () => a.go("review") },
         { label: "Voice presets", run: () => a.go("presets") },
         { label: "Agent Studio", run: () => a.go("agent") },
         { label: "Model Center", run: () => a.go("models") },

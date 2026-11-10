@@ -89,6 +89,15 @@ export const VOICE_PACKS: VoicePack[] = [
 ];
 export const ALL_PIPER_ROLES: PiperRole[] = [...PIPER_ROLES, ...ACCENT_ROLES];
 
+/**
+ * The gender a voice's own DOCUMENTATION states, or "" when nothing documents it. Only the L2-ARCTIC speakers qualify: the corpus
+ * lists each speaker's gender. A Piper voice's first name is not documentation, so every other voice gets "" and is listened to.
+ */
+export function documentedGender(key: string): "female" | "male" | "" {
+  const r = ACCENT_ROLES.find((x) => x.key === key);
+  return r ? (r.use.startsWith("Woman") ? "female" : r.use.startsWith("Man") ? "male" : "") : "";
+}
+
 const WAZOBIA_NAMES = ["adaeze", "amara", "bolaji", "elder_deji", "emeka", "hauwa", "ife", "james", "john", "musa", "ngozi", "tunde", "wura"];
 const LANGS = [["en", "Nigerian English", "Nigerian"], ["yo", "Yoruba", "Yoruba"], ["ha", "Hausa", "Hausa"], ["ig", "Igbo", "Igbo"]] as const;
 const title = (v: string) => v.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");

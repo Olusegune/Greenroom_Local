@@ -1,5 +1,4 @@
 import { api, type PiperVoice } from "./api";
-import { genderWord } from "./avatarLibrary";
 import { CHATTERBOX_MODEL_ID, KOKORO_VOICES, QWEN_VOICES, type SetupStep } from "./setupPlan";
 import type { VoiceEntry } from "./types";
 
@@ -16,7 +15,7 @@ export async function execStep(s: SetupStep, ctx: { catalog: PiperVoice[]; saveL
     const st = await api.piperStatus();
     if (!st.voices.includes(s.key)) await api.piperInstallVoice(s.key);
     const meta = ctx.catalog.find((c) => c.key === s.key);
-    ctx.saveLibrary((l) => (l.some((x) => x.id === s.key && x.provider === "piper") ? l : [...l, { id: s.key!, name: meta?.name ?? s.label, provider: "piper", source: "library", language: meta?.language ?? "English", accent: meta?.country ?? "", gender: genderWord(s.key!), notes: "Added by Set up my PC", createdAt: now }]));
+    ctx.saveLibrary((l) => (l.some((x) => x.id === s.key && x.provider === "piper") ? l : [...l, { id: s.key!, name: meta?.name ?? s.label, provider: "piper", source: "library", language: meta?.language ?? "English", accent: meta?.country ?? "", gender: "", notes: "Added by Set up my PC", createdAt: now }]));
   } else if (s.kind === "chatterbox-runtime") {
     const st = await api.chatterboxRuntimeInstall();
     if (!st.installed) throw new Error(st.detail || "The Chatterbox runtime did not install.");

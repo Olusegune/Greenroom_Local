@@ -16,6 +16,7 @@ import { faceFor } from "../avatarLibrary";
 import { useAvatars } from "../avatarState";
 import { assignPresetFaces } from "../presets/portraits";
 import { useSample } from "../useSample";
+import { GENRE_HUE, GenreIcon } from "./genreArt";
 import { ageBandOf, isLocalVoice, pickStandIn } from "../localStandIn";
 import type { VoiceEntry } from "../types";
 
@@ -153,9 +154,12 @@ export default function Presets() {
           <h2>Start with a genre</h2>
           <div className="genre-grid">
             {GENRES.map((g) => (
-              <button key={g} className="genre-tile" onClick={() => setGenre(g)}>
-                <strong>{GENRE_LABEL[g]}</strong>
-                <span className="muted">{all.filter((p) => p.genre === g).length} presets</span>
+              <button key={g} className="genre-tile" style={{ "--g": GENRE_HUE[g] } as React.CSSProperties} onClick={() => setGenre(g)}>
+                <span className="genre-icon"><GenreIcon genre={g} /></span>
+                <span className="genre-text">
+                  <strong>{GENRE_LABEL[g]}</strong>
+                  <span className="genre-count">{all.filter((p) => p.genre === g).length} presets</span>
+                </span>
               </button>
             ))}
           </div>

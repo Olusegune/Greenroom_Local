@@ -6,6 +6,7 @@ import type { Engine } from "../engines";
 import { voicesFor } from "../presets/cast";
 import { STARTER_PRESETS, type VoicePreset } from "../presets";
 import { planCasting } from "../casting/autocast";
+import { extractStated } from "../casting/extract";
 import { assignVoice, isLocked } from "../casting/lock";
 import { requirementsOf, describeRequirements } from "../casting/requirements";
 import { STATUS_LABEL } from "../casting/types";
@@ -51,10 +52,20 @@ export function executors(env: Env): Executors {
     // invents a gender, age, language or accent, and it never writes a preset's guesses onto a character. It assigns a voice only
     // when the voice is PROVEN to fit; everything else is listed with reasons for the person to decide. A locked voice is never touched.
     async cast() {
+      // 1. Read what the script STATES about each character that has no requirements yet. Stated facts become requirements (with their
+      //    quotes in the notes); everything else becomes a question. Nothing is invented, and a nationality is never an accent.
+      const questions: string[] = [];
+      for (const c of speaking()) {
+        if (isLocked(c) || c.cast) continue;
+        const ex = extractStated(c.name, c.about);
+        questions.push(...ex.questions);
+        if (ex.stated.length) env.edit((pr) => ({ ...pr, characters: pr.characters.map((x) => (x.id === c.id && !x.cast && !isLocked(x) ? { ...x, cast: { version: 1 as const, ...ex.spec } } : x)) }));
+      }
       const p = env.project();
       const lib = env.library().filter((v) => !env.localOnly || ["piper", "chatterbox", "kokoro", "qwen", "wazobia", "local"].includes(v.provider));
       const sp = speaking();
       const plan = planCasting(sp, lib, { commercial: p.commercial === true });
+      const asks = questions.length ? `\nQuestions for you:\n${questions.join("\n")}` : "";
       const made: { character: string; voice: string; status: string }[] = [];
       for (const [characterId, voiceId] of Object.entries(plan.assign)) {
         const voice = lib.find((v) => v.id === voiceId)!;
@@ -71,8 +82,8 @@ export function executors(env: Env): Executors {
         decide.push(`${name(pr.characterId)}${req.empty ? " (nothing required is stated about their voice: tell me, or set it in Casting)" : ` (${stated.join("; ")})`} — ${pr.candidates.slice(0, 3).map((m) => `${p.characters.length ? (lib.find((v) => v.id === m.voiceId)?.name ?? m.voiceId) : m.voiceId} [${STATUS_LABEL[m.status]}]`).join(", ")}`);
       }
       for (const n of plan.none) decide.push(`${name(n.characterId)} — no voice in your library can be used: ${n.why}`);
-      if (decide.length) throw new Error(`The cast needs your decision. ${made.length ? `Assigned ${made.map((m) => `${m.character}: ${m.voice}`).join(", ")}. ` : ""}Choose a voice in Cast (or Voices), listen to it, then retry this step.\n${decide.join("\n")}`);
-      return { output: { cast: made, note: "Nothing is approved yet: the next step is yours." } };
+      if (decide.length) throw new Error(`The cast needs your decision. ${made.length ? `Assigned ${made.map((m) => `${m.character}: ${m.voice}`).join(", ")}. ` : ""}Choose a voice in Cast (or Voices), listen to it, then retry this step.\n${decide.join("\n")}${asks}`);
+      return { output: { cast: made, questions, note: "Nothing is approved yet: the next step is yours." } };
     },
 
     // The only step that locks voices, and it is always the person's: its gate is never automatic.
