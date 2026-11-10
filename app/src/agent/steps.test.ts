@@ -153,3 +153,34 @@ describe("the export step", () => {
     expect(exportStem("A".repeat(200)).length).toBe(60);
   });
 });
+
+describe("the quality step and speaker consistency", () => {
+  const withTakes = () => {
+    const p = scene();
+    p.lines = Array.from({ length: 4 }, (_, i) => ({ id: `l${i + 1}`, characterId: "ada", scene: 1, text: `Line number ${i + 1} is here.`, direction: dir, takes: [take(`t${i + 1}`)], chosen: `t${i + 1}`, events: [] }));
+    return { current: p };
+  };
+  const vec = (angle: number) => { const r = (angle * Math.PI) / 180; return [Math.cos(r), Math.sin(r), ...Array(254).fill(0)]; };
+  const qc = async (p: { current: Project }, over: Partial<Env> = {}) => {
+    const r = await runAll(plan(p.current), executors(env(p, { measure: async () => ({ peak: 0.5, silenceRatio: 0.1, seconds: 2, lufs: -20, clipRuns: 0 }), ...over })), now);
+    return r.nodes.find((n) => n.id === "qc")!.output as { findings: { kind: string; severity: string; text: string }[]; consistency: string };
+  };
+  it("flags a take that does not sound like the character's others, as 'listen' and never as a problem", async () => {
+    const p = withTakes();
+    const out = await qc(p, { embed: async () => ({ t1: vec(0), t2: vec(6), t3: vec(-5), t4: vec(80) }) });
+    const f = out.findings.filter((x) => x.kind === "consistency");
+    expect(f).toHaveLength(1);
+    expect(f[0]!.severity).toBe("listen");
+    expect(f[0]!.text).toMatch(/Ada: this take is unlike/);
+    expect(out.consistency).toBe("checked for 1 character");
+  });
+  it("finds nothing to flag when the takes measure as one speaker", async () => {
+    const out = await qc(withTakes(), { embed: async () => ({ t1: vec(0), t2: vec(6), t3: vec(-5), t4: vec(9) }) });
+    expect(out.findings.some((x) => x.kind === "consistency")).toBe(false);
+  });
+  it("says so plainly when the tool is missing or fails, instead of reporting everything fine", async () => {
+    expect((await qc(withTakes())).consistency).toMatch(/not checked/);
+    expect((await qc(withTakes(), { embed: async () => { throw new Error("not installed"); } })).consistency).toBe("not checked (the speaker tool is not installed)");
+    expect((await qc(withTakes(), { embed: async () => { throw new Error("boom"); } })).consistency).toBe("not checked (the speaker tool failed)");
+  });
+});

@@ -18,6 +18,7 @@ export interface ClipOut {
   mime: string;
   ms: number;
 }
+export interface QwenLockStatus { baseReady: boolean; gpu: boolean; gpuName: string; voices: { id: string; locked: boolean }[] }
 export interface Audio {
   audioB64: string;
   mime: string;
@@ -242,6 +243,17 @@ const real = {
   qwenRuntimeInstall: () => call<LocalRuntimeStatus>("qwen_runtime_install"),
   /** Runs one short line through Qwen3-TTS: downloads the model on first use and proves the chain works. */
   qwenPrefetch: () => call<LocalRuntimeStatus>("qwen_prefetch"),
+  /** Frees the warm Qwen3-TTS worker's memory. */
+  qwenUnload: () => call<boolean>("qwen_unload"),
+  qwenLockStatus: () => call<QwenLockStatus>("qwen_lock_status"),
+  qwenBaseDownload: () => call<QwenLockStatus>("qwen_base_download"),
+  qwenLockVoice: (voice: string) => call<QwenLockStatus>("qwen_lock_voice", { voice }),
+  qwenUnlockVoice: (voice: string) => call<QwenLockStatus>("qwen_unlock_voice", { voice }),
+  qwenGpuInstall: () => call<QwenLockStatus>("qwen_gpu_install"),
+  speakerStatus: () => call<{ ready: boolean; detail: string }>("speaker_status"),
+  speakerInstall: () => call<{ ready: boolean; detail: string }>("speaker_install"),
+  /** One speaker vector per take of a project (null when a take could not be read). */
+  speakerEmbed: (project: string, takes: string[]) => call<{ take: string; embedding: number[] | null }[]>("speaker_embed", { project, takes }),
   voiceConvert: (req: { sourceB64: string; sourceExt: string; targetB64: string; targetExt: string }) => call<ClipOut>("voice_convert", { req }),
   directorLocalStatus: () => call<LocalRuntimeStatus>("director_local_status"),
   directorLocalInstall: () => call<LocalRuntimeStatus>("director_local_install"),

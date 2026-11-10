@@ -22,6 +22,8 @@ models/
 !/runtime/sfx_once.py
 !/runtime/kokoro_once.py
 !/runtime/qwen_once.py
+!/runtime/qwen_server.py
+!/runtime/speaker_embed.py
 downloads/
 *.part
 
@@ -31,3 +33,5 @@ downloads/
 .env
 .env.*
 !.env.example
+
+!/runtime/qwen_fetch.py

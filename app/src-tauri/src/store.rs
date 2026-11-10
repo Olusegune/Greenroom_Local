@@ -122,6 +122,15 @@ pub fn take_write(root: &Path, project: &str, take: &str, ext: &str, bytes: &[u8
     atomic_write(&path, bytes)
 }
 
+/// The file of a take, if it exists. The id is checked, so a name from outside cannot point anywhere else.
+pub fn take_path(root: &Path, project: &str, take: &str) -> Result<PathBuf, String> {
+    if !valid_id(take) {
+        return Err(bad("take"));
+    }
+    let dir = project_dir(root, project)?.join("takes");
+    ["wav", "mp3", "ogg", "m4a", "flac", "aac"].iter().map(|e| dir.join(format!("{take}.{e}"))).find(|p| p.is_file()).ok_or_else(|| "That take is missing from the project folder.".to_string())
+}
+
 pub fn take_read(root: &Path, project: &str, take: &str) -> Result<Vec<u8>, String> {
     if !valid_id(take) {
         return Err(bad("take"));

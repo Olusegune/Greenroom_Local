@@ -2,12 +2,13 @@
 // engine could not play, voices that do not fit) and flags what only a person can judge for a listen. It never calls a
 // performance good or bad: "sounds unnatural" is the director's call.
 
+import { auditCasting } from "../casting/lock";
 import type { Project, VoiceEntry } from "../types";
 import { DEFAULT_MIX } from "../types";
 import { identityWarning, migrateDna } from "../voiceDna";
 
 export type Severity = "problem" | "listen" | "note";
-export interface Finding { severity: Severity; lineId?: string; kind: "missing" | "clipping" | "silence" | "timing" | "unsupported" | "assignment" | "rights" | "listen" | "loudness" | "ducking" | "sync"; text: string }
+export interface Finding { severity: Severity; lineId?: string; kind: "missing" | "clipping" | "silence" | "timing" | "unsupported" | "assignment" | "rights" | "listen" | "loudness" | "ducking" | "sync" | "consistency"; text: string }
 
 /** What was measured on a take, when it could be. Absent means not measured, which is reported, not assumed fine. */
 export interface Measured {
@@ -32,6 +33,8 @@ const words = (t: string) => t.replace(/\[[^\]]*\]/g, " ").split(/\s+/).filter((
 
 export function qualityCheck(project: Project, library: VoiceEntry[], measured: Record<string, Measured> = {}): Finding[] {
   const out: Finding[] = [];
+  // A chosen take made for another character, with another voice than the one approved, or whose approved voice is gone: the audio belongs to the wrong person.
+  for (const i of auditCasting(project.characters, project.lines, library)) if (i.kind !== "unstamped") out.push({ severity: i.severity === "problem" ? "problem" : "listen", lineId: i.lineId, kind: "assignment", text: i.text });
   for (const l of project.lines) {
     if (!l.text.trim()) continue;
     const c = project.characters.find((x) => x.id === l.characterId);

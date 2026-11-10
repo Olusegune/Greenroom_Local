@@ -67,6 +67,12 @@ export function agentEnv({ app, live }: { app: ReturnType<typeof useApp>; live: 
         sha256: sha256Hex,
       });
     },
+    async embed(takes) {
+      const st = await api.speakerStatus();
+      if (!st.ready) throw new Error("not installed");
+      const rows = await api.speakerEmbed(live.current!.id, takes);
+      return Object.fromEntries(rows.filter((r) => r.embedding).map((r) => [r.take, r.embedding!]));
+    },
     async measure(take): Promise<Measured | null> {
       const b = await takeBuffer(live.current!.id, take.id);
       const x = b.getChannelData(0);

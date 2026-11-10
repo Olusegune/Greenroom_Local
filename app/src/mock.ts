@@ -39,6 +39,9 @@ function demoLibrary(): VoiceEntry[] {
 let library: VoiceEntry[] = demoLibrary();
 const demoKokoro = { runtime: false, model: false };
 const demoQwen = { runtime: false, model: false };
+const demoSpeaker = { on: false };
+const demoQwenLock = { base: false, gpu: false, locked: new Set<string>() };
+const qwenLockDemo = () => ({ baseReady: demoQwenLock.base, gpu: demoQwenLock.gpu, gpuName: demoQwenLock.gpu ? "Demo graphics card" : "", voices: ["qwen-warm-narrator", "qwen-gravel-man", "qwen-bright-young-woman", "qwen-gentle-older-man"].map((id) => ({ id, locked: demoQwenLock.locked.has(id) })) });
 let casts: SavedCast[] = [];
 let sheetJson = "{}";
 const versions = new Map<string, { id: string; at: string; label: string; json: string }[]>();
@@ -218,6 +221,16 @@ export const mock: Api = {
   kokoroPrefetch: async () => { if (!demoKokoro.runtime) throw new Error("Install the Kokoro runtime first."); await wait(800); demoKokoro.model = true; return { installed: true, modelReady: true, detail: "Kokoro is ready: runtime installed and model downloaded." }; },
   qwenRuntimeStatus: async () => ({ installed: demoQwen.runtime, modelReady: demoQwen.model, detail: demoQwen.model ? "Qwen3-TTS is ready: runtime installed and model downloaded." : demoQwen.runtime ? "Runtime installed. Download the Qwen3-TTS model to enable speech." : "Install the Qwen3-TTS runtime to enable local speech." }),
   qwenRuntimeInstall: async () => (await wait(800), (demoQwen.runtime = true), { installed: true, modelReady: demoQwen.model, detail: "Runtime installed. Download the Qwen3-TTS model to enable speech." }),
+  qwenUnload: async () => false,
+  qwenLockStatus: async () => qwenLockDemo(),
+  qwenBaseDownload: async () => { demoQwenLock.base = true; return qwenLockDemo(); },
+  qwenLockVoice: async (voice: string) => { demoQwenLock.locked.add(voice); return qwenLockDemo(); },
+  qwenUnlockVoice: async (voice: string) => { demoQwenLock.locked.delete(voice); return qwenLockDemo(); },
+  qwenGpuInstall: async () => { demoQwenLock.gpu = true; return qwenLockDemo(); },
+  speakerStatus: async () => ({ ready: demoSpeaker.on, detail: demoSpeaker.on ? "Ready: Greenroom can measure whether a character's takes sound like one speaker." : "Not installed. It is a small download (about 100 MB)." }),
+  speakerInstall: async () => (await wait(800), (demoSpeaker.on = true), { ready: true, detail: "Ready: Greenroom can measure whether a character's takes sound like one speaker." }),
+  // Demo only: a fixed vector per take id, with one take that sounds like someone else, so the screen and the agent can be exercised.
+  speakerEmbed: async (_project: string, takes: string[]) => (await wait(300), takes.map((t, i) => ({ take: t, embedding: Array.from({ length: 256 }, (_, k) => (k === 0 ? 1 : k === 1 ? (i === 3 ? 4 : 0.05 * ((i * 7) % 5)) : 0.01 * (((k + i) * 13) % 7)) as number) }))),
   qwenPrefetch: async () => { if (!demoQwen.runtime) throw new Error("Install the Qwen3-TTS runtime first."); await wait(800); demoQwen.model = true; return { installed: true, modelReady: true, detail: "Qwen3-TTS is ready: runtime installed and model downloaded." }; },
   voiceConvert: async () => { await wait(1500); return { audioB64: tone(4, 330), mime: "audio/wav", ms: 1500 }; },
   directorLocalStatus: async () => ({ installed: demoDirector.on, modelReady: demoDirector.on, detail: demoDirector.on ? "Ready. The Director runs on this computer." : "Install the local director: a 38 MB engine and a 2.5 GB model." }),

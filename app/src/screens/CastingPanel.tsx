@@ -11,6 +11,7 @@ import { profileOf } from "../casting/voiceProfile";
 import type { Character, VoiceEntry } from "../types";
 import { PlayButton } from "../ui";
 import IntegrityCard, { IntegrityTable } from "./IntegrityCard";
+import ConsistencyCheck from "./ConsistencyCheck";
 import { integrityOf } from "../casting/integrity";
 import { useSample } from "../useSample";
 
@@ -98,6 +99,7 @@ export default function CastingPanel({ character }: { character: Character }) {
         </span>
       </div>
       {current && <IntegrityCard character={character} voice={current} context={ctx} />}
+      <ConsistencyCheck character={character} />
       {open && (
         <div className="stack">
           <fieldset className="cast-req">

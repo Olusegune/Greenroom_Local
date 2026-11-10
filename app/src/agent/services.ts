@@ -17,7 +17,8 @@ import { MAX_SOUNDS } from "./plan";
 import { auditionPlan } from "../presets/audition";
 import type { Executors } from "./graph";
 import { settingsFrom, type Interpretation } from "./brief";
-import { linesToRemake, qualityCheck, summarize, type Measured } from "./quality";
+import { linesToRemake, qualityCheck, summarize, type Finding, type Measured } from "./quality";
+import { consistencyOf, type TakeVector } from "../casting/consistency";
 
 export interface Env {
   project: () => Project;
@@ -34,6 +35,8 @@ export interface Env {
   portraitFor?: (presetId: string) => string | undefined;
   /** Makes one sound clip (a cloud call unless the sound engine is local). The caller has already checked the limit. */
   makeSound?: (prompt: string, seconds: number) => Promise<{ take: NonNullable<Line["events"][number]["take"]>; spent: number }>;
+  /** One speaker vector per take (project id, take ids), when the speaker tool is installed. Absent or failing means consistency was not checked, and the report says so. */
+  embed?: (take: string[]) => Promise<Record<string, number[]>>;
   /** Mixes and writes the full scene. Only ever called after the person has approved delivery. */
   exportScene?: (project: Project) => Promise<SceneExport>;
 }
@@ -147,8 +150,26 @@ export function executors(env: Env): Executors {
       const p = env.project();
       const m: Record<string, Measured> = {};
       for (const l of p.lines) for (const t of l.takes) { const x = await env.measure(t).catch(() => null); if (x) m[t.id] = x; }
-      const findings = qualityCheck(p, env.library(), m);
-      return { output: { ...summarize(findings), findings, remake: linesToRemake(findings) } };
+      const findings: Finding[] = qualityCheck(p, env.library(), m);
+      // Do each character's chosen takes sound like one speaker? Measured with a speaker encoder; flagged takes are "listen", never "problem":
+      // the measure finds voices that differ, it cannot say which one you want.
+      let checked: string = "not checked (the speaker tool is not installed)";
+      if (env.embed) {
+        try {
+          const chosen = p.lines.filter((l) => l.text.trim() && l.chosen).map((l) => ({ l, t: l.takes.find((x) => x.id === l.chosen)! })).filter((x) => x.t);
+          const vecs = await env.embed(chosen.map((x) => x.t.id));
+          let groups = 0;
+          for (const c of p.characters) {
+            const mine: TakeVector[] = chosen.filter((x) => x.l.characterId === c.id && vecs[x.t.id]).map((x) => ({ takeId: x.t.id, lineId: x.l.id, embedding: vecs[x.t.id]! }));
+            const r = consistencyOf(mine);
+            if (r.verdict === "not_enough") continue;
+            groups++;
+            for (const t of r.takes.filter((x) => x.verdict !== "consistent")) findings.push({ severity: "listen", lineId: t.lineId, kind: "consistency", text: `${c.name}: this take is ${t.verdict === "different" ? "unlike" : "less like"} the character's other takes (similarity ${t.similarity.toFixed(2)}). Listen: the voice may have drifted.` });
+          }
+          checked = groups ? `checked for ${groups} character${groups === 1 ? "" : "s"}` : "nothing to compare (needs two takes of a character)";
+        } catch (e) { checked = /not installed/.test((e as Error).message) ? "not checked (the speaker tool is not installed)" : "not checked (the speaker tool failed)"; }
+      }
+      return { output: { ...summarize(findings), findings, remake: linesToRemake(findings), consistency: checked } };
     },
 
     async sound(node) {

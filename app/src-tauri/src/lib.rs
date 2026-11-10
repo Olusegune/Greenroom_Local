@@ -12,6 +12,8 @@ mod managed_python;
 mod mux;
 mod net;
 mod script_import;
+mod qwen_warm;
+mod speaker;
 mod setup_check;
 mod store;
 mod video;
@@ -524,6 +526,10 @@ const QWEN_PACKAGE: &str = "qwen-tts==0.1.1";
 const QWEN_CHECK: &str = "from qwen_tts import Qwen3TTSModel; import torch";
 /// The VoiceDesign checkpoint named in the QwenLM/Qwen3-TTS README (Apache-2.0), checked 2026-11-09.
 const QWEN_MODEL: &str = "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign";
+/// The Base checkpoint (same README, Apache-2.0). It copies the voice of a reference clip, which is what keeps one voice steady across lines.
+const QWEN_BASE: &str = "Qwen/Qwen3-TTS-12Hz-1.7B-Base";
+/// What every reference clip says. A fixed, ordinary sentence of about seven seconds.
+const QWEN_REFERENCE_TEXT: &str = "Good evening. I do hope you are well, and I am glad that you could come.";
 
 /// VoiceDesign has no fixed voices: each is a written description of one. These are the built-in ones. Greenroom's
 /// ids are the keys; anything else is refused before a process starts.
@@ -537,9 +543,21 @@ fn qwen_voice_description(id: &str) -> Option<&'static str> {
     })
 }
 
+/// A fixed seed for each built-in voice, so the same line in the same voice comes out the same. It does not make different lines sound
+/// like one person: that needs a reference clip (docs/QWEN_STABILITY.md).
+fn qwen_seed(voice: &str) -> u32 {
+    let mut h: u32 = 2166136261;
+    for b in voice.bytes() { h ^= b as u32; h = h.wrapping_mul(16777619); }
+    (h % 2_000_000_000) + 1
+}
+
 fn qwen_dir(root: &std::path::Path) -> PathBuf { root.join("runtime").join("qwen-managed") }
 fn qwen_python(root: &std::path::Path) -> PathBuf { qwen_dir(root).join("python.exe") }
 fn qwen_weights_marker(root: &std::path::Path) -> PathBuf { qwen_dir(root).join("weights-ok") }
+fn qwen_base_marker(root: &std::path::Path) -> PathBuf { qwen_dir(root).join("base-ok") }
+fn qwen_ref_wav(root: &std::path::Path, voice: &str) -> PathBuf { qwen_dir(root).join("refs").join(format!("{voice}.wav")) }
+/// A voice is locked when its reference clip exists and the Base model is on this PC: every line then copies that one clip's voice.
+fn qwen_locked(root: &std::path::Path, voice: &str) -> bool { qwen_voice_description(voice).is_some() && qwen_base_marker(root).is_file() && qwen_ref_wav(root, voice).is_file() }
 
 fn qwen_speak(root: &std::path::Path, text: &str, voice: &str) -> Result<Vec<u8>, String> {
     use std::io::Write;
@@ -549,6 +567,24 @@ fn qwen_speak(root: &std::path::Path, text: &str, voice: &str) -> Result<Vec<u8>
     if text.chars().count() > 600 { return Err("Qwen3-TTS supports up to 600 characters per line here.".into()); }
     let python = qwen_python(root);
     if !python.is_file() { return Err("The Qwen3-TTS runtime is not installed on this computer yet. Install it in Model Center.".into()); }
+    // Once the model is on this PC the warm worker keeps it loaded between lines: only the first line pays the load. Before that
+    // (the first download) the one-shot worker below does the downloading. If the warm worker cannot start, the one-shot still works.
+    if qwen_weights_marker(root).is_file() {
+        let request = if qwen_locked(root, voice) {
+            serde_json::json!({"op": "clone", "text": text, "language": "English", "base_model": QWEN_BASE, "ref_path": qwen_ref_wav(root, voice), "ref_text": QWEN_REFERENCE_TEXT, "seed": qwen_seed(voice)})
+        } else {
+            serde_json::json!({"op": "design", "text": text, "instruct": instruct, "language": "English", "model": QWEN_MODEL, "seed": qwen_seed(voice)})
+        };
+        let log = setup_check::log_path(root).with_file_name("qwen-server.log");
+        match qwen_warm::speak(&python, include_str!("../../../runtime/qwen_server.py"), &qwen_dir(root).join("hf"), &log, &request, std::time::Duration::from_secs(1500)) {
+            Ok(done) => {
+                setup_check::append_log(root, &format!("qwen warm line: {} in {:.1}s", done.device, done.seconds));
+                return Ok(done.wav);
+            }
+            Err(e) if e.starts_with("Could not start") => setup_check::append_log(root, &format!("qwen warm worker unavailable, using the one-shot worker: {e}")),
+            Err(e) => return Err(e),
+        }
+    }
     let _guard = GENERATION.lock().map_err(|_| "Qwen3-TTS is unavailable. Restart Greenroom and try again.")?;
     let mut cmd = Command::new(python);
     cmd.args(["-c", include_str!("../../../runtime/qwen_once.py")]).env("HF_HOME", qwen_dir(root).join("hf")).env("HF_HUB_DOWNLOAD_TIMEOUT", "60").stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
@@ -568,7 +604,7 @@ fn qwen_speak(root: &std::path::Path, text: &str, voice: &str) -> Result<Vec<u8>
 fn qwen_status(root: &std::path::Path) -> LocalRuntimeStatus {
     let mut s = managed_runtime_status(root, "qwen", QWEN_CHECK);
     s.model_ready = s.installed && qwen_weights_marker(root).is_file();
-    s.detail = if s.model_ready { "Qwen3-TTS is ready: runtime installed and model downloaded.".into() } else if s.installed { "Runtime installed. Download the Qwen3-TTS model to enable speech.".into() } else { "Install the Qwen3-TTS runtime to enable local speech.".into() };
+    s.detail = if s.model_ready { if qwen_warm::running() { "Qwen3-TTS is ready and loaded in memory (later lines are fast; it frees itself after 15 idle minutes).".into() } else { "Qwen3-TTS is ready: runtime installed and model downloaded.".into() } } else if s.installed { "Runtime installed. Download the Qwen3-TTS model to enable speech.".into() } else { "Install the Qwen3-TTS runtime to enable local speech.".into() };
     s
 }
 
@@ -580,6 +616,157 @@ fn qwen_prefetch_blocking(root: &std::path::Path) -> Result<LocalRuntimeStatus, 
     crate::store::atomic_write(&qwen_weights_marker(root), QWEN_MODEL.as_bytes())?;
     Ok(qwen_status(root))
 }
+
+// ---- Speaker similarity -------------------------------------------------------------------------------------------
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SpeakerStatus { ready: bool, detail: String }
+
+fn speaker_status_of(root: &std::path::Path) -> SpeakerStatus {
+    match speaker::find_python(root) {
+        Some(_) => SpeakerStatus { ready: true, detail: "Ready: Greenroom can measure whether a character's takes sound like one speaker.".into() },
+        None => SpeakerStatus { ready: false, detail: "Not installed. It is a small download (about 100 MB, plus PyTorch if no local voice runtime is installed yet).".into() },
+    }
+}
+
+#[tauri::command]
+async fn speaker_status(app: tauri::AppHandle) -> Result<SpeakerStatus, String> { let docs = root(&app)?; blocking(move || Ok(speaker_status_of(&docs))).await }
+
+/// Installs the encoder into its own private runtime (only needed when neither the Kokoro nor the Qwen runtime already has it).
+#[tauri::command]
+async fn speaker_install(app: tauri::AppHandle) -> Result<SpeakerStatus, String> {
+    let docs = root(&app)?;
+    blocking(move || {
+        static SETUP: Mutex<()> = Mutex::new(());
+        let _guard = SETUP.lock().map_err(|_| "Setup is unavailable. Restart Greenroom and try again.")?;
+        if speaker::find_python(&docs).is_some() { return Ok(speaker_status_of(&docs)); }
+        if !cfg!(all(target_os = "windows", target_arch = "x86_64")) { return Err("The speaker tool currently supports Windows x64.".into()); }
+        let dir = docs.join("runtime").join("speaker-managed");
+        let python = managed_python::bootstrap(&dir)?;
+        let program = python.to_string_lossy();
+        let pip = |args: &[&str], label: &str| -> Result<(), String> { let mut a = vec!["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input"]; a.extend_from_slice(args); run_setup_command(&program, &a, label) };
+        pip(&["--only-binary=:all:", "--index-url", "https://download.pytorch.org/whl/cpu", "torch==2.6.0"], "the speaker tool's PyTorch installer")?;
+        pip(&["--only-binary=:all:", "setuptools<81", "wheel"], "the build tools installer")?;
+        pip(&["--only-binary=:all:", "webrtcvad-wheels", "librosa", "scipy", "numpy"], "the speaker tool's audio packages")?;
+        pip(&["--no-deps", "resemblyzer"], "the speaker encoder installer")?;
+        if !command_ok(&python, &["-c", speaker::CHECK]) { return Err("The speaker tool installed but could not be verified. Try again.".into()); }
+        Ok(speaker_status_of(&docs))
+    }).await
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TakeEmbedding { take: String, embedding: Option<Vec<f32>> }
+
+/// One speaker vector per take of a project. Nothing is written and nothing leaves the computer.
+#[tauri::command]
+async fn speaker_embed(app: tauri::AppHandle, project: String, takes: Vec<String>) -> Result<Vec<TakeEmbedding>, String> {
+    let docs = root(&app)?;
+    blocking(move || {
+        let python = speaker::find_python(&docs).ok_or("The speaker tool is not installed. Install it in Model Center.")?;
+        let paths = takes.iter().map(|t| store::take_path(&docs, &project, t)).collect::<Result<Vec<_>, _>>()?;
+        let out = speaker::embed(&python, &paths)?;
+        Ok(takes.into_iter().zip(out).map(|(take, embedding)| TakeEmbedding { take, embedding }).collect())
+    }).await
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct QwenLockStatus { base_ready: bool, gpu: bool, gpu_name: String, voices: Vec<QwenVoiceLock> }
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct QwenVoiceLock { id: String, locked: bool }
+
+const QWEN_VOICE_IDS: [&str; 4] = ["qwen-warm-narrator", "qwen-gravel-man", "qwen-bright-young-woman", "qwen-gentle-older-man"];
+
+/// Whether PyTorch inside the Qwen runtime can see a graphics card, and its name.
+fn qwen_gpu_probe(root: &std::path::Path) -> (bool, String) {
+    let python = qwen_python(root);
+    if !python.is_file() { return (false, String::new()); }
+    let out = hidden_command(&python).args(["-c", "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else '')"]).output();
+    match out {
+        Ok(o) if o.status.success() => { let t = String::from_utf8_lossy(&o.stdout).to_string(); let mut l = t.lines(); (l.next() == Some("True"), l.next().unwrap_or("").trim().to_string()) }
+        _ => (false, String::new()),
+    }
+}
+
+fn qwen_lock_status_of(root: &std::path::Path) -> QwenLockStatus {
+    let (gpu, gpu_name) = qwen_gpu_probe(root);
+    QwenLockStatus { base_ready: qwen_base_marker(root).is_file(), gpu, gpu_name, voices: QWEN_VOICE_IDS.iter().map(|v| QwenVoiceLock { id: (*v).to_string(), locked: qwen_locked(root, v) }).collect() }
+}
+
+#[tauri::command]
+async fn qwen_lock_status(app: tauri::AppHandle) -> Result<QwenLockStatus, String> { let docs = root(&app)?; blocking(move || Ok(qwen_lock_status_of(&docs))).await }
+
+/// Downloads the Base model (about 4 GB) so a voice can be locked to a reference clip. Survives stalls and resumes.
+fn qwen_base_download_blocking(docs: &std::path::Path) -> Result<QwenLockStatus, String> {
+        static SETUP: Mutex<()> = Mutex::new(());
+        let _guard = SETUP.lock().map_err(|_| "Setup is unavailable. Restart Greenroom and try again.")?;
+        let python = qwen_python(docs);
+        if !python.is_file() { return Err("Install the Qwen3-TTS runtime first.".into()); }
+        let out = hidden_command(&python).args(["-c", include_str!("../../../runtime/qwen_fetch.py"), QWEN_BASE]).env("HF_HOME", qwen_dir(docs).join("hf")).env("HF_HUB_DOWNLOAD_TIMEOUT", "60").output().map_err(|_| "Could not start the model download.")?;
+        if !out.status.success() {
+            let why = setup_check::why(&String::from_utf8_lossy(&out.stderr));
+            setup_check::append_log(docs, &format!("qwen base download failed: {why}"));
+            return Err(format!("The Base model did not finish downloading. It picks up where it stopped when you try again. {why}"));
+        }
+        store::atomic_write(&qwen_base_marker(docs), QWEN_BASE.as_bytes())?;
+        Ok(qwen_lock_status_of(docs))
+}
+
+#[tauri::command]
+async fn qwen_base_download(app: tauri::AppHandle) -> Result<QwenLockStatus, String> { let docs = root(&app)?; blocking(move || qwen_base_download_blocking(&docs)).await }
+
+/// Makes the reference clip for one built-in voice (VoiceDesign speaks the fixed sentence once) and keeps it. From then on the voice
+/// copies this one clip for every line. Needs the Base model on this PC.
+fn qwen_lock_voice_blocking(docs: &std::path::Path, voice: &str) -> Result<QwenLockStatus, String> {
+        let instruct = qwen_voice_description(voice).ok_or("That Qwen voice is not available.")?;
+        if !qwen_base_marker(docs).is_file() { return Err("Download the Base model first.".into()); }
+        let python = qwen_python(docs);
+        let request = serde_json::json!({"op": "reference", "text": QWEN_REFERENCE_TEXT, "instruct": instruct, "language": "English", "model": QWEN_MODEL, "seed": qwen_seed(voice)});
+        let log = setup_check::log_path(docs).with_file_name("qwen-server.log");
+        let done = qwen_warm::speak(&python, include_str!("../../../runtime/qwen_server.py"), &qwen_dir(docs).join("hf"), &log, &request, std::time::Duration::from_secs(1500))?;
+        if done.wav.len() < 20_000 { return Err("The reference clip came back almost empty. Try again.".into()); }
+        store::atomic_write(&qwen_ref_wav(docs, voice), &done.wav)?;
+        setup_check::append_log(docs, &format!("qwen reference clip made for {voice} on {} in {:.1}s", done.device, done.seconds));
+        Ok(qwen_lock_status_of(docs))
+}
+
+#[tauri::command]
+async fn qwen_lock_voice(app: tauri::AppHandle, voice: String) -> Result<QwenLockStatus, String> { let docs = root(&app)?; blocking(move || qwen_lock_voice_blocking(&docs, &voice)).await }
+
+/// Takes the lock off one voice: it returns to being designed from its description on every line.
+fn qwen_unlock_voice_blocking(docs: &std::path::Path, voice: &str) -> Result<QwenLockStatus, String> {
+        qwen_voice_description(voice).ok_or("That Qwen voice is not available.")?;
+        let _ = std::fs::remove_file(qwen_ref_wav(docs, voice));
+        Ok(qwen_lock_status_of(docs))
+}
+
+#[tauri::command]
+async fn qwen_unlock_voice(app: tauri::AppHandle, voice: String) -> Result<QwenLockStatus, String> { let docs = root(&app)?; blocking(move || qwen_unlock_voice_blocking(&docs, &voice)).await }
+
+/// Replaces the CPU build of PyTorch inside the Qwen runtime with a CUDA build so a graphics card can run Qwen3-TTS.
+fn qwen_gpu_install_blocking(docs: &std::path::Path) -> Result<QwenLockStatus, String> {
+        static SETUP: Mutex<()> = Mutex::new(());
+        let _guard = SETUP.lock().map_err(|_| "Setup is unavailable. Restart Greenroom and try again.")?;
+        let python = qwen_python(docs);
+        if !python.is_file() { return Err("Install the Qwen3-TTS runtime first.".into()); }
+        qwen_warm::stop();
+        let program = python.to_string_lossy();
+        run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--only-binary=:all:", "--force-reinstall", "--no-deps", "--index-url", "https://download.pytorch.org/whl/cu124", "torch==2.6.0", "torchaudio==2.6.0"], "the graphics-card PyTorch installer")?;
+        let st = qwen_lock_status_of(docs);
+        setup_check::append_log(docs, &format!("qwen gpu install finished: cuda available = {} {}", st.gpu, st.gpu_name));
+        if !st.gpu { return Err("The graphics-card PyTorch installed but cannot see a graphics card. Qwen3-TTS keeps running on the processor.".into()); }
+        Ok(st)
+}
+
+#[tauri::command]
+async fn qwen_gpu_install(app: tauri::AppHandle) -> Result<QwenLockStatus, String> { let docs = root(&app)?; blocking(move || qwen_gpu_install_blocking(&docs)).await }
+
+/// Frees the warm Qwen3-TTS worker's memory. The next line starts it again.
+#[tauri::command]
+async fn qwen_unload() -> Result<bool, String> { blocking(|| Ok(qwen_warm::stop())).await }
 
 #[tauri::command]
 async fn qwen_prefetch(app: tauri::AppHandle) -> Result<LocalRuntimeStatus, String> { let docs = root(&app)?; blocking(move || qwen_prefetch_blocking(&docs)).await }
@@ -1948,7 +2135,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, setup_check, setup_report, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
+            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_base_download, qwen_lock_voice, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
         ])
         .build(tauri::generate_context!())
         .expect("error while building Greenroom")
@@ -2010,6 +2197,89 @@ mod qwen_tests {
         assert!(qwen_speak(&tmp, "hi", "qwen-warm-narrator").unwrap_err().contains("not installed"));
         assert!(qwen_speak(&tmp, &"x".repeat(601), "qwen-warm-narrator").unwrap_err().contains("600"));
     }
+    /// Real: GPU check, Base model download, reference clips, locked lines. Downloads several GB, so it only runs when asked.
+    #[test]
+    #[ignore]
+    fn real_qwen_gpu_and_lock() {
+        let root = PathBuf::from(std::env::var("GREENROOM_REAL_ROOT").expect("GREENROOM_REAL_ROOT"));
+        let out = PathBuf::from(std::env::var("GREENROOM_REAL_OUT").expect("GREENROOM_REAL_OUT"));
+        std::fs::create_dir_all(&out).unwrap();
+        let step = std::env::var("GREENROOM_STEP").unwrap_or_default();
+        if step == "gpu" {
+            let t = std::time::Instant::now();
+            let st = qwen_gpu_install_blocking(&root).expect("gpu install");
+            println!("gpu install {:?}: gpu={} {}", t.elapsed(), st.gpu, st.gpu_name);
+        }
+        if step == "base" {
+            let t = std::time::Instant::now();
+            let st = qwen_base_download_blocking(&root).expect("base download");
+            println!("base download {:?}: ready={}", t.elapsed(), st.base_ready);
+        }
+        if step == "lock" {
+            for v in ["qwen-warm-narrator", "qwen-gravel-man"] {
+                let t = std::time::Instant::now();
+                let st = qwen_lock_voice_blocking(&root, v).expect("lock");
+                println!("locked {v} in {:?}: {:?}", t.elapsed(), st.voices.iter().map(|x| (x.id.clone(), x.locked)).collect::<Vec<_>>());
+            }
+        }
+        if step == "speak" {
+            let texts = ["Good evening. I do hope you are well.", "Your soul is overdue.", "Nobody leaves this room until I say so.", "It was a quiet morning in the harbour town.", "Please state your name and your purpose here.", "I have seen this before, and it never ends well."];
+            let tag = std::env::var("GREENROOM_TAG").unwrap_or("locked".into());
+            for (name, v) in [("warm", "qwen-warm-narrator"), ("gravel", "qwen-gravel-man")] {
+                for (i, t) in texts.iter().enumerate() {
+                    let t0 = std::time::Instant::now();
+                    let wav = qwen_speak(&root, t, v).expect(v);
+                    std::fs::write(out.join(format!("qwen{tag}_{name}_{i}.wav")), &wav).unwrap();
+                    println!("{v} line {i}: {:?} (locked: {})", t0.elapsed(), qwen_locked(&root, v));
+                }
+            }
+            qwen_warm::stop();
+        }
+    }
+
+    #[test]
+    fn a_voice_is_locked_only_with_the_base_model_and_its_reference_clip() {
+        let tmp = std::env::temp_dir().join(format!("gr-qwen-lock-{}", std::process::id()));
+        std::fs::create_dir_all(qwen_dir(&tmp).join("refs")).unwrap();
+        assert!(!qwen_locked(&tmp, "qwen-gravel-man"));
+        std::fs::write(qwen_ref_wav(&tmp, "qwen-gravel-man"), b"RIFF").unwrap();
+        assert!(!qwen_locked(&tmp, "qwen-gravel-man"), "no Base model yet");
+        std::fs::write(qwen_base_marker(&tmp), b"x").unwrap();
+        assert!(qwen_locked(&tmp, "qwen-gravel-man"));
+        assert!(!qwen_locked(&tmp, "qwen-warm-narrator"), "another voice has no clip");
+        assert!(!qwen_locked(&tmp, "../evil"), "only built-in voices can be locked");
+        std::fs::remove_dir_all(&tmp).ok();
+    }
+
+    #[test]
+    fn every_built_in_voice_can_be_listed_and_locked() {
+        for v in QWEN_VOICE_IDS { assert!(qwen_voice_description(v).is_some(), "{v}"); }
+    }
+
+    #[test]
+    fn each_voice_has_its_own_fixed_seed() {
+        assert_eq!(qwen_seed("qwen-warm-narrator"), qwen_seed("qwen-warm-narrator"));
+        assert_ne!(qwen_seed("qwen-warm-narrator"), qwen_seed("qwen-gravel-man"));
+        assert!(qwen_seed("") >= 1);
+    }
+
+    /// The warm worker against the real model: the second line must not pay the load again. Only runs when asked.
+    #[test]
+    #[ignore]
+    fn real_qwen_warm_second_line_is_faster() {
+        let root = PathBuf::from(std::env::var("GREENROOM_REAL_ROOT").expect("GREENROOM_REAL_ROOT"));
+        let t1 = std::time::Instant::now();
+        let a = qwen_speak(&root, "Good evening. I do hope you are well.", "qwen-gravel-man").expect("first");
+        let first = t1.elapsed();
+        let t2 = std::time::Instant::now();
+        let b = qwen_speak(&root, "Good evening. I do hope you are well.", "qwen-gravel-man").expect("second");
+        let second = t2.elapsed();
+        println!("first {first:?}, second {second:?}, same bytes with the same seed: {}", a == b);
+        assert!(qwen_warm::running());
+        assert!(qwen_warm::stop());
+        assert!(second < first, "the second line should be faster than the first");
+    }
+
     #[test]
     fn the_runtime_check_uses_the_documented_class_name() {
         assert!(QWEN_CHECK.contains("Qwen3TTSModel"));
