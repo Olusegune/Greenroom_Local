@@ -7,10 +7,10 @@ const m = (id: string) => MODEL_CATALOG.find((x) => x.id === id)!;
 
 describe("model status", () => {
   it("never calls a model Ready unless Greenroom can use it", () => {
-    // Qwen3-TTS has a route now, but is Installed, not Ready, until someone has heard it work.
+    // Qwen3-TTS is Ready: its worker made valid audio on a real PC (2026-11-09, also with no internet), and the in-app setup
+    // test line passed on the owner's PC. Whether it SOUNDS good is the owner's call and is not claimed here.
     const q = modelStatus(m("qwen3-tts-17b"), "installed", true, hw);
-    expect(q.status).toBe("installed");
-    expect(q.detail).toMatch(/not marked Ready/);
+    expect(q.status).toBe("ready");
     expect(modelStatus(m("qwen3-tts-17b"), "available", true, hw).status).toBe("download-required");
     // Kokoro has a route but has never run on a real install: it is Installed, not Ready, until someone has heard it work.
     const k = modelStatus(m("kokoro-82m"), "installed", true, hw);

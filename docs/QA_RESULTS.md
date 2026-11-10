@@ -70,3 +70,10 @@ Each demo was also re-read from disk: every character has a library voice, a pro
 - **Perform line card decluttered:** quick styles fold away, summary boxes became pills showing only what is set, presets and sliders in one row, Compare takes next to Another take, shorter notices.
 - **Checks:** 971 JavaScript tests, 129 Rust tests (3 ignored), clippy clean, `rafter secrets` clean, `npm audit` 0 vulnerabilities, `cargo audit` 6 allowed warnings (unchanged). `rafter run` was not run (out of quota).
 - **Not checked:** the installed app was not clicked through; the in-app Qwen Set up button was not pressed (the worker was tested directly with the app's runtime); Inworld not tried with a real account; the Perform layout was type-checked but not viewed; nothing judged by ear; installers unsigned.
+
+## 0.12.6 (2026-11-09)
+
+- **Kokoro would not install** ("metadata-generation-failed", seen in the owner's screenshot and in `logs\setup.log`, three times): Kokoro needs `docopt`, a source-only package whose legacy `setup.py` cannot run inside the embedded Python. The package installer step now passes `--use-pep517`. Verified on the owner's Kokoro runtime: `docopt` fails to build without the flag and builds with it, and the full `kokoro==0.9.4` resolve got past metadata into installing (stopped only by a file locked by the running app). Kokoro was not completed or heard end to end.
+- **Qwen3-TTS is now marked Ready** in Model Center: the in-app setup (runtime, model and test line, voices) completed on the owner's PC, and the worker was tested directly (valid audio, also offline). Not heard by ear.
+- Unrelated: the "Credential Pool Status" console window seen during setup is the Hermes tool's `hermes auth` menu, not Greenroom.
+- Tests: 971 JavaScript passed (1 skipped); clippy clean and 129 Rust tests passed on the code before the one-line installer change.

@@ -268,7 +268,7 @@ fn setup_managed_runtime(root: &std::path::Path, name: &str, package: &str, impo
     run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--only-binary=:all:", "--index-url", "https://download.pytorch.org/whl/cpu", "torch==2.6.0", "torchaudio==2.6.0"], "the CPU speech runtime installer")?;
     // Some dependencies (Qwen3-TTS has one) are built from source and need setuptools, which the embedded Python lacks. Found in a real run.
     run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--only-binary=:all:", "setuptools<81", "wheel"], "the build tools installer")?;
-    run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", package], "the local speech package installer")?;
+    run_setup_command(&program, &["-m", "pip", "--isolated", "install", "--disable-pip-version-check", "--no-input", "--use-pep517", package], "the local speech package installer")?; // --use-pep517: Kokoro needs docopt, an old source-only package whose setup.py cannot be built the legacy way inside the embedded Python (found in a real run)
     if !command_ok(&python, &["-c", import_check]) { return Err(format!("{name} installed but could not be verified. Retry setup.")); }
     crate::store::atomic_write(&dir.join("complete"), package.as_bytes())?;
     Ok(managed_runtime_status(root, name, import_check))

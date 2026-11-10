@@ -27,7 +27,7 @@ export const CONNECTED: Record<string, string> = {
 };
 
 /** Routes that exist but have not been run on a real model since their runtime script was rebuilt (see CINEMATIC_ENGINE_AUDIT.md). They are Installed, not Ready. */
-export const UNVERIFIED = new Set(["stable-audio-open-small", "ace-step-v1", "kokoro-82m", "qwen3-tts-17b"]);
+export const UNVERIFIED = new Set(["stable-audio-open-small", "ace-step-v1", "kokoro-82m"]);
 
 export const LABEL: Record<ModelStatus, string> = { "download-required": "Download required", installed: "Installed", ready: "Ready", "requires-setup": "Requires setup", unsupported: "Unsupported on this hardware" };
 
