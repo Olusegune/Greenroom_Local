@@ -40,6 +40,8 @@ const screens = [
   ["Export", async () => { await click("Export", ".rail button.nav"); await sleep(700); }],
   ["Timeline", async () => { await click("Timeline", ".rail button.nav"); await sleep(700); }],
   ["Model Center", async () => { await click("Model Center", ".rail button.nav"); await sleep(700); }],
+  ["Voice metadata", async () => { await click("Voice metadata", ".rail button.nav"); await sleep(700); await ev(`document.querySelector('.review-item')?.click()`); await sleep(400); }],
+  ["Cast with the casting panel open", async () => { await click("Cast", ".rail button.nav"); await sleep(700); await ev(`[...document.querySelectorAll('.casting-panel button')].find(b=>b.textContent.includes('Choose or check'))?.click()`); await sleep(400); }],
   ["Settings", async () => { await click("Settings", ".rail button.nav"); await sleep(700); }],
 ];
 const report = {};

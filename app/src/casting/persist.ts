@@ -1,7 +1,8 @@
 // Reading casting data back from a saved project. A saved file is untrusted: a damaged or hand-edited file must not be able to
 // invent an approval, so every field is checked and anything wrong is dropped (the character then simply has no approval).
 
-import type { Character, Project } from "../types";
+import type { Character, Project, VoiceEntry } from "../types";
+import { readMeta } from "./voiceProfile";
 import type { ApprovalEvent, CastingApproval, CastingSpec, CharacterCasting, MatchStatus, VocalAge } from "./types";
 
 const str = (x: unknown, n: number) => (typeof x === "string" ? x.replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, n) : "");
@@ -64,4 +65,16 @@ export function readCharacterCasting(c: Character): Character {
 /** A project as loaded, with casting data validated on every character. */
 export function readProjectCasting(p: Project): Project {
   return { ...p, characters: p.characters.map(readCharacterCasting) };
+}
+
+/**
+ * The voice library as loaded. A voice's recorded metadata is checked on the way in: a hand-edited voices.json cannot mark a fact
+ * "verified" unless it names a source that can verify (a person listening, or the way the route works), and a damaged record is dropped.
+ */
+export function readLibraryMeta(list: VoiceEntry[]): VoiceEntry[] {
+  return (Array.isArray(list) ? list : []).map((v) => {
+    const { meta, ...rest } = v;
+    const clean = readMeta(meta);
+    return clean ? { ...rest, meta: clean } : rest;
+  });
 }

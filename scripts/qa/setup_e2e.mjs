@@ -47,7 +47,7 @@ const after = flat(await ev(`${kokoroCard}?.innerText`));
 const order = ["Kokoro runtime", "Kokoro model and test line", "Kokoro voices"].map((s) => after.indexOf(s));
 check("all three steps are listed in order", order.every((n) => n >= 0) && order[0] < order[1] && order[1] < order[2], after.slice(0, 160));
 check("all three finished", (after.match(/done/g) ?? []).length >= 3);
-check("the card says Installed, not Ready (never run for real)", after.includes("Installed") && after.includes("not marked Ready"), after.slice(after.indexOf("Installed"), after.indexOf("Installed") + 90));
+check("the card says Ready (0.12.8: a real run produced valid audio; nobody has listened)", /Ready/.test(after), after.slice(0, 160));
 await shot("3-kokoro-after");
 await click("Voices", ".rail button.nav"); await sleep(900);
 check("Voices library has the Kokoro voices", (await ev(`document.body.innerText.includes('Heart (American, female)')`)) === true);
@@ -62,7 +62,7 @@ check("Qwen sheet warns it is slow on a CPU and needs internet once", qsheet.inc
 check("confirm Qwen", await ev(`(()=>{const b=[...document.querySelectorAll('button')].find(x=>x.textContent.trim()==='Download');if(b){b.click();return true}return false})()`)); await sleep(4500);
 const qafter = flat(await ev(`${qwenCard}?.innerText`));
 check("all three Qwen steps finish", (qafter.match(/done/g) ?? []).length >= 3 && qafter.indexOf("Qwen3-TTS runtime") < qafter.indexOf("Qwen3-TTS model and test line"), qafter.slice(0, 120));
-check("Qwen card says Installed, not Ready", qafter.includes("Installed") && qafter.includes("not marked Ready"));
+check("Qwen card says Ready (a real run produced valid audio)", /Ready/.test(qafter), qafter.slice(0, 160));
 await shot("3b-qwen-after");
 await click("Voices", ".rail button.nav"); await sleep(900);
 check("Voices library has the Qwen voices", (await ev(`document.body.innerText.includes('Warm narrator (Qwen, female)')`)) === true);

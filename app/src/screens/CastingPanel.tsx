@@ -105,7 +105,7 @@ export default function CastingPanel({ character }: { character: Character }) {
                 </select>
               </label>
               <label className="field">Spoken language
-                <input value={spec.language ?? ""} placeholder="for example Yoruba" onChange={(e) => setSpec({ language: e.target.value })} />
+                <input type="text" value={spec.language ?? ""} placeholder="for example Yoruba" onChange={(e) => setSpec({ language: e.target.value })} />
               </label>
               <label className="field">Language is
                 <select value={spec.languageStrictness ?? "required"} onChange={(e) => setSpec({ languageStrictness: e.target.value as CastingSpec["languageStrictness"] })}>
@@ -113,7 +113,7 @@ export default function CastingPanel({ character }: { character: Character }) {
                 </select>
               </label>
               <label className="field">Accent
-                <input value={spec.accent ?? ""} placeholder="for example Nigerian English" onChange={(e) => setSpec({ accent: e.target.value })} />
+                <input type="text" value={spec.accent ?? ""} placeholder="for example Nigerian English" onChange={(e) => setSpec({ accent: e.target.value })} />
               </label>
               <label className="field">Accent is
                 <select value={spec.accentStrictness ?? "preferred"} onChange={(e) => setSpec({ accentStrictness: e.target.value as CastingSpec["accentStrictness"] })}>
@@ -126,7 +126,7 @@ export default function CastingPanel({ character }: { character: Character }) {
               {AGES.map((a) => <label key={a.id} className="row small"><input type="checkbox" checked={(spec.vocalAge ?? []).includes(a.id)} onChange={() => toggleAge(a.id)} /> {a.label}</label>)}
             </div>
             <label className="field">Notes (never used to match)
-              <input value={spec.culturalBackground ?? ""} placeholder="background, nationality, anything for your own reference" onChange={(e) => setSpec({ culturalBackground: e.target.value })} />
+              <input type="text" value={spec.culturalBackground ?? ""} placeholder="background, nationality, anything for your own reference" onChange={(e) => setSpec({ culturalBackground: e.target.value })} />
             </label>
             <p className="small" aria-live="polite">{describeRequirements(req).length ? describeRequirements(req).join(". ") + "." : "Nothing is required yet, so no voice can be proven to fit."}</p>
           </fieldset>

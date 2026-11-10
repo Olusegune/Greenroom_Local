@@ -120,7 +120,7 @@ export default function VoiceReview() {
                   {a.id === "gender" && <select id="rv-gender" value={val("gender", current)} onChange={(e) => setDraft({ ...draft, gender: e.target.value })}><option value="">Unknown</option><option value="masculine">Masculine</option><option value="feminine">Feminine</option><option value="androgynous">Androgynous</option></select>}
                   {a.id === "age" && <select id="rv-age" value={val("age", current)} onChange={(e) => setDraft({ ...draft, age: e.target.value })}><option value="">Unknown</option><option value="child">Child</option><option value="teen">Teen</option><option value="young">Young adult</option><option value="mid">Adult</option><option value="old">Older</option></select>}
                   {a.id === "pitch" && <select id="rv-pitch" value={val("pitch", current)} onChange={(e) => setDraft({ ...draft, pitch: e.target.value })}><option value="">Unknown</option><option value="low">Low</option><option value="mid">Middle</option><option value="high">High</option></select>}
-                  {(a.id === "languages" || a.id === "accent" || a.id === "texture") && <input id={`rv-${a.id}`} value={val(a.id, current)} placeholder={a.id === "languages" ? "for example english, yoruba" : ""} onChange={(e) => setDraft({ ...draft, [a.id]: e.target.value })} />}
+                  {(a.id === "languages" || a.id === "accent" || a.id === "texture") && <input type="text" id={`rv-${a.id}`} value={val(a.id, current)} placeholder={a.id === "languages" ? "for example english, yoruba" : ""} onChange={(e) => setDraft({ ...draft, [a.id]: e.target.value })} />}
                   <p className="muted small">{SOURCE_LABEL[f.source]}{f.checkedAt ? ` · ${f.checkedAt.slice(0, 10)}` : ""}{f.note ? ` · ${f.note}` : ""}</p>
                 </div>
               );
@@ -128,10 +128,10 @@ export default function VoiceReview() {
             <div className="review-fact">
               <label htmlFor="rv-comm"><strong>Commercial use</strong></label>
               <select id="rv-comm" value={val("commercial", prof.commercial.status)} onChange={(e) => setDraft({ ...draft, commercial: e.target.value })}><option value="unknown">Unknown</option><option value="allowed">Allowed</option><option value="forbidden">Not allowed</option></select>
-              {"commercial" in draft && <input aria-label="Licence note" placeholder="where the licence says so" value={val("commercialNote", "")} onChange={(e) => setDraft({ ...draft, commercialNote: e.target.value })} />}
+              {"commercial" in draft && <input type="text" aria-label="Licence note" placeholder="where the licence says so" value={val("commercialNote", "")} onChange={(e) => setDraft({ ...draft, commercialNote: e.target.value })} />}
             </div>
             <label className="row"><input type="checkbox" checked={listened} onChange={(e) => setListened(e.target.checked)} /> I listened to this voice and confirm what I have entered</label>
-            <label className="field">Evidence (optional)<input value={evidence} placeholder="for example: heard the neutral and emotional lines, 10 Nov" onChange={(e) => setEvidence(e.target.value)} /></label>
+            <label className="field">Evidence (optional)<input type="text" value={evidence} placeholder="for example: heard the neutral and emotional lines, 10 Nov" onChange={(e) => setEvidence(e.target.value)} /></label>
             <p className="muted small">Automatic classification is never presented as proof of anyone's age, gender, race or ethnicity: these are how a VOICE sounds to you.</p>
             <div className="row"><button className="primary" onClick={save}>{listened ? "Save as confirmed" : "Save as entered"}</button><button className="ghost" onClick={() => setDraft({})}>Discard changes</button></div>
             {prof.revisions.length > 0 && (

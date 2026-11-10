@@ -248,3 +248,15 @@ describe("identical names, stale data and hostile input", () => {
     expect(plan2.proposals[0]!.candidates[0]!.status).toBe("UNKNOWN_METADATA");
   });
 });
+
+describe("a saved voice library cannot smuggle in verified facts", () => {
+  it("a hand-edited voices.json is read through the same checks as a review", async () => {
+    const { readLibraryMeta } = await import("./persist");
+    const bad = [{ ...voice("v1"), meta: { version: 1, gender: { value: "masculine", status: "verified", source: "provider_label", confidence: "high" }, revisions: [] } }, { ...voice("v2"), meta: "junk" }, voice("v3")];
+    const clean = readLibraryMeta(bad as never);
+    expect(profileOf(clean[0]!).gender.status).toBe("unverified");
+    expect(clean[1]!.meta).toBeUndefined();
+    expect(clean).toHaveLength(3);
+    expect(readLibraryMeta(null as never)).toEqual([]);
+  });
+});

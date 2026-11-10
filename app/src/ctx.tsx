@@ -6,7 +6,7 @@ import { History, keepWork } from "./history";
 import { newProject, type Project, type VoiceEntry } from "./types";
 import { parseScript, uid } from "./script";
 import { DEFAULT_ENGINES_CFG, DEFAULT_PRICES, type EnginesCfg } from "./engines";
-import { readProjectCasting } from "./casting/persist";
+import { readLibraryMeta, readProjectCasting } from "./casting/persist";
 import { estimateCost, spendLines, type SpendItem } from "./trust";
 
 export type Tab = "home" | "write" | "cast" | "perform" | "timeline" | "picture" | "export" | "studio" | "history" | "voices" | "review" | "presets" | "agent" | "models" | "engines" | "sfx" | "lab" | "settings" | "help";
@@ -91,7 +91,7 @@ export function Provider({ children }: { children: ReactNode }) {
   const refreshKeys = useCallback(() => void api.keyStatus().then(setKeys).catch(() => undefined), []);
   useEffect(refreshKeys, [refreshKeys]);
   useEffect(() => void loadAvatars(), []);
-  useEffect(() => void api.libraryLoad().then((l) => ((libRef.current = l), setLibrary(l))).catch(() => undefined), []);
+  useEffect(() => void api.libraryLoad().then((raw) => { const l = readLibraryMeta(raw); libRef.current = l; setLibrary(l); }).catch(() => undefined), []);
 
   useEffect(() => void api.enginesLoad().then((c) => setEngines({ ...DEFAULT_ENGINES_CFG, ...c, localServer: { ...DEFAULT_ENGINES_CFG.localServer, ...(c.localServer ?? {}) } })).catch(() => undefined), []);
 

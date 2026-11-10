@@ -24,7 +24,7 @@ const step = async (name, fn) => { const before = errors.length; let ok; try { o
 
 await step("create project from template", () => click("Animation story"));
 await sleep(900);
-for (const t of ["Script", "Cast", "Perform", "Timeline", "Picture", "Export", "Studio", "History", "Voices", "Model Center", "Engines", "SFX Studio", "Voice lab", "Settings", "Help & guide"]) {
+for (const t of ["Script", "Cast", "Perform", "Timeline", "Picture", "Export", "Studio", "History", "Voices", "Voice metadata", "Presets", "Agent Studio", "Model Center", "Engines", "SFX Studio", "Voice lab", "Settings", "Help & guide"]) {
   await step("screen: " + t, () => click(t));
 }
 await step("Voices tabs", async () => { for (const t of ["My library", "Casting call", "Find a voice", "Design a voice", "Clone a voice", "Accent test"]) { await click(t); await sleep(300); } });

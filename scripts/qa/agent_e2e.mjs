@@ -25,6 +25,7 @@ const ev = async (js) => (await send("Runtime.evaluate", { expression: js, await
 const shot = async (name) => { const r = await send("Page.captureScreenshot", { format: "png" }); writeFileSync(`${out}/${name}.png`, Buffer.from(r.result.data, "base64")); };
 const click = (t, sel = "button,a,[role=tab]") => ev(`(()=>{const b=[...document.querySelectorAll('${sel}')].find(x=>x.textContent.trim().startsWith(${JSON.stringify(t)})&&!x.disabled);if(b){b.click();return true}return false})()`);
 const setValue = (sel, v, proto = "HTMLTextAreaElement") => ev(`(()=>{const el=document.querySelector(${JSON.stringify(sel)});Object.getOwnPropertyDescriptor(window.${proto}.prototype,'value').set.call(el,${JSON.stringify(v)});el.dispatchEvent(new Event('input',{bubbles:true}))})()`);
+const flatDbg = (t) => (t ?? '').split(String.fromCharCode(10)).join(' ');
 const checks = [];
 const check = (name, ok, detail = "") => checks.push(`${ok ? "ok  " : "FAIL"} ${name}${detail ? " : " + detail : ""}`);
 const colOf = (title) => ev(`(()=>{const a=[...document.querySelectorAll('.board-card')].find(x=>x.getAttribute('aria-label')===${JSON.stringify(title)});return a?a.closest('.board-col').getAttribute('aria-label'):null})()`);
@@ -60,15 +61,19 @@ check("analyze is planned", (await colOf("Analyze the script")) === "Planned");
 check("delivery step exists and is gated", (await ev(`[...document.querySelectorAll('.board-card')].some(x=>x.getAttribute('aria-label')==='Export the full scene'&&x.textContent.includes('delivery'))`)) === true);
 await click("Start"); await sleep(1500);
 check("analyze completed", (await colOf("Analyze the script")) === "Completed");
-check("guided: stops at the cast checkpoint", (await colOf("Recommend and approve the cast")) === "Awaiting your approval", await colsText());
+// 0.13: the cast step only proposes. With nothing stated about a character, and the only voice a cloud voice in a local-only run,
+// it must refuse and ask the person, never pick a voice for them.
+check("guided: the cast step stops and asks instead of choosing for you", (await colOf("Recommend the cast")) === "Failed or stopped" && (await ev(`document.body.innerText.includes('The cast needs your decision')`)) === true, await colsText());
 await shot("2-awaiting-cast");
-
-// Local-only: the only voice in the demo library is a cloud voice, so the cast step must refuse, and say why.
-await click("Approve", ".board-card button"); await sleep(2500);
-check("local-only: cast refuses to use a cloud voice", (await colOf("Recommend and approve the cast")) === "Failed or stopped" && (await ev(`document.body.innerText.includes('No suitable voice in your library')`)) === true, await colsText());
+check("the approval of the cast is a separate step that is still waiting", (await colOf("Approve and lock the cast")) !== "Completed");
 check("local-only: no cloud take was made", (await ev(`!document.body.innerText.includes('"takeId"')`)) === true);
 await shot("2b-local-only-refusal");
 
+// The person chooses the voices (the agent will not), then comes back and allows cloud.
+await click("Cast", ".rail button.nav"); await sleep(800);
+await ev(`document.querySelectorAll('.voice-card').forEach((card)=>{const sel=card.querySelector('select');const o=[...sel.options].find(x=>x.value);if(o){Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(sel,o.value);sel.dispatchEvent(new Event('change',{bubbles:true}))}})`); await sleep(800);
+check("the person chose a voice for each character", (await ev(`[...document.querySelectorAll('.voice-card')].every(c=>c.querySelector('select').value!=='')`)) === true);
+await click("Agent Studio", ".rail button.nav"); await sleep(600);
 // Allow cloud inside a $5 limit, update the plan (finished steps are kept), retry
 await ev(`(()=>{const c=document.querySelector('.agent-brief input[type=checkbox]');c.click()})()`); await sleep(300);
 await setValue('.agent-brief input[type=number]', "5", "HTMLInputElement"); await sleep(200);

@@ -78,7 +78,7 @@ export default function Cast() {
           </span>
         </div>
       )}
-      <div className="grid">
+      <div className="grid cast-grid">
         {cast.map((c) => {
           const voice = library.find((v) => v.id === c.voiceId);
           const first = project.lines.find((l) => l.characterId === c.id);

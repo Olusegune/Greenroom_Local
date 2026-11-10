@@ -32,21 +32,23 @@
 /* ---- the voice review screen -------------------------------------------------------------------------------------- */
 .review-grid { display: grid; grid-template-columns: minmax(240px, 320px) 1fr; gap: var(--s4); align-items: start; }
 .review-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); max-height: 70vh; overflow: auto; }
-.review-item { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: var(--s3); background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-card); }
+.review-item { height: auto; min-height: 60px; line-height: 1.3; justify-content: center; width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: var(--s3); background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-card); }
 .review-item.sel { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
 .review-fact { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--line); padding-top: var(--s2); }
 .review-fact p { margin: 0; }
 @media (max-width: 760px) { .review-grid { grid-template-columns: 1fr; } .review-list { max-height: 30vh; } }
 
 /* ---- genre tiles: an icon, a tint and a count ---------------------------------------------------------------------- */
-.genre-tile { --g: 160; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; gap: var(--s3); min-height: 92px; padding: var(--s4); background: linear-gradient(135deg, hsl(var(--g) 62% 52% / .20), hsl(var(--g) 62% 52% / 0) 62%), var(--surface-2); border: 1px solid color-mix(in srgb, hsl(var(--g) 60% 55%) 28%, var(--line)); transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease; }
+.genre-tile { --g: 160; position: relative; overflow: hidden; display: flex; flex-direction: row; align-items: center; gap: var(--s3); min-height: 92px; padding: var(--s4); background: radial-gradient(circle at 100% 100%, hsl(var(--g) 70% 55% / .22), transparent 42%), linear-gradient(135deg, hsl(var(--g) 62% 52% / .20), hsl(var(--g) 62% 52% / 0) 62%), var(--surface-2); border: 1px solid color-mix(in srgb, hsl(var(--g) 60% 55%) 28%, var(--line)); transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease; }
 .genre-tile:hover { transform: translateY(-2px); border-color: hsl(var(--g) 60% 58% / .7); box-shadow: 0 6px 18px hsl(var(--g) 60% 40% / .22); }
 .genre-tile:focus-visible { outline: 2px solid hsl(var(--g) 70% 65%); outline-offset: 2px; }
-.genre-tile::after { content: ""; position: absolute; right: -18px; bottom: -22px; width: 88px; height: 88px; border-radius: 50%; background: radial-gradient(closest-side, hsl(var(--g) 70% 55% / .22), transparent); pointer-events: none; }
 .genre-icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: hsl(var(--g) 78% 76%); background: hsl(var(--g) 60% 50% / .22); border: 1px solid hsl(var(--g) 60% 60% / .35); }
 .genre-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .genre-text strong { line-height: 1.2; }
 .genre-count { align-self: flex-start; padding: 1px 8px; border-radius: 999px; font-size: var(--fs-xs); background: hsl(var(--g) 60% 50% / .18); color: var(--text); }
 :root[data-theme="light"] .genre-icon { color: hsl(var(--g) 62% 26%); background: hsl(var(--g) 70% 60% / .30); }
-:root[data-theme="light"] .genre-tile { background: linear-gradient(135deg, hsl(var(--g) 70% 60% / .26), hsl(var(--g) 70% 60% / 0) 62%), var(--surface-2); }
+:root[data-theme="light"] .genre-tile { background: radial-gradient(circle at 100% 100%, hsl(var(--g) 70% 60% / .26), transparent 42%), linear-gradient(135deg, hsl(var(--g) 70% 60% / .26), hsl(var(--g) 70% 60% / 0) 62%), var(--surface-2); }
 @media (prefers-reduced-motion: reduce) { .genre-tile, .genre-tile:hover { transition: none; transform: none; } }
+
+/* One open casting panel must not stretch its neighbours. */
+.cast-grid { align-items: start; }

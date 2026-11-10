@@ -47,12 +47,12 @@ const AUDIT = `(() => {
   if (broken.length) out.push(broken.length + " image(s) did not load: " + broken.slice(0, 2).map((i) => i.src.slice(-60)).join(" | "));
   const clipped = [...document.querySelectorAll("button, .badge, .chip, h1, h2, h3, label, summary")].filter((e) => e.offsetParent && e.scrollWidth > e.clientWidth + 3 && getComputedStyle(e).overflow !== "visible" && getComputedStyle(e).textOverflow !== "ellipsis");
   if (clipped.length) out.push(clipped.length + " element(s) with clipped text: " + clipped.slice(0, 3).map((e) => (e.textContent || "").trim().slice(0, 30)).join(" | "));
-  const outside = [...document.querySelectorAll("main.stage *")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.right > vw + 4) && getComputedStyle(e).position !== "fixed"; });
+  const outside = [...document.querySelectorAll("main.stage *")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.right > vw + 4) && getComputedStyle(e).position !== "fixed" && !e.ownerSVGElement; /* shapes inside an svg are clipped by it */ });
   if (outside.length) out.push(outside.length + " element(s) extend past the right edge, e.g. " + outside[0].tagName + "." + String(outside[0].className).slice(0, 30));
   return out;
 })()`;
 
-const SCREENS = ["Script", "Cast", "Perform", "Timeline", "Picture", "Export", "Studio", "History", "Presets", "Agent Studio", "Voices", "Model Center", "Engines", "SFX Studio", "Voice lab", "Settings", "Help & guide"];
+const SCREENS = ["Script", "Cast", "Perform", "Timeline", "Picture", "Export", "Studio", "History", "Presets", "Voice metadata", "Agent Studio", "Voices", "Model Center", "Engines", "SFX Studio", "Voice lab", "Settings", "Help & guide"];
 const SIZES = [[1360, 900], [900, 800], [560, 900]];
 const findings = [];
 await send("Page.enable"); await send("Runtime.enable");

@@ -44,6 +44,10 @@ A card's More menu opens a listening test for its accent. See `ACCENT_VERIFICATI
 
 When the voice chosen for a card is a cloud voice and the library holds a local voice (Piper, Chatterbox, Wazobia or your own server) in the same language, the card offers a free preview: a plain read of the audition line by the closest local voice. "Closest" means language (must match), then gender, age band and accent as the library states them. It is a stand-in, not a copy of the cloud voice, and the card says so. Settings, Local first, makes the free preview the main Audition button and moves the real cloud audition to a second button marked "uses credits". The cloud audition still asks first.
 
+## Matching a voice to a preset (0.13.0)
+
+The "Hear with" list ranks the library with the casting match engine (`docs/CASTING_MATCH_ENGINE.md`): a preset's gender, age range, language and accent become requirements, and each voice gets a status with reasons. A voice that fits on paper but was never listened to is "Listen first", not "Fits"; a voice with no recorded gender is "Not enough known"; nothing is guessed from a voice's name or description. The genre tiles show an icon and a tint per genre. Applying a preset to a character writes the preset's requirements onto the character only where it has none, never changes a voice that is already chosen or approved, and never changes a portrait.
+
 ## Not built yet
 
 A Venomspur signature preset (his profile and portrait are not in the repository); editing a custom preset's fields in place (duplicate and import exist); portrait choice per preset (a preset's own `portraitId` is honoured but there is no picker); a regrouping of the library by capability.

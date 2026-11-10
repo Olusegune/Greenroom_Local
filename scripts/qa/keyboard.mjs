@@ -52,6 +52,8 @@ await click("Film and television", ".genre-tile"); await sleep(600);
 await walk("Presets cards", ".presets");
 
 // Enter and Space on a button
+// Since 0.12.8 Compare lives under the card's "More": it must be opened first, like a person would.
+await ev(`document.querySelectorAll('.preset-card details').forEach(d=>d.open=true)`);
 await ev(`(()=>{const b=[...document.querySelectorAll('.preset-card button')].find(x=>x.textContent.trim()==='Compare'); b.focus(); return true})()`);
 await key("Enter", "Enter", 13); await sleep(300);
 check("Enter activates Compare", (await ev(`!!document.querySelector('.compare')`)) === true);
