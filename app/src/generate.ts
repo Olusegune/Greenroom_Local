@@ -1,6 +1,8 @@
 // Making one take: pick the engine from the voice, shape the text for it, save the audio, remember its length.
 
 import { api, type Provider } from "./api";
+import { castingGuard, type GuardCode } from "./casting/lock";
+import type { MatchContext, MatchResult, TakeCast } from "./casting/types";
 import { applyPronunciations, composeText, spokenWords, stripTags, vkInstructions } from "./direct";
 import { ENGINES, providerFor, type ElevenModel, type InworldModel } from "./engines";
 import { DEFAULT_INWORLD_MODEL, inworldPlan } from "./inworld";
@@ -14,12 +16,43 @@ import { analyzeSamples, takeFlags } from "./analysis";
 import { uid } from "./script";
 import { sha256Hex } from "./trust";
 import { APP_VERSION } from "./version";
-import type { Line, Pronunciation, Take, VoiceEntry } from "./types";
+import type { Character, Line, Pronunciation, Take, VoiceEntry } from "./types";
 
 export type Model = ElevenModel;
 
 /** What is sent for this line and voice. Engines without tags get the plain words, plus delivery in words where they take it. */
+/** Ask for the casting check: the character this line belongs to, and the library, so the voice can be compared with the one approved. */
+export interface CastingCheck {
+  character: Character | undefined;
+  library: VoiceEntry[];
+  modelId?: string | null;
+  context?: MatchContext;
+}
+
+/** Raised when the voice about to speak is not the one this character is approved with. Nothing is made, and nothing is replaced. */
+export class CastingError extends Error {
+  constructor(message: string, readonly code: GuardCode, readonly alternatives: MatchResult[]) {
+    super(message);
+    this.name = "CastingError";
+  }
+}
+
+/** The request that goes to the engine for one piece of text. The voice id carries the speaker (file@7, ife@yo) unchanged. */
+export function clipRequest(p: Plan, voice: Pick<VoiceEntry, "id">, speed: number, quality?: string): Parameters<typeof api.runClip>[0] {
+  return { provider: p.provider, text: p.text, voice: voice.id, speed, instructions: p.instructions, quality, model: p.modelId };
+}
+
+/** Runs the casting guard when a check was asked for. Returns the identity to stamp on the take, or throws. */
+function guardCast(voice: VoiceEntry, opts: PlanOptions): TakeCast | undefined {
+  if (!opts.casting) return undefined;
+  const g = castingGuard(opts.casting.character, voice, opts.casting.library, opts.casting.modelId ?? null, opts.casting.context ?? {});
+  if (!g.ok) throw new CastingError(g.message, g.code, g.alternatives);
+  return g.cast;
+}
+
 export interface PlanOptions {
+  /** When given, the voice is checked against the character's approval before anything is made, and the take records who it was made for. */
+  casting?: CastingCheck;
   inworldModel?: InworldModel;
   /** Make the line as one of four interpretations. The saved line is not changed. */
   variation?: VariationId;
@@ -81,10 +114,11 @@ export function requestsFor(original: Line, voice: VoiceEntry, model: Model, dic
 }
 
 export async function makeTake(projectId: string, original: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const cast = guardCast(voice, opts);
   const saved = acted(original, voice, opts).line;
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
   const p = plan(original, voice, model, dict, opts);
-  const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: line.direction.speed, instructions: p.instructions, quality, model: p.modelId });
+  const out = await api.runClip(clipRequest(p, voice, line.direction.speed, quality));
   const id = "t-" + uid();
   const ext = out.mime === "audio/wav" ? "wav" : "mp3";
   await api.takeWrite(projectId, id, ext, out.audioB64);
@@ -106,6 +140,7 @@ export async function makeTake(projectId: string, original: Line, voice: VoiceEn
     model: p.model,
     ext,
     voiceId: voice.id,
+    ...(cast ? { cast } : {}),
     sent: p.instructions ? `${p.text}  (instructions: ${p.instructions})` : p.text,
     seconds,
     provenance: {
@@ -148,6 +183,7 @@ export async function makeSound(projectId: string, prompt: string, seconds: numb
  * can sound different from one continuous read.
  */
 export async function makeBeatTake(projectId: string, original: Line, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  const cast = guardCast(voice, opts);
   const { line: saved, render } = acted(original, voice, opts);
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
   const steps = assemblePlan(line);
@@ -162,7 +198,7 @@ export async function makeBeatTake(projectId: string, original: Line, voice: Voi
     const sub: Line = { ...line, text: voice.provider === "inworld" && st.emphasis ? emphasise(st.line.text) : st.line.text, direction: st.line.direction, beats: undefined, performance: undefined };
     const p = planOne(sub, voice, model, dict, { ...opts, variation: undefined });
     first ??= p;
-    const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: sub.direction.speed, instructions: p.instructions, quality, model: p.modelId });
+    const out = await api.runClip(clipRequest(p, voice, sub.direction.speed, quality));
     const buf = await decode(out);
     if (rate && buf.sampleRate !== rate) throw new Error("The phrases came back at different sample rates, so they cannot be joined. Make this line as one take.");
     rate = buf.sampleRate;
@@ -191,6 +227,7 @@ export async function makeBeatTake(projectId: string, original: Line, voice: Voi
     model: first!.model,
     ext: "wav",
     voiceId: voice.id,
+    ...(cast ? { cast } : {}),
     sent: sent.map((t, i) => `(${i + 1}) ${t}`).join("  "),
     seconds,
     provenance: {
@@ -218,6 +255,10 @@ export async function makeBeatTake(projectId: string, original: Line, voice: Voi
  * The original take is never changed: this returns a new take that says which phrase was remade and from which take.
  */
 export async function remakeBeat(projectId: string, original: Line, from: Take, index: number, voice: VoiceEntry, model: Model, dict: Pronunciation[] = [], quality?: string, opts: PlanOptions = {}): Promise<Take> {
+  // The rest of this take was spoken by from.voiceId. A phrase from another voice would make one take with two voices in it,
+  // labelled as one of them: refuse before anything is requested.
+  if (from.voiceId !== voice.id) throw new CastingError(`This take was made with ${from.provenance?.voiceName ?? from.voiceId}, but ${voice.name} was about to remake a phrase of it. Make the line again instead.`, "voice_changed", []);
+  const cast = guardCast(voice, opts);
   const saved = acted(original, voice, opts).line;
   const parts = from.provenance?.parts;
   if (!parts?.[index]) throw new Error("This take has no phrase timings, so one phrase cannot be remade. Make the line again.");
@@ -226,7 +267,7 @@ export async function remakeBeat(projectId: string, original: Line, from: Take, 
   if (!st || st.line.text !== parts[index]!.text) throw new Error("The line has been edited since this take was made, so its phrases no longer match. Make the line again.");
   const sub: Line = { ...line, text: voice.provider === "inworld" && st.emphasis ? emphasise(st.line.text) : st.line.text, direction: st.line.direction, beats: undefined, performance: undefined };
   const p = planOne(sub, voice, model, dict, { ...opts, variation: undefined });
-  const out = await api.runClip({ provider: p.provider, text: p.text, voice: voice.id, speed: sub.direction.speed, instructions: p.instructions, quality, model: p.modelId });
+  const out = await api.runClip(clipRequest(p, voice, sub.direction.speed, quality));
   const [old, fresh] = [await takeBuffer(projectId, from.id), await decode(out)];
   if (old.sampleRate !== fresh.sampleRate) throw new Error("The new phrase came back at a different sample rate, so it cannot be joined. Make the line again.");
   const joined = spliceBeat(Float32Array.from(old.getChannelData(0)), old.sampleRate, parts, index, Float32Array.from(fresh.getChannelData(0)));
@@ -236,7 +277,7 @@ export async function remakeBeat(projectId: string, original: Line, from: Take, 
   const seconds = await remember(id, { audioB64: b64, mime: "audio/wav" });
   const sha256 = await sha256Hex(fromBase64(b64));
   const sent = from.sent.split(/ {2}(?=\(\d+\) )/).map((x, i) => (i === index ? `(${i + 1}) ${p.text}` : x)).join("  ");
-  return { ...from, id, at: new Date().toISOString(), sent, seconds, provenance: { ...from.provenance!, sha256, parts: joined.parts, remade: { phrase: index + 1, from: from.id }, chars: (from.provenance!.chars ?? 0) + p.text.length, check: undefined } };
+  return { ...from, id, ...(cast ? { cast } : {}), at: new Date().toISOString(), sent, seconds, provenance: { ...from.provenance!, sha256, parts: joined.parts, remade: { phrase: index + 1, from: from.id }, chars: (from.provenance!.chars ?? 0) + p.text.length, check: undefined } };
 }
 
 export function modelLabel(m: Take["model"]): string {

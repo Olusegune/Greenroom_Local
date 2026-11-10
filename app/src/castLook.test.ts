@@ -10,33 +10,36 @@ const voice = (id: string, over: Partial<VoiceEntry>): VoiceEntry => ({ id, name
 const ch = (id: string, name: string, over: Partial<Character> = {}): Character => ({ id, name, language: "English", ...over });
 const lib = [voice("m1", { gender: "male", accent: "american" }), voice("f1", { gender: "female", accent: "american" }), voice("f2", { gender: "female", accent: "nigerian", age: "old" }), voice("k1", { gender: "female", age: "child" })];
 
-describe("a stated gender, age or heritage steers the voice; a name never does", () => {
-  it("a female character is not given a male voice while a female voice exists", () => {
-    const p = planCast([ch("a", "Ada", { look: { gender: "f" } })], lib, { roles: [] });
-    expect(["f1", "f2", "k1"]).toContain(p.assign.a);
+describe("a stated gender or age steers the voice, never a name, a heritage or a description", () => {
+  const need = (g: "m" | "f", age?: "child" | "teen" | "young" | "mid" | "old") => ({ look: { gender: g, ...(age ? { age } : {}) } });
+  it("a female character is never given a male voice, and a voice with no recorded gender is left for the owner to audition", () => {
+    const p = planCast([ch("a", "Ada", need("f"))], [lib[0]!], { roles: [] });
+    expect(p.assign).toEqual({});
+    expect(p.proposals).toEqual([]);
+    expect(p.none[0]!.why).toMatch(/masculine voice; the character's stated gender calls for a feminine voice/);
   });
-  it("a male character is given the male voice", () => {
-    expect(planCast([ch("t", "Tunde", { look: { gender: "m" } })], lib, { roles: [] }).assign.t).toBe("m1");
+  it("a claimed (provider-labelled) gender is a candidate to audition, not an assignment", () => {
+    const p = planCast([ch("t", "Tunde", need("m"))], lib, { roles: [] });
+    expect(p.assign).toEqual({});
+    expect(p.proposals[0]!.candidates[0]!.voiceId).toBe("m1");
+    expect(p.proposals[0]!.candidates[0]!.status).toBe("NEEDS_AUDITION");
   });
-  it("an older Nigerian woman gets the older Nigerian female voice", () => {
-    const p = planCast([ch("a", "Ada", { look: { gender: "f", age: "old", heritage: "black" } })], lib, { roles: [] });
-    expect(p.assign.a).toBe("f2");
+  it("an adult character does not get a child's voice, and a child is offered one", () => {
+    const adult = planCast([ch("a", "Ada", need("f", "mid"))], lib, { roles: [] });
+    expect(adult.proposals[0]!.candidates.map((c) => c.voiceId)).not.toContain("k1");
+    const kid = planCast([ch("b", "Bisi", need("f", "child"))], lib, { roles: [] });
+    expect(kid.proposals[0]!.candidates[0]!.voiceId).toBe("k1");
   });
-  it("an adult character is not given a child's voice, and a child is given one", () => {
-    expect(planCast([ch("a", "Ada", { look: { gender: "f", age: "mid" } })], lib, { roles: [] }).assign.a).not.toBe("k1");
-    expect(planCast([ch("b", "Bisi", { look: { gender: "f", age: "child" } })], lib, { roles: [] }).assign.b).toBe("k1");
+  it("a heritage or a description in the script is NOT a requirement: it neither steers nor excludes a voice", () => {
+    const p = planCast([ch("a", "Ada", { about: "ADA (60s, Nigerian) sits. She taps her watch.", look: { heritage: "black" } })], lib, { roles: [] });
+    expect(p.assign).toEqual({});
+    // all four voices stay offered: nothing was stated that could rule one out
+    expect(p.proposals[0]!.candidates).toHaveLength(4);
+    expect(p.proposals[0]!.ruledOut).toEqual([]);
   });
-  it("what the script says about a character counts when no look was set, but a name alone does not", () => {
-    expect(planCast([ch("a", "Ada", { about: "ADA (60s, Nigerian) sits. She taps her watch." })], lib, { roles: [] }).assign.a).toBe("f2");
-    // the name Ada or Tunde says nothing: with no stated gender the choice is not steered by it
+  it("a name says nothing: with no stated gender no voice is ruled out", () => {
     const p = planCast([ch("t", "Tunde"), ch("a", "Ada")], [voice("only-m", { gender: "male" }), voice("only-f", { gender: "female" })], { roles: [] });
-    expect(Object.keys(p.assign).sort()).toEqual(["a", "t"]);
-  });
-  it("every character still gets a voice, and distinct ones when there are enough", () => {
-    const cs = [ch("a", "Ada", { look: { gender: "f" } }), ch("b", "Bisi", { look: { gender: "f" } }), ch("t", "Tunde", { look: { gender: "m" } })];
-    const p = planCast(cs, lib, { roles: [] });
-    expect(new Set(Object.values(p.assign)).size).toBe(3);
-    expect(p.assign.t).toBe("m1");
+    expect(p.proposals.every((x) => x.ruledOut.length === 0)).toBe(true);
   });
 });
 

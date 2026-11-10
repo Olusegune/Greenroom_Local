@@ -5,6 +5,7 @@ import type { ConvertReport } from "./convertReport";
 import type { BeatMode, BeatSetting } from "./beats";
 import type { Reaction } from "./reactions";
 import type { AgentRun } from "./agent/graph";
+import type { CastingSpec, CharacterCasting, TakeCast, VoiceMeta } from "./casting/types";
 
 export interface Character {
   id: string;
@@ -22,6 +23,10 @@ export interface Character {
   dna?: VoiceDna;
   /** Sound clips already made for this character (a laugh, a sigh) that can be reused on other lines at no cost. */
   reactions?: Reaction[];
+  /** What this character's casting calls for, as stated (vocal gender, age, language, accent and how firmly). Absent until the owner states something. */
+  cast?: CastingSpec;
+  /** The owner's approved voice for this character and the history of changes. Once approved, only the owner, confirming, can change the voice. */
+  casting?: CharacterCasting;
 }
 
 /** What produced a piece of audio, kept with it so a studio can answer "where did this come from?". */
@@ -67,6 +72,8 @@ export interface Take {
   model: "eleven_v4" | "eleven_v3" | "voicekiller" | "inworld" | "kie" | "piper" | "local" | "chatterbox" | "kokoro" | "qwen" | "wazobia";
   ext: "mp3" | "wav";
   voiceId: string;
+  /** The character and exact voice this take was made for. Absent on takes made before 0.13. */
+  cast?: TakeCast;
   /** Exactly what was sent, tags included, so a take can always be explained. */
   sent: string;
   seconds: number;
@@ -291,6 +298,8 @@ export interface VoiceEntry {
   licence?: LicenceUse;
   licenceNote?: string;
   licenceChecked?: string;
+  /** What the owner has recorded about this voice (gender, age, languages, accent), with where each fact came from. Overrides what is derived. */
+  meta?: VoiceMeta;
 }
 
 export interface VoiceInfo {

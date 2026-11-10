@@ -6,6 +6,7 @@ import { History, keepWork } from "./history";
 import { newProject, type Project, type VoiceEntry } from "./types";
 import { parseScript, uid } from "./script";
 import { DEFAULT_ENGINES_CFG, DEFAULT_PRICES, type EnginesCfg } from "./engines";
+import { readProjectCasting } from "./casting/persist";
 import { estimateCost, spendLines, type SpendItem } from "./trust";
 
 export type Tab = "home" | "write" | "cast" | "perform" | "timeline" | "picture" | "export" | "studio" | "history" | "voices" | "presets" | "agent" | "models" | "engines" | "sfx" | "lab" | "settings" | "help";
@@ -189,7 +190,7 @@ export function Provider({ children }: { children: ReactNode }) {
   const openProject = useCallback(
     async (id: string) => {
       try {
-        const p = await api.projectLoad(id);
+        const p = readProjectCasting(await api.projectLoad(id));
         dirty.current = false;
         hist.current.clear();
         setP(p);
