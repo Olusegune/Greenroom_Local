@@ -1,3 +1,4 @@
+import { useCasting } from "../casting/useCasting";
 import { mergePronunciations, parsePronunciationCsv, pronunciationsToCsv } from "../pronunciationCsv";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
@@ -16,6 +17,7 @@ import { useSample, voiceLine } from "../useSample";
 
 export default function Cast() {
   const { project, edit, library, go } = useApp();
+  const casting = useCasting();
   const sample = useSample();
   const [engine, setEngine] = useState<Engine | "all">("all");
   if (!project) return <section><h1>Cast</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then assign voices to its characters here.</Empty></section>;
@@ -92,7 +94,7 @@ export default function Cast() {
               </div>
               <label className="field">
                 Voice
-                <select value={c.voiceId ?? ""} onChange={(e) => patch(c.id, { voiceId: e.target.value || undefined })}>
+                <select value={c.voiceId ?? ""} onChange={(e) => void casting.assign(c.id, library.find((v) => v.id === e.target.value) ?? null)}>
                   <option value="">Choose a voice…</option>
                   {options.map((v) => (
                     <option key={v.provider + v.id} value={v.id}>

@@ -1,3 +1,4 @@
+import { useCasting } from "../casting/useCasting";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { useApp } from "../ctx";
 import { PlanReview } from "./PlanReview";
@@ -20,7 +21,7 @@ import { api } from "../api";
 import { ENGINES, ENGINE_ORDER, directorLabel, directorReady, qualityFormat, soundEngineOf } from "../engines";
 import { askCloud } from "../directorCall";
 import { useLocalDirectorReady } from "../localDirector";
-import { assembledFor, makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type Model } from "../generate";
+import { assembledFor, makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type CastingCheck, type Model } from "../generate";
 import { beatsFor, hasBeats, isAssembled } from "../beats";
 import { migrateReactions, reuse, saveReaction } from "../reactions";
 import ReVoiceDialog from "./ReVoiceDialog";
@@ -71,6 +72,10 @@ export default function Perform() {
     }
   };
   const stop = useRef(false);
+  // The latest project and library, read at the moment each take is made: a run that started with one voice must notice the voice changed.
+  const live = useRef({ project, library });
+  live.current = { project, library };
+  const castingFor = (line: Line): CastingCheck => ({ character: live.current.project?.characters.find((c) => c.id === line.characterId), library: live.current.library, context: { commercial: live.current.project?.commercial === true } });
   if (!project) return <section><h1>Perform</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>Create or open a project, then direct lines and generate takes here.</Empty></section>;
 
   const dict: Pronunciation[] = project.pronunciations ?? [];
@@ -106,7 +111,7 @@ export default function Perform() {
     }
     try {
       for (let i = 0; i < runs.length; i++) {
-        const t = await (assembledFor(line, voice, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i] });
+        const t = await (assembledFor(line, voice, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i], casting: castingFor(line) });
         // A set of interpretations never replaces a take you already chose.
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: variations ? l.chosen ?? t.id : t.id }), "~take");
         const sent = t.provenance?.chars ?? chars;
@@ -136,7 +141,10 @@ export default function Perform() {
       const line = todo[i]!;
       try {
         const v = voiceOf(line)!;
-        const t = await (assembledFor(line, v, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, v, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
+        // Read the voice again NOW: the owner may have changed it since this run began.
+        const nowChar = live.current.project?.characters.find((c) => c.id === line.characterId);
+        const nowVoice = live.current.library.find((x) => x.id === nowChar?.voiceId) ?? v;
+        const t = await (assembledFor(line, nowVoice, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, nowVoice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, casting: castingFor(line) });
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }), "~take");
         const sent = t.provenance?.chars ?? 0;
         addLedger({ kind: "speech", engine: ENGINES[v.provider].label, chars: sent, items: [{ kind: "speech", engine: v.provider, chars: sent }] });
@@ -630,6 +638,7 @@ const saveHistory = (h: string[]) => {
 
 function LineCard({ line, index, character, voice, model, dict, patch, make, view, onDirector }: { view: PerformView; onDirector: () => void; line: Line; index: number; character?: Character; voice?: VoiceEntry; model: Model; dict: Pronunciation[]; patch: (fn: (l: Line) => Line) => void; make: (l: Line, n?: number, v?: VariationId[]) => Promise<boolean> }) {
   const { project, confirmSpend, toast, engines, priceLines, addLedger, library, edit, go: goTo, keys } = useApp();
+  const casting = useCasting();
   const localDirector = useLocalDirectorReady();
   const [writing, setWriting] = useState(false);
   const [recent, setRecent] = useState<string[]>(loadHistory);
@@ -668,7 +677,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
       if (!ok) return;
     }
     try {
-      const nt = await remakeBeat(project!.id, line, t, index, voice, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel });
+      const nt = await remakeBeat(project!.id, line, t, index, voice, model, dict, qualityFormat(engines.quality), { inworldModel: engines.inworldModel, casting: { character: character, library, context: { commercial: project?.commercial === true } } });
       patch((l) => ({ ...l, takes: [...l.takes, nt] }));
       addLedger({ kind: "speech", engine: ENGINES[voice.provider].label, chars: ph.text.length, items: [{ kind: "speech", engine: voice.provider, chars: ph.text.length }] });
       toast(`Remade phrase ${index + 1} as a new take. The old one is kept.`);
@@ -771,7 +780,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
             value={voice?.id ?? ""}
             onChange={(e) => {
               if (e.target.value === "__more") return goTo("voices");
-              if (e.target.value) edit((p) => ({ ...p, characters: p.characters.map((c) => (c.id === character.id ? { ...c, voiceId: e.target.value } : c)) }));
+              if (e.target.value) void casting.assign(character.id, library.find((v) => v.id === e.target.value) ?? null);
             }}
           >
             {!voice && <option value="">Choose a voice…</option>}

@@ -39,7 +39,8 @@ export function agentEnv({ app, live }: { app: ReturnType<typeof useApp>; live: 
     async makeTake(line, voice) {
       const p = live.current!;
       const dna = p.characters.find((c) => c.id === line.characterId)?.dna;
-      const opts = { inworldModel: engines.inworldModel };
+      // The casting guard: the voice that is about to speak must be the one this character was approved with.
+      const opts = { inworldModel: engines.inworldModel, casting: { character: p.characters.find((c) => c.id === line.characterId), library, context: { commercial: p.commercial === true } } };
       const make = assembledFor(line, voice, opts) ? makeBeatTake : makeTake;
       const take = await make(p.id, line, voice, engines.elevenModel, dictFor(p.pronunciations, dna), qualityFormat(engines.quality), opts);
       const cloud = !ENGINES[voice.provider].local;

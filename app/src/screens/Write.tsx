@@ -1,3 +1,4 @@
+import { useCasting } from "../casting/useCasting";
 import { CharacterFace } from "./AvatarBrowser";
 import { useState } from "react";
 import { useApp } from "../ctx";
@@ -29,7 +30,8 @@ export default function Write() {
   const onlyNarrator = cast.length === 1 && cast[0]!.name === NARRATOR;
   const ready = project.lines.length > 0;
   const voiceless = cast.filter((c) => !library.some((v) => v.id === c.voiceId)).length;
-  const patch = (id: string, voiceId: string) => edit((p) => ({ ...p, characters: p.characters.map((c) => (c.id === id ? { ...c, voiceId: voiceId || undefined } : c)) }));
+  const casting = useCasting();
+  const patch = (id: string, voiceId: string) => void casting.assign(id, library.find((v) => v.id === voiceId) ?? null);
 
   return (
     <section>

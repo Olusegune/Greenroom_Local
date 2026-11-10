@@ -20,6 +20,8 @@ export interface SpendAsk {
   warn?: string;
   /** A file download rather than a paid call: different words, no credits mentioned. */
   download?: boolean;
+  /** A plain decision that spends nothing and downloads nothing (for example changing an approved voice). */
+  neutral?: { text: string; confirm: string };
 }
 
 interface Ctx {
@@ -282,7 +284,7 @@ function SpendSheet({ ask, onDone }: { ask: SpendAsk; onDone: (ok: boolean, skip
       <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="spend-t">
         <h2 id="spend-t">{ask.title}</h2>
         {ask.warn && <p className="note err" role="alert">{ask.warn}</p>}
-        <p className="muted">{ask.download ? "This downloads files to this computer. Nothing is sent from your project." : "This sends text to the provider and uses credits on your own account. Greenroom cannot see your price, so check your plan if unsure."}</p>
+        <p className="muted">{ask.neutral ? ask.neutral.text : ask.download ? "This downloads files to this computer. Nothing is sent from your project." : "This sends text to the provider and uses credits on your own account. Greenroom cannot see your price, so check your plan if unsure."}</p>
         <ul>
           {ask.lines.map((l) => (
             <li key={l}>{l}</li>
@@ -296,7 +298,7 @@ function SpendSheet({ ask, onDone }: { ask: SpendAsk; onDone: (ok: boolean, skip
         <div className="row end" style={{ marginTop: 16 }}>
           <button onClick={() => onDone(false, false)}>Cancel</button>
           <button className="primary" autoFocus onClick={() => onDone(true, skip)}>
-            {ask.download ? "Download" : ask.warn ? "Go over budget and continue" : "Go ahead and use credits"}
+            {ask.neutral ? ask.neutral.confirm : ask.download ? "Download" : ask.warn ? "Go over budget and continue" : "Go ahead and use credits"}
           </button>
         </div>
       </div>

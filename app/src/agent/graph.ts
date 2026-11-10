@@ -17,7 +17,7 @@ export const MODES: { id: Mode; label: string; blurb: string }[] = [
   { id: "autonomous", label: "Autonomous Draft", blurb: "The agent makes a first draft inside the limits you set. Voice rights and final delivery still wait for you." },
 ];
 
-export type NodeKind = "analyze" | "cast" | "audition" | "direct" | "take" | "qc" | "sound" | "timeline" | "export";
+export type NodeKind = "analyze" | "cast" | "approve_cast" | "audition" | "direct" | "take" | "qc" | "sound" | "timeline" | "export";
 export type Status = "planned" | "ready" | "running" | "awaiting_approval" | "completed" | "failed" | "cancelled" | "skipped";
 /** What has to be approved before a node runs. "final" is delivery. It is never skipped. */
 export type Gate = "none" | "creative" | "spend" | "rights" | "final";

@@ -5,7 +5,7 @@
 import type { AgentRun, AuditEntry, Gate, JobNode, Mode, NodeKind, Status } from "./graph";
 
 const MODES: Mode[] = ["manual", "guided", "autonomous"];
-const KINDS: NodeKind[] = ["analyze", "cast", "audition", "direct", "take", "qc", "sound", "timeline", "export"];
+const KINDS: NodeKind[] = ["analyze", "cast", "approve_cast", "audition", "direct", "take", "qc", "sound", "timeline", "export"];
 const STATUSES: Status[] = ["planned", "ready", "running", "awaiting_approval", "completed", "failed", "cancelled", "skipped"];
 const GATES: Gate[] = ["none", "creative", "spend", "rights", "final"];
 export const MAX_NODES = 600;

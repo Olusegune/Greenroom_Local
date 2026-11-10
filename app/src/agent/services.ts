@@ -3,9 +3,12 @@
 // project goes through `env.edit`, so the person's Undo reverts it, and every step reports what it did as plain data.
 
 import type { Engine } from "../engines";
-import { APP_VERSION } from "../version";
-import { applyPreset as applyToCharacter, voicesFor } from "../presets/cast";
-import { recommend, STARTER_PRESETS, type Genre, type VoicePreset } from "../presets";
+import { voicesFor } from "../presets/cast";
+import { STARTER_PRESETS, type VoicePreset } from "../presets";
+import { planCasting } from "../casting/autocast";
+import { assignVoice, isLocked } from "../casting/lock";
+import { requirementsOf, describeRequirements } from "../casting/requirements";
+import { STATUS_LABEL } from "../casting/types";
 import type { Line, Project, Take, VoiceEntry } from "../types";
 import { foleyPlan } from "../foley";
 import type { SceneExport } from "../exportScene";
@@ -34,7 +37,6 @@ export interface Env {
   exportScene?: (project: Project) => Promise<SceneExport>;
 }
 
-const genreOf = (i?: Interpretation): Genre | undefined => i?.proposals.find((p): p is Extract<typeof p, { kind: "genre" }> => p.kind === "genre")?.genre;
 
 export function executors(env: Env): Executors {
   const speaking = () => { const p = env.project(); return p.characters.filter((c) => p.lines.some((l) => l.characterId === c.id && l.text.trim())); };
@@ -45,25 +47,49 @@ export function executors(env: Env): Executors {
       return { output: { characters: per, lines: p.lines.length, scenes: p.scenes.length || 1 } };
     },
 
+    // Proposes voices. It reads ONLY what is stated about each character (its casting requirements and stated look); it never
+    // invents a gender, age, language or accent, and it never writes a preset's guesses onto a character. It assigns a voice only
+    // when the voice is PROVEN to fit; everything else is listed with reasons for the person to decide. A locked voice is never touched.
     async cast() {
+      const p = env.project();
       const lib = env.library().filter((v) => !env.localOnly || ["piper", "chatterbox", "kokoro", "qwen", "wazobia", "local"].includes(v.provider));
-      const ready = env.ready();
-      const all = env.presets ?? STARTER_PRESETS;
-      const made: { character: string; voice: string; preset: string }[] = [];
-      const missing: string[] = [];
-      for (const c of speaking()) {
-        if (c.voiceId && env.library().some((v) => v.id === c.voiceId)) continue; // already cast: the person's choice stays
-        const recs = recommend(all, { ...(genreOf(env.interpretation) ? { genre: genreOf(env.interpretation)! } : {}), ...(c.look?.age ? { age: ({ child: "child", teen: "teen", young: "young_adult", mid: "adult", old: "older_adult" } as const)[c.look.age] } : {}), ...(c.look?.gender ? { gender: c.look.gender === "m" ? "male" as const : "female" as const } : {}), keywords: [c.name, ...(c.about ?? "").split(/\W+/).filter((w) => w.length > 3).slice(0, 8)], private: env.localOnly }, ready);
-        const pick = recs.map((r) => ({ r, voices: voicesFor(r.preset, lib, ready) })).find((x) => x.voices.length);
-        if (!pick) { missing.push(c.name); continue; }
-        const voice = pick.voices[0]!;
-        const avatarId = env.portraitFor?.(pick.r.preset.id);
-        const applied = applyToCharacter(c, pick.r.preset, { voice, ...(avatarId ? { avatarId } : {}), now: new Date().toISOString(), appVersion: APP_VERSION });
-        env.edit((p) => ({ ...p, characters: p.characters.map((x) => (x.id === c.id ? applied.character : x)) }));
-        made.push({ character: c.name, voice: voice.name, preset: pick.r.preset.name });
+      const sp = speaking();
+      const plan = planCasting(sp, lib, { commercial: p.commercial === true });
+      const made: { character: string; voice: string; status: string }[] = [];
+      for (const [characterId, voiceId] of Object.entries(plan.assign)) {
+        const voice = lib.find((v) => v.id === voiceId)!;
+        let result: ReturnType<typeof assignVoice> | undefined;
+        env.edit((pr) => { result = assignVoice(pr.characters, { characterId, voice, by: "agent", now: new Date().toISOString(), context: { commercial: pr.commercial === true } }); return result.ok ? { ...pr, characters: result.characters } : pr; });
+        if (result?.ok) made.push({ character: sp.find((c) => c.id === characterId)!.name, voice: voice.name, status: "VERIFIED_MATCH" });
       }
-      if (missing.length) throw new Error(`No suitable voice in your library for ${missing.join(", ")}. Add a voice in Voices or pick one in Cast, then retry.`);
-      return { output: { cast: made } };
+      const name = (id: string) => sp.find((c) => c.id === id)?.name ?? id;
+      const decide: string[] = [];
+      for (const pr of plan.proposals) {
+        const c = sp.find((x) => x.id === pr.characterId)!;
+        const req = requirementsOf(c);
+        const stated = describeRequirements(req);
+        decide.push(`${name(pr.characterId)}${req.empty ? " (nothing required is stated about their voice: tell me, or set it in Casting)" : ` (${stated.join("; ")})`} — ${pr.candidates.slice(0, 3).map((m) => `${p.characters.length ? (lib.find((v) => v.id === m.voiceId)?.name ?? m.voiceId) : m.voiceId} [${STATUS_LABEL[m.status]}]`).join(", ")}`);
+      }
+      for (const n of plan.none) decide.push(`${name(n.characterId)} — no voice in your library can be used: ${n.why}`);
+      if (decide.length) throw new Error(`The cast needs your decision. ${made.length ? `Assigned ${made.map((m) => `${m.character}: ${m.voice}`).join(", ")}. ` : ""}Choose a voice in Cast (or Voices), listen to it, then retry this step.\n${decide.join("\n")}`);
+      return { output: { cast: made, note: "Nothing is approved yet: the next step is yours." } };
+    },
+
+    // The only step that locks voices, and it is always the person's: its gate is never automatic.
+    async approve_cast() {
+      const sp = speaking();
+      const locked: string[] = [];
+      const refused: string[] = [];
+      for (const c of sp) {
+        if (isLocked(c)) { locked.push(c.name); continue; }
+        const voice = c.voiceId ? env.library().find((v) => v.id === c.voiceId) : undefined;
+        if (!voice) { refused.push(`${c.name} has no voice`); continue; }
+        let result: ReturnType<typeof assignVoice> | undefined;
+        env.edit((pr) => { result = assignVoice(pr.characters, { characterId: c.id, voice, by: "owner", approve: true, acknowledge: true, now: new Date().toISOString(), context: { commercial: pr.commercial === true } }); return result.ok ? { ...pr, characters: result.characters } : pr; });
+        if (result?.ok) locked.push(c.name); else refused.push(`${c.name}: ${result?.message ?? "could not be approved"}`);
+      }
+      if (refused.length) throw new Error(`Could not lock the cast. ${refused.join("; ")}.`);
+      return { output: { locked, note: "Approved by you at this checkpoint and locked. Only you can change these voices now." } };
     },
 
     async audition() {

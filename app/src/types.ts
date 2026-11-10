@@ -247,6 +247,8 @@ export interface Project {
   ledger?: LedgerEntry[];
   /** The Agent Studio production run: plan, progress, approvals and audit log. Absent on projects made before it. */
   agent?: AgentRun;
+  /** The project is for commercial release: voices that are not licensed for it are not eligible. Absent means no. */
+  commercial?: boolean;
   createdAt: string;
   updatedAt: string;
 }

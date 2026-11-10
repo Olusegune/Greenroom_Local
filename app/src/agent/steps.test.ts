@@ -16,7 +16,7 @@ const take = (id: string, seconds = 2): Take => ({ id, at: NOW, model: "piper", 
 function scene(): Project {
   const p = newProject("p", "My: Scene?", NOW);
   p.script = "# Scene 1\n(The door slams.)\nADA: Good evening to you.\n(Rain hammers the window.)\nADA: Your soul is overdue.";
-  p.characters = [{ id: "ada", name: "Ada", language: "English", voiceId: "piper1" }];
+  p.characters = [{ id: "ada", name: "Ada", language: "English", voiceId: "piper1", casting: { version: 1, history: [], approval: { voiceId: "piper1", engine: "piper", voiceName: "piper1", modelId: null, speakerId: null, approvedAt: NOW, version: 1, basis: "NEEDS_AUDITION", acknowledged: [], by: "owner" } } }];
   p.lines = [{ id: "l1", characterId: "ada", scene: 1, text: "Good evening to you.", direction: dir, takes: [take("t1")], chosen: "t1", events: [] }, { id: "l2", characterId: "ada", scene: 1, text: "Your soul is overdue.", direction: dir, takes: [take("t2")], chosen: "t2", events: [] }];
   return p;
 }

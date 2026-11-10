@@ -14,14 +14,15 @@ const LIB = [voice("eleven1", "elevenlabs", { licence: "commercial" }), voice("p
 function project(): Project {
   const p = newProject("p1", "Test", NOW);
   p.script = "ADA: Good evening.\nBOB: Your soul is overdue.";
-  p.characters = [{ id: "ada", name: "Ada", language: "English", voiceId: "eleven1" }, { id: "bob", name: "Bob", language: "English", voiceId: "piper1" }];
+  const approval = (voiceId: string, engine: string) => ({ version: 1 as const, history: [], approval: { voiceId, engine, voiceName: voiceId, modelId: null, speakerId: null, approvedAt: NOW, version: 1, basis: "NEEDS_AUDITION" as const, acknowledged: [], by: "owner" as const } });
+  p.characters = [{ id: "ada", name: "Ada", language: "English", voiceId: "eleven1", casting: approval("eleven1", "elevenlabs") }, { id: "bob", name: "Bob", language: "English", voiceId: "piper1", casting: approval("piper1", "piper") }];
   const dir = { emotion: "", note: "", sounds: [], speed: 1, pauseAfter: 0.4 };
   p.lines = [{ id: "l1", characterId: "ada", scene: 1, text: "Good evening to you.", direction: dir, takes: [], events: [] }, { id: "l2", characterId: "bob", scene: 1, text: "Your soul is overdue.", direction: dir, takes: [], events: [] }];
   return p;
 }
 const price = (e: string, chars: number) => (e === "elevenlabs" ? chars * 0.01 : 0);
 const plan = (over: Partial<Parameters<typeof planProduction>[2]> = {}, p = project()): AgentRun => planProduction(p, LIB, { id: "r1", brief: "", mode: "guided", localOnly: false, cloudLimit: 5, now: NOW, price, ...over });
-const ok: Executors = Object.fromEntries((["analyze", "cast", "audition", "direct", "take", "qc", "sound", "timeline", "export"] as const).map((k) => [k, async () => ({ output: k })]));
+const ok: Executors = Object.fromEntries((["analyze", "cast", "approve_cast", "audition", "direct", "take", "qc", "sound", "timeline", "export"] as const).map((k) => [k, async () => ({ output: k })]));
 const fake = (over: Partial<Record<keyof Executors, NonNullable<Executors[keyof Executors]>>> = {}): Executors => ({ ...ok, ...over });
 async function drive(run: AgentRun, ex: Executors, approveAll = false): Promise<AgentRun> {
   let r = run;
@@ -38,7 +39,7 @@ const status = (r: AgentRun, id: string) => r.nodes.find((n) => n.id === id)!.st
 describe("production planning", () => {
   const r = plan();
   it("plans every stage with dependencies and one take per line", () => {
-    expect(r.nodes.map((n) => n.kind)).toEqual(["analyze", "cast", "audition", "direct", "take", "take", "qc", "sound", "timeline", "export"]);
+    expect(r.nodes.map((n) => n.kind)).toEqual(["analyze", "cast", "approve_cast", "audition", "direct", "take", "take", "qc", "sound", "timeline", "export"]);
     expect(r.nodes.find((n) => n.id === "take:l1")!.deps).toEqual(["direct"]);
     expect(r.nodes.find((n) => n.id === "qc")!.deps).toEqual(["take:l1", "take:l2"]);
   });
@@ -67,10 +68,17 @@ describe("production planning", () => {
     expect(planProblems(plan({}, p2), p2, cloned).join(" ")).toMatch(/no consent record/);
     expect(planProblems(plan({ cloudLimit: 0.05 }), project(), LIB).join(" ")).toMatch(/over your limit/);
   });
-  it("puts a cloned voice behind a rights gate", () => {
+  it("puts the approval of the cast behind a rights gate that is never automatic, with or without a cloned voice", () => {
     const cloned = [voice("c1", "elevenlabs", { source: "cloned" })];
     const p = project(); p.characters[0] = { ...p.characters[0]!, voiceId: "c1" };
-    expect(planProduction(p, cloned, { id: "r", brief: "", mode: "autonomous", localOnly: false, cloudLimit: 5, now: NOW, price }).nodes.find((n) => n.id === "cast")!.gate).toBe("rights");
+    delete (p.characters[0] as { casting?: unknown }).casting;
+    const n = planProduction(p, cloned, { id: "r", brief: "", mode: "autonomous", localOnly: false, cloudLimit: 5, now: NOW, price }).nodes.find((x) => x.id === "approve_cast")!;
+    expect(n.gate).toBe("rights");
+    expect(n.status).toBe("planned");
+    expect(n.deps).toEqual(["cast"]);
+  });
+  it("finds the cast already approved and keeps it: the approval step comes back finished", () => {
+    expect(status(plan(), "approve_cast")).toBe("completed");
   });
 });
 
@@ -78,8 +86,8 @@ describe("approval checkpoints", () => {
   it("guided mode stops at the creative gate and runs nothing past it", async () => {
     const r = await drive(plan(), fake());
     expect(status(r, "analyze")).toBe("completed");
-    expect(status(r, "cast")).toBe("awaiting_approval");
-    expect(status(r, "direct")).toBe("planned");
+    expect(status(r, "direct")).toBe("awaiting_approval");
+    expect(status(r, "take:l1")).toBe("planned");
     expect(r.audit.some((a) => a.event.startsWith("waiting for approval"))).toBe(true);
   });
   it("runs to the end when each checkpoint is approved, and still stops at delivery", async () => {
@@ -103,10 +111,10 @@ describe("approval checkpoints", () => {
   });
   it("rejecting a step cancels it and its dependents do not run", async () => {
     let r = await drive(plan(), fake());
-    r = reject(r, "cast", NOW, "wrong voices");
+    r = reject(r, "direct", NOW, "wrong direction");
     r = await runAll(r, fake(), now);
-    expect(status(r, "cast")).toBe("cancelled");
-    expect(status(r, "direct")).toBe("planned");
+    expect(status(r, "direct")).toBe("cancelled");
+    expect(status(r, "take:l1")).toBe("planned");
   });
 });
 
@@ -264,18 +272,45 @@ describe("running for real against a project (fake engine)", () => {
     const done = await runAll(approve(r, "export", NOW), executors(s.env), now);
     expect(done.nodes.find((n) => n.id === "export")!.output).toMatchObject({ ready: true });
   });
-  it("the cast step fills in a missing voice from presets, only from ready engines, and never overrides a choice", async () => {
+  it("the cast step lists candidates for a character with nothing stated, invents nothing, and never overrides a choice", async () => {
     const s = setup();
-    s.project.characters = s.project.characters.map((c) => (c.id === "bob" ? { ...c, voiceId: undefined, about: "a dry noir detective" } : c));
+    s.project.characters = s.project.characters.map((c) => (c.id === "bob" ? { ...c, voiceId: undefined, casting: undefined, about: "a dry noir detective, he is sixty" } : c));
     const r = await drive(plan({ mode: "autonomous" }, s.project), executors(s.env));
     expect(s.project.characters.find((c) => c.id === "ada")!.voiceId).toBe("eleven1");
-    expect(s.project.characters.find((c) => c.id === "bob")!.voiceId).toBeTruthy();
-    expect(s.project.characters.find((c) => c.id === "bob")!.dna?.timbre).toBeTruthy();
+    // Nothing STATED about Bob's voice (the description is not a requirement), so nothing is assigned and the person decides.
+    expect(s.project.characters.find((c) => c.id === "bob")!.voiceId).toBeUndefined();
+    expect(s.project.characters.find((c) => c.id === "bob")!.cast).toBeUndefined();
+    expect(status(r, "cast")).toBe("failed");
+    expect(r.nodes.find((n) => n.id === "cast")!.error).toMatch(/needs your decision[\s\S]*Bob[\s\S]*nothing required is stated/);
+  });
+  it("the cast step assigns a voice only when it is proven to fit what was stated, and leaves it unapproved", async () => {
+    const s = setup();
+    const proven = { ...voice("proven", "piper"), meta: { version: 1 as const, revisions: [], gender: { value: "masculine" as const, status: "verified" as const, source: "owner_listening" as const, confidence: "high" as const }, age: { value: "old" as const, status: "verified" as const, source: "owner_listening" as const, confidence: "high" as const }, languages: { value: ["english"], status: "verified" as const, source: "owner_listening" as const, confidence: "high" as const } } };
+    s.env.library = () => [...LIB, proven];
+    s.project.characters = s.project.characters.map((c) => (c.id === "bob" ? { ...c, voiceId: undefined, casting: undefined, cast: { version: 1 as const, vocalGender: "masculine" as const, vocalAge: ["old" as const] } } : c));
+    const r = await drive(plan({ mode: "autonomous" }, s.project), executors(s.env));
+    const bob = s.project.characters.find((c) => c.id === "bob")!;
+    expect(bob.voiceId).toBe("proven");
+    expect(bob.casting?.approval).toBeUndefined();
     expect(status(r, "cast")).toBe("completed");
+    // The approval step is the person's: autonomous mode stops there.
+    expect(status(r, "approve_cast")).toBe("awaiting_approval");
+    expect(status(r, "take:l2")).toBe("planned");
+  });
+  it("only the person's approval locks the cast, and the agent cannot approve a voice", async () => {
+    const s = setup();
+    s.project.characters = s.project.characters.map((c) => ({ ...c, casting: undefined }));
+    let r = await drive(plan({ mode: "autonomous" }, s.project), executors(s.env));
+    expect(status(r, "approve_cast")).toBe("awaiting_approval");
+    expect(s.project.characters.every((c) => !c.casting?.approval)).toBe(true);
+    r = approve(r, "approve_cast", NOW);
+    r = await runAll(r, executors(s.env), now);
+    expect(s.project.characters.every((c) => !!c.casting?.approval)).toBe(true);
+    expect(status(r, "approve_cast")).toBe("completed");
   });
   it("a local-only run casts only local voices and says so when none fit", async () => {
     const s = setup({ localOnly: true });
-    s.project.characters = s.project.characters.map((c) => (c.id === "bob" ? { ...c, voiceId: undefined, about: "noir detective" } : c));
+    s.project.characters = s.project.characters.map((c) => (c.id === "bob" ? { ...c, voiceId: undefined, casting: undefined, cast: { version: 1 as const, vocalGender: "masculine" as const } } : c));
     const r = await drive(plan({ mode: "autonomous", localOnly: true, cloudLimit: 0 }, s.project), executors(s.env));
     expect(s.project.characters.find((c) => c.id === "bob")!.voiceId).not.toBe("eleven1");
     expect(["completed", "failed"]).toContain(status(r, "cast"));
@@ -363,7 +398,10 @@ import { migrateRun, MAX_NODES } from "./persist";
 describe("reading a saved run (hostile input)", () => {
   it("round-trips a real run", () => {
     const r = plan();
-    expect(migrateRun(JSON.parse(JSON.stringify(r)))).toEqual(r);
+    // Approval is never granted by a file: a finished approval step reads back as finished but not approved, and a person re-approves.
+    const back = migrateRun(JSON.parse(JSON.stringify(r)))!;
+    expect(back.nodes.map((n) => [n.id, n.status])).toEqual(r.nodes.map((n) => [n.id, n.status]));
+    expect(back.nodes.find((n) => n.id === "approve_cast")!.approved).toBe(true);
   });
   it("rejects non-runs without throwing", () => {
     for (const bad of [null, 1, "x", [], {}, { nodes: [] }, { nodes: "no" }]) expect(migrateRun(bad)).toBeUndefined();

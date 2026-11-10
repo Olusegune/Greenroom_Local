@@ -1,3 +1,4 @@
+import { useCasting } from "../casting/useCasting";
 import { pipergender } from "../avatarLibrary";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl, type DesignPreview, type PiperVoice } from "../api";
@@ -68,7 +69,8 @@ function tagline(v: VoiceEntry): string {
 }
 
 function Mine({ goFind }: { goFind: () => void }) {
-  const { library, saveLibrary, keys, toast, project, edit, go } = useApp();
+  const { library, saveLibrary, keys, toast, project, go } = useApp();
+  const casting = useCasting();
   const sample = useSample();
   const add = useAdd();
   const [chatterboxReady, setChatterboxReady] = useState(false);
@@ -85,8 +87,7 @@ function Mine({ goFind }: { goFind: () => void }) {
   const useFor = (v: VoiceEntry, characterId: string) => {
     const c = speakers.find((x) => x.id === characterId);
     if (!c) return;
-    edit((p) => ({ ...p, characters: p.characters.map((x) => (x.id === characterId ? { ...x, voiceId: v.id } : x)) }));
-    toast(`${c.name} will now use ${v.name}.`);
+    void casting.assign(characterId, v);
   };
 
   const importAccount = () =>
