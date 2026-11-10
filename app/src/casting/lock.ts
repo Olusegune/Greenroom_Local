@@ -96,6 +96,8 @@ export function assignVoice(characters: Character[], req: AssignRequest): Assign
     return fail("incompatible", `${req.voice.name} does not fit ${c.name}: ${match.reasons.find((r) => r.outcome === "mismatch")?.text ?? "a stated requirement is not met."}`, match);
   }
   if (match.status === "UNAVAILABLE" && !owner) return fail("unavailable", `${req.voice.name} cannot be used right now.`, match);
+  // The auto-caster and the agent decide alone only when a voice is PROVEN to fit. Anything less is for the owner.
+  if ((req.by === "auto" || req.by === "agent") && match.status !== "VERIFIED_MATCH") return fail("needs_owner", `${req.voice.name} is "${match.status === "NEEDS_AUDITION" ? "listen first" : match.status === "UNKNOWN_METADATA" ? "not enough known" : "compatible, with limits"}" for ${c.name}. Only you can choose it, after listening.`, match);
 
   if (req.approve) {
     if (!owner) return fail("needs_owner", "Only you can approve a voice.", match);

@@ -1,0 +1,827 @@
+{
+  "appVersion": "0.12.8",
+  "at": "2026-11-10T17:34:46.401Z",
+  "scope": "Local engines only (Piper, Kokoro). The owner's approval is performed by the test harness. Nothing judged by ear.",
+  "reading": [
+    {
+      "character": "BABA",
+      "stated": [
+        {
+          "field": "age",
+          "value": "old",
+          "quote": "elderly"
+        },
+        {
+          "field": "gender",
+          "value": "masculine",
+          "quote": "grandfather"
+        },
+        {
+          "field": "language",
+          "value": "Yoruba",
+          "quote": "Yoruba-speaking"
+        }
+      ],
+      "questions": []
+    },
+    {
+      "character": "DETECTIVE",
+      "stated": [
+        {
+          "field": "age",
+          "value": "mid",
+          "quote": "middle-aged"
+        },
+        {
+          "field": "gender",
+          "value": "feminine",
+          "quote": "woman"
+        },
+        {
+          "field": "nationality",
+          "value": "British",
+          "quote": "British"
+        }
+      ],
+      "questions": [
+        "DETECTIVE is described as British. That does not say how they sound: should they speak with British English, another accent, or another language?"
+      ]
+    },
+    {
+      "character": "BOY",
+      "stated": [
+        {
+          "field": "age",
+          "value": "child",
+          "quote": "8 years old"
+        },
+        {
+          "field": "gender",
+          "value": "masculine",
+          "quote": "boy"
+        },
+        {
+          "field": "nationality",
+          "value": "American",
+          "quote": "American"
+        }
+      ],
+      "questions": [
+        "BOY is described as American. That does not say how they sound: should they speak with American English, another accent, or another language?"
+      ]
+    },
+    {
+      "character": "NIMI",
+      "stated": [
+        {
+          "field": "age",
+          "value": "teen",
+          "quote": "teenage"
+        },
+        {
+          "field": "gender",
+          "value": "feminine",
+          "quote": "girl"
+        },
+        {
+          "field": "nationality",
+          "value": "Nigerian",
+          "quote": "Nigerian"
+        }
+      ],
+      "questions": [
+        "NIMI is described as Nigerian. That does not say how they sound: should they speak with Nigerian English, another accent, or another language?"
+      ]
+    },
+    {
+      "character": "DEMON",
+      "stated": [
+        {
+          "field": "gender",
+          "value": "masculine",
+          "quote": "male"
+        },
+        {
+          "field": "nationality",
+          "value": "British",
+          "quote": "British"
+        }
+      ],
+      "questions": [
+        "DEMON is described as British. That does not say how they sound: should they speak with British English, another accent, or another language?",
+        "DEMON: no age is stated. How old should they sound?"
+      ]
+    },
+    {
+      "character": "ROBOT",
+      "stated": [],
+      "questions": [
+        "ROBOT: no vocal gender is stated. Should the voice be masculine, feminine, or does it not matter?",
+        "ROBOT: no age is stated. How old should they sound?"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "character": "BABA",
+      "requirements": {
+        "empty": false,
+        "gender": {
+          "value": "masculine",
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "age": {
+          "value": [
+            "old"
+          ],
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "language": {
+          "value": "Yoruba",
+          "strictness": "required",
+          "origin": "the casting requirements"
+        }
+      },
+      "results": [
+        {
+          "voice": "Deji (Yoruba)",
+          "status": "UNAVAILABLE",
+          "why": "Deji (Yoruba) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it."
+        },
+        {
+          "voice": "George (British, male)",
+          "status": "INCOMPATIBLE",
+          "why": "George (British, male) is recorded as a masculine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Michael (American, male)",
+          "status": "INCOMPATIBLE",
+          "why": "Michael (American, male) is recorded as a masculine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Alan (British)",
+          "status": "INCOMPATIBLE",
+          "why": "Alan (British) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Alba (Scottish)",
+          "status": "INCOMPATIBLE",
+          "why": "Alba (Scottish) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Amy (American)",
+          "status": "INCOMPATIBLE",
+          "why": "Amy (American) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Emma (British, female)",
+          "status": "INCOMPATIBLE",
+          "why": "Emma (British, female) is recorded as a feminine voice; the casting requirements calls for a masculine voice."
+        },
+        {
+          "voice": "Heart (American, female)",
+          "status": "INCOMPATIBLE",
+          "why": "Heart (American, female) is recorded as a feminine voice; the casting requirements calls for a masculine voice."
+        },
+        {
+          "voice": "Joe (American)",
+          "status": "INCOMPATIBLE",
+          "why": "Joe (American) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        }
+      ]
+    },
+    {
+      "character": "DETECTIVE",
+      "requirements": {
+        "empty": false,
+        "gender": {
+          "value": "feminine",
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "age": {
+          "value": [
+            "mid"
+          ],
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "language": {
+          "value": "English",
+          "strictness": "preferred",
+          "origin": "the character's language"
+        },
+        "accent": {
+          "value": "British",
+          "strictness": "preferred",
+          "origin": "the casting requirements"
+        }
+      },
+      "results": [
+        {
+          "voice": "Emma (British, female)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Emma (British, female) is recorded as a feminine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Alan (British)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Alan (British) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Heart (American, female)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Heart (American, female) is recorded as a feminine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Alba (Scottish)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Alba (Scottish) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Amy (American)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Amy (American) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Joe (American)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Joe (American) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Deji (Yoruba)",
+          "status": "UNAVAILABLE",
+          "why": "Deji (Yoruba) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it."
+        },
+        {
+          "voice": "George (British, male)",
+          "status": "INCOMPATIBLE",
+          "why": "George (British, male) is recorded as a masculine voice; the casting requirements calls for a feminine voice."
+        },
+        {
+          "voice": "Michael (American, male)",
+          "status": "INCOMPATIBLE",
+          "why": "Michael (American, male) is recorded as a masculine voice; the casting requirements calls for a feminine voice."
+        }
+      ]
+    },
+    {
+      "character": "BOY",
+      "requirements": {
+        "empty": false,
+        "gender": {
+          "value": "masculine",
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "age": {
+          "value": [
+            "child"
+          ],
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "language": {
+          "value": "English",
+          "strictness": "preferred",
+          "origin": "the character's language"
+        }
+      },
+      "results": [
+        {
+          "voice": "George (British, male)",
+          "status": "UNKNOWN_METADATA",
+          "why": "George (British, male) is recorded as a masculine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Michael (American, male)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Michael (American, male) is recorded as a masculine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Alan (British)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Alan (British) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Alba (Scottish)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Alba (Scottish) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Amy (American)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Amy (American) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Joe (American)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Joe (American) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Deji (Yoruba)",
+          "status": "UNAVAILABLE",
+          "why": "Deji (Yoruba) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it."
+        },
+        {
+          "voice": "Emma (British, female)",
+          "status": "INCOMPATIBLE",
+          "why": "Emma (British, female) is recorded as a feminine voice; the casting requirements calls for a masculine voice."
+        },
+        {
+          "voice": "Heart (American, female)",
+          "status": "INCOMPATIBLE",
+          "why": "Heart (American, female) is recorded as a feminine voice; the casting requirements calls for a masculine voice."
+        }
+      ]
+    },
+    {
+      "character": "NIMI",
+      "requirements": {
+        "empty": false,
+        "gender": {
+          "value": "feminine",
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "age": {
+          "value": [
+            "teen"
+          ],
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "language": {
+          "value": "English",
+          "strictness": "preferred",
+          "origin": "the character's language"
+        },
+        "accent": {
+          "value": "Nigerian English",
+          "strictness": "required",
+          "origin": "the casting requirements"
+        }
+      },
+      "results": [
+        {
+          "voice": "Deji (Yoruba)",
+          "status": "UNAVAILABLE",
+          "why": "Deji (Yoruba) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it."
+        },
+        {
+          "voice": "Emma (British, female)",
+          "status": "INCOMPATIBLE",
+          "why": "Emma (British, female) is recorded as a feminine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Heart (American, female)",
+          "status": "INCOMPATIBLE",
+          "why": "Heart (American, female) is recorded as a feminine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Alan (British)",
+          "status": "INCOMPATIBLE",
+          "why": "Alan (British) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Alba (Scottish)",
+          "status": "INCOMPATIBLE",
+          "why": "Alba (Scottish) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Amy (American)",
+          "status": "INCOMPATIBLE",
+          "why": "Amy (American) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "George (British, male)",
+          "status": "INCOMPATIBLE",
+          "why": "George (British, male) is recorded as a masculine voice; the casting requirements calls for a feminine voice."
+        },
+        {
+          "voice": "Joe (American)",
+          "status": "INCOMPATIBLE",
+          "why": "Joe (American) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Michael (American, male)",
+          "status": "INCOMPATIBLE",
+          "why": "Michael (American, male) is recorded as a masculine voice; the casting requirements calls for a feminine voice."
+        }
+      ]
+    },
+    {
+      "character": "DEMON",
+      "requirements": {
+        "empty": false,
+        "gender": {
+          "value": "masculine",
+          "strictness": "required",
+          "origin": "the casting requirements"
+        },
+        "language": {
+          "value": "English",
+          "strictness": "preferred",
+          "origin": "the character's language"
+        },
+        "accent": {
+          "value": "British",
+          "strictness": "preferred",
+          "origin": "the casting requirements"
+        }
+      },
+      "results": [
+        {
+          "voice": "George (British, male)",
+          "status": "NEEDS_AUDITION",
+          "why": "George (British, male) is recorded as a masculine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Michael (American, male)",
+          "status": "NEEDS_AUDITION",
+          "why": "Michael (American, male) is recorded as a masculine voice (stated, not yet confirmed by listening)."
+        },
+        {
+          "voice": "Alan (British)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Alan (British) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Alba (Scottish)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Alba (Scottish) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Amy (American)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Amy (American) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests feminine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Joe (American)",
+          "status": "UNKNOWN_METADATA",
+          "why": "Joe (American) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it. A name table suggests masculine. Names are not evidence, so this is not used. Listen and confirm."
+        },
+        {
+          "voice": "Deji (Yoruba)",
+          "status": "UNAVAILABLE",
+          "why": "Deji (Yoruba) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it."
+        },
+        {
+          "voice": "Emma (British, female)",
+          "status": "INCOMPATIBLE",
+          "why": "Emma (British, female) is recorded as a feminine voice; the casting requirements calls for a masculine voice."
+        },
+        {
+          "voice": "Heart (American, female)",
+          "status": "INCOMPATIBLE",
+          "why": "Heart (American, female) is recorded as a feminine voice; the casting requirements calls for a masculine voice."
+        }
+      ]
+    },
+    {
+      "character": "ROBOT",
+      "requirements": {
+        "empty": true,
+        "language": {
+          "value": "English",
+          "strictness": "preferred",
+          "origin": "the character's language"
+        }
+      },
+      "results": [
+        {
+          "voice": "Alan (British)",
+          "status": "COMPATIBLE_WITH_LIMITATIONS",
+          "why": "Alan (British) speaks English."
+        },
+        {
+          "voice": "Alba (Scottish)",
+          "status": "COMPATIBLE_WITH_LIMITATIONS",
+          "why": "Alba (Scottish) speaks English."
+        },
+        {
+          "voice": "Amy (American)",
+          "status": "COMPATIBLE_WITH_LIMITATIONS",
+          "why": "Amy (American) speaks English."
+        },
+        {
+          "voice": "Emma (British, female)",
+          "status": "COMPATIBLE_WITH_LIMITATIONS",
+          "why": "Emma (British, female) speaks English."
+        },
+        {
+          "voice": "George (British, male)",
+          "status": "COMPATIBLE_WITH_LIMITATIONS",
+          "why": "George (British, male) speaks English."
+        },
+        {
+          "voice": "Heart (American, female)",
+          "status": "COMPATIBLE_WITH_LIMITATIONS",
+          "why": "Heart (American, female) speaks English."
+        },
+        {
+          "voice": "Joe (American)",
+          "status": "COMPATIBLE_WITH_LIMITATIONS",
+          "why": "Joe (American) speaks English."
+        },
+        {
+          "voice": "Michael (American, male)",
+          "status": "COMPATIBLE_WITH_LIMITATIONS",
+          "why": "Michael (American, male) speaks English."
+        },
+        {
+          "voice": "Deji (Yoruba)",
+          "status": "UNAVAILABLE",
+          "why": "Deji (Yoruba) cannot be used right now: the WazobiaVoice model is not installed on this PC."
+        }
+      ]
+    }
+  ],
+  "autoAssigned": {},
+  "refusals": [
+    {
+      "attempt": "test_harness: give af_heart to demon",
+      "code": "locked",
+      "message": "DEMON has an approved voice (George (British, male)). It can only be changed by you, after confirming."
+    },
+    {
+      "attempt": "auto: give en_US-joe-medium to boy",
+      "code": "needs_owner",
+      "message": "Joe (American) is \"not enough known\" for BOY. Only you can choose it, after listening."
+    },
+    {
+      "attempt": "test_harness: give bm_george to baba",
+      "code": "incompatible",
+      "message": "George (British, male) does not fit BABA: George (British, male) speaks english only; the casting requirements needs Yoruba."
+    },
+    {
+      "attempt": "test_harness: give en_US-amy-medium to nimi",
+      "code": "incompatible",
+      "message": "Amy (American) does not fit NIMI: Amy (American)'s accent is American, not Nigerian English."
+    },
+    {
+      "attempt": "agent: give bm_george to detective",
+      "code": "locked",
+      "message": "DETECTIVE has an approved voice (Emma (British, female)). It can only be changed by you, after confirming."
+    },
+    {
+      "attempt": "owner: approve Joe for the boy without acknowledging the unknowns",
+      "code": "needs_acknowledgement",
+      "message": "Joe (American) is \"not enough known\" for BOY. Listen to it, then approve and accept what is unverified."
+    },
+    {
+      "attempt": "generate a demon line with Heart",
+      "code": "voice_changed",
+      "message": "DEMON was approved with George (British, male), but Heart (American, female) was about to speak. Nothing was made."
+    }
+  ],
+  "cast": [
+    {
+      "character": "BABA",
+      "approved": null,
+      "historyEvents": []
+    },
+    {
+      "character": "DETECTIVE",
+      "approved": {
+        "voice": "Emma (British, female)",
+        "basis": "Not enough known",
+        "acknowledged": [
+          "Emma (British, female) is recorded as a feminine voice (stated, not yet confirmed by listening).",
+          "Emma (British, female) has no recorded vocal age, so it cannot be shown to sound like an adult (the casting requirements). Listen and record it."
+        ],
+        "by": "test_harness",
+        "version": 1
+      },
+      "historyEvents": [
+        "approved",
+        "refused"
+      ]
+    },
+    {
+      "character": "BOY",
+      "approved": null,
+      "historyEvents": []
+    },
+    {
+      "character": "NIMI",
+      "approved": null,
+      "historyEvents": []
+    },
+    {
+      "character": "DEMON",
+      "approved": {
+        "voice": "George (British, male)",
+        "basis": "Listen first",
+        "acknowledged": [
+          "George (British, male) is recorded as a masculine voice (stated, not yet confirmed by listening)."
+        ],
+        "by": "test_harness",
+        "version": 1
+      },
+      "historyEvents": [
+        "approved",
+        "refused"
+      ]
+    },
+    {
+      "character": "ROBOT",
+      "approved": {
+        "voice": "Joe (American)",
+        "basis": "Compatible, with limits",
+        "acknowledged": [],
+        "by": "test_harness",
+        "version": 1
+      },
+      "historyEvents": [
+        "approved"
+      ]
+    }
+  ],
+  "notCast": [
+    {
+      "character": "BABA",
+      "why": "Deji (Yoruba) has no recorded vocal presentation, so it cannot be shown to be a masculine voice (needed: the casting requirements). Listen and record it.",
+      "offered": [
+        "Deji (Yoruba): UNAVAILABLE",
+        "George (British, male): INCOMPATIBLE",
+        "Michael (American, male): INCOMPATIBLE",
+        "Alan (British): INCOMPATIBLE"
+      ]
+    },
+    {
+      "character": "BOY",
+      "why": "George (British, male) is recorded as a masculine voice (stated, not yet confirmed by listening).",
+      "offered": [
+        "George (British, male): UNKNOWN_METADATA",
+        "Michael (American, male): UNKNOWN_METADATA",
+        "Alan (British): UNKNOWN_METADATA",
+        "Alba (Scottish): UNKNOWN_METADATA"
+      ]
+    },
+    {
+      "character": "NIMI",
+      "why": "Deji (Yoruba) has no recorded vocal presentation, so it cannot be shown to be a feminine voice (needed: the casting requirements). Listen and record it.",
+      "offered": [
+        "Deji (Yoruba): UNAVAILABLE",
+        "Emma (British, female): INCOMPATIBLE",
+        "Heart (American, female): INCOMPATIBLE",
+        "Alan (British): INCOMPATIBLE"
+      ]
+    }
+  ],
+  "takes": [
+    {
+      "character": "DETECTIVE",
+      "line": "l-detective-0",
+      "scene": 0,
+      "approvedVoice": "bf_emma",
+      "takeVoice": "bf_emma",
+      "castStamp": {
+        "characterId": "detective",
+        "voiceId": "bf_emma",
+        "engine": "kokoro",
+        "modelId": null,
+        "speakerId": null,
+        "castingVersion": 1
+      },
+      "fileIntact": true,
+      "manifestMatches": true
+    },
+    {
+      "character": "DEMON",
+      "line": "l-demon-0",
+      "scene": 0,
+      "approvedVoice": "bm_george",
+      "takeVoice": "bm_george",
+      "castStamp": {
+        "characterId": "demon",
+        "voiceId": "bm_george",
+        "engine": "kokoro",
+        "modelId": null,
+        "speakerId": null,
+        "castingVersion": 1
+      },
+      "fileIntact": true,
+      "manifestMatches": true
+    },
+    {
+      "character": "ROBOT",
+      "line": "l-robot-0",
+      "scene": 0,
+      "approvedVoice": "en_US-joe-medium",
+      "takeVoice": "en_US-joe-medium",
+      "castStamp": {
+        "characterId": "robot",
+        "voiceId": "en_US-joe-medium",
+        "engine": "piper",
+        "modelId": null,
+        "speakerId": null,
+        "castingVersion": 1
+      },
+      "fileIntact": true,
+      "manifestMatches": true
+    },
+    {
+      "character": "DETECTIVE",
+      "line": "l-detective-1",
+      "scene": 1,
+      "approvedVoice": "bf_emma",
+      "takeVoice": "bf_emma",
+      "castStamp": {
+        "characterId": "detective",
+        "voiceId": "bf_emma",
+        "engine": "kokoro",
+        "modelId": null,
+        "speakerId": null,
+        "castingVersion": 1
+      },
+      "fileIntact": true,
+      "manifestMatches": true
+    },
+    {
+      "character": "DEMON",
+      "line": "l-demon-1",
+      "scene": 1,
+      "approvedVoice": "bm_george",
+      "takeVoice": "bm_george",
+      "castStamp": {
+        "characterId": "demon",
+        "voiceId": "bm_george",
+        "engine": "kokoro",
+        "modelId": null,
+        "speakerId": null,
+        "castingVersion": 1
+      },
+      "fileIntact": true,
+      "manifestMatches": true
+    },
+    {
+      "character": "ROBOT",
+      "line": "l-robot-1",
+      "scene": 1,
+      "approvedVoice": "en_US-joe-medium",
+      "takeVoice": "en_US-joe-medium",
+      "castStamp": {
+        "characterId": "robot",
+        "voiceId": "en_US-joe-medium",
+        "engine": "piper",
+        "modelId": null,
+        "speakerId": null,
+        "castingVersion": 1
+      },
+      "fileIntact": true,
+      "manifestMatches": true
+    }
+  ],
+  "regenerated": [
+    "l-demon-1",
+    "l-detective-0"
+  ],
+  "audit": [],
+  "export": {
+    "path": "C:\\Users\\eduni\\Documents\\Greenroom Local\\acceptance\\Six characters - full scene.wav",
+    "lufs": -18.804631238662612,
+    "truePeakDb": -1,
+    "seconds": 15.530000000000003
+  },
+  "refusalsAll": [
+    {
+      "attempt": "test_harness: give af_heart to demon",
+      "code": "locked",
+      "message": "DEMON has an approved voice (George (British, male)). It can only be changed by you, after confirming."
+    },
+    {
+      "attempt": "auto: give en_US-joe-medium to boy",
+      "code": "needs_owner",
+      "message": "Joe (American) is \"not enough known\" for BOY. Only you can choose it, after listening."
+    },
+    {
+      "attempt": "test_harness: give bm_george to baba",
+      "code": "incompatible",
+      "message": "George (British, male) does not fit BABA: George (British, male) speaks english only; the casting requirements needs Yoruba."
+    },
+    {
+      "attempt": "test_harness: give en_US-amy-medium to nimi",
+      "code": "incompatible",
+      "message": "Amy (American) does not fit NIMI: Amy (American)'s accent is American, not Nigerian English."
+    },
+    {
+      "attempt": "agent: give bm_george to detective",
+      "code": "locked",
+      "message": "DETECTIVE has an approved voice (Emma (British, female)). It can only be changed by you, after confirming."
+    },
+    {
+      "attempt": "owner: approve Joe for the boy without acknowledging the unknowns",
+      "code": "needs_acknowledgement",
+      "message": "Joe (American) is \"not enough known\" for BOY. Listen to it, then approve and accept what is unverified."
+    },
+    {
+      "attempt": "generate a demon line with Heart",
+      "code": "voice_changed",
+      "message": "DEMON was approved with George (British, male), but Heart (American, female) was about to speak. Nothing was made."
+    }
+  ]
+}
