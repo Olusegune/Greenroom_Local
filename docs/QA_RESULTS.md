@@ -86,3 +86,11 @@ Each demo was also re-read from disk: every character has a library voice, a pro
 - **Preset card redesigned:** one line of facts under the name, a two-line description, accent (and a warning chip only when experimental) plus status, one voice picker with a one-line fit note (a quiet tick when it fits), Audition / Free preview, a full-width Add to Cast, and everything else (works on, free preview voice, audition text, Compare, listening test, duplicate, remove) under "More". Checked in a real browser (demo build): voices QA and the full presets QA pass, no console errors.
 - **Not installed on the owner's PC, so not tested:** the sound-effects model (Stable Audio Open Small, runtime present, weights missing) and ACE-Step music (not installed). Their status stays "Installed, not Ready".
 - Checks: 971 JavaScript tests, 130 Rust tests (3 ignored), clippy clean, `rafter secrets` clean.
+
+## 0.13.0 (2026-11-10): casting integrity
+
+- **Casting rules** are covered by `app/src/casting/*.test.ts` (examples, 3,000 random character-and-voice pairs, 1,500 random attempts to change approved voices, hostile saved files, the L2-ARCTIC speaker map against the model's own file). 1,067 JavaScript tests, 130 Rust tests, clippy clean, `npm audit` 0, `cargo audit` 6 allowed warnings, secret scan clean.
+- **Real audio**: the six-character acceptance run (`docs/acceptance-results.json`) with real Piper and Kokoro. Three characters cast and spoke; three correctly not cast (no suitable voice installed). Every take verified against the approved voice, character, file hash and manifest. Mix -18.8 LUFS at -1.0 dBTP, measured with ffmpeg.
+- **Real app**: the built exe was started and its window looked at; `scripts/qa/real_app_readonly.mjs` drove every screen read-only against the real library (17 voices): no errors.
+- **Browser runs**: smoke, presets, presets with voices, own audio, sweep, script and picture import, agent, keyboard, setup, casting, accessibility. Three out-of-date tests were updated; layout defects found and fixed (stretching cards, unstyled inputs, clipped list items).
+- **Not checked**: nothing judged by ear; no project opened, no voice approved and no take generated in the real app by a test; WazobiaVoice, sound effects, ACE-Step and every cloud engine not run; screen reader, zoom and high contrast not tested; `rafter run` not run.

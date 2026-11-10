@@ -1,5 +1,10 @@
 # Handover note: Greenroom Local (for a Claude agent on another PC)
 
+## Update at 0.13.0 (2026-11-10): casting integrity, built on the other PC's 0.12.8
+
+New code in `app/src/casting/` (types, voice profiles with provenance, requirements, the matching engine, the approval lock and generation guard, validated persistence, auto-cast, script reading, expression matrix, audition scripts) and screens `CastingPanel.tsx`, `VoiceReview.tsx`, `genreArt.tsx`. Every voice change goes through `assignVoice` (hook `useCasting`); `generate.ts` takes `opts.casting` and refuses a voice that is not the approved one. The agent has a new step `approve_cast` (gate `rights`, never automatic). Read `docs/CASTING_INTEGRITY_AUDIT.md` first, then `docs/CASTING_MATCH_ENGINE.md`. QA: `scripts/qa/casting_e2e.mjs`, `scripts/qa/real_app_readonly.mjs` (drives the REAL built exe read-only through WebView2 remote debugging), `app/src/demo/acceptance.spec.ts` (`GREENROOM_ACCEPTANCE=1`, real Piper and Kokoro). Gate at 0.13.0: 1,067 JavaScript and 130 Rust tests. Still nothing judged by ear; the Yoruba, child and teen characters of the acceptance run need voices that are not installed on this PC. Note for the build traps: this build was made once, in the foreground, with no other node or cargo process running.
+
+
 Written 2026-11-10 at version **0.12.8**. Read this first, then `CLAUDE.md` (project rules), `DECISIONS.md` (D-1 to D-51) and `docs/QA_RESULTS.md` (what was checked in each release, newest at the bottom). The owner is Victor Edun (git user "Victor Edun", GitHub account **Olusegune**). They do **not** use a terminal: everything is done in the app window, and what they receive is a built installer in a versioned Desktop folder. Everything in this note was checked against the live repository and the owner's PC on the day it was written; anything not checked says so.
 
 ## 1. Get the code (git): verified facts

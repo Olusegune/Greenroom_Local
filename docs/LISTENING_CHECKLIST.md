@@ -102,3 +102,31 @@ If a tag the preview called **sent** was not audible on a voice, the capability 
 - Part 1: all pass, the speakers feel evenly loud and nothing acted.
 - Part 3: the throat clear and chuckle are audible as sounds and the last sentence is colder. If they are not, we learn which tags to drop, which is just as valuable.
 - Part 5: nothing is billed that the cost sheet did not show first.
+
+---
+
+## Part 7: the casting rules need your ears (0.13.0)
+
+The casting rules only treat a fact as **verified** when you listened and said so. Until then every voice is "Listen first" or "Not enough known". This is the quickest way to make the library useful (about 30 minutes for the voices you use):
+
+1. Open **Voice metadata** (sidebar). Choose a voice and press **Hear the neutral line**.
+2. For each fact you are sure of, set it (vocal presentation, how old it sounds, languages, accent), tick **I listened to this voice and confirm what I have entered**, add a short note ("heard the neutral and emotional lines") and press **Save as confirmed**. Leave anything you are unsure of as Unknown: that is a correct answer.
+3. For WazobiaVoice, filter to that engine and press **Hear these in turn (same words)**: the same line is played by each voice so you can compare. Greenroom does not know which Wazobia speakers are men or women, old or young; only you can say.
+4. In **Cast**, open **Choose or check the voice** on a character, state what they need, use **Compare** on up to three candidates and **Hear ... compared in turn**, then **Approve and lock** the one you want.
+
+Things to listen for, per control, if you test expressions (the engine matrix says what each engine accepts; none is marked verified until you record a result):
+
+| Control | Try this line | A pass sounds like | A failure sounds like |
+|---|---|---|---|
+| Laughing | `Ha! [laughs] Oh, that is wonderful.` | a real laugh | the word "laughs" spoken, or nothing |
+| Crying | `I tried so hard. [crying] I really did.` | a catch in the voice | the tag read aloud, or calm |
+| Whispering | `[whispers] Do not wake them.` | breathy and close | normal volume |
+| Shouting | `[shouting] Get out!` | raised and strained | the neutral level |
+| Sighing | `[sighs] Fine. We will do it your way.` | an audible exhale | the word spoken |
+| Coughing | `[coughs] Sorry. Where was I?` | a cough | the word spoken |
+| Breathlessness | `[out of breath] I ran all the way.` | gasps between phrases | even delivery |
+| Sarcasm | `Oh, brilliant. Another meeting.` | over-sweet, meaning the opposite | sincere |
+| Transitions | a line made phrase by phrase with a different feeling per phrase | a clear change, smooth joins | one feeling, or seams |
+| Exertion | `[straining] Just a little more.` | effort in the voice | calm |
+
+Record each result as a `DECISIONS.md` row (engine, control, heard, decision).

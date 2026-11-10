@@ -85,6 +85,13 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
 
+## New in 0.13.0
+- **Casting integrity.** A voice is only called a match when it is proven. Every fact about a voice shows its status and where it came from; nothing is guessed from a name; an approved voice is locked and only you can change it; generation and export are checked against it. See `docs/CASTING_MATCH_ENGINE.md` and `docs/CASTING_INTEGRITY_AUDIT.md`.
+- **Voice metadata** (sidebar): record what you heard about each voice, with evidence and history. **Cast**: a casting panel per character (what they need, ranked voices with reasons, side-by-side audition, Approve and lock).
+- **Agent Studio** casts only proven matches and asks about the rest; approving the cast is always yours.
+- **Presets**: the genre tiles have icons and colour.
+- With nothing listened to yet, no voice is "verified" and auto-cast assigns nothing: confirm the voices you use in Voice metadata first.
+
 ## New in 0.12.3
 - **Qwen3-TTS is connected** (experimental). Model Center, Qwen card, "Set up Qwen3-TTS automatically", or the tick in Set up my PC. It makes four described English voices. It is slow on a CPU (about a minute per short line here), a voice can differ a little between lines, and the install is about 6.4 GB. Nobody has listened to it, so it shows as Installed, not Ready.
 - The shared installer now installs setuptools first, which a real run showed Qwen needs.
