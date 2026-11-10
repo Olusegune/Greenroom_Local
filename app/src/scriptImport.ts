@@ -3,7 +3,8 @@
 //
 // The text is untrusted: every pattern here is anchored and bounded, lines are capped, and nothing is evaluated or fetched.
 
-import { readVoice, type Heritage, type VoiceAge } from "./avatarLibrary";
+import { extractStated } from "./casting/extract";
+import { type Heritage, type VoiceAge } from "./avatarLibrary";
 import { parseScript } from "./script";
 
 export interface ImportedCharacter {
@@ -204,8 +205,11 @@ export function convertScript(raw: string): Converted {
     .filter((c) => counts.has(c.id))
     .map((c) => {
       const about = kind === "screenplay" ? aboutFor(c.name, actions) : "";
-      const r = about ? readVoice("", about) : {};
-      return { name: c.name, lines: counts.get(c.id) ?? 0, about, gender: r.g, age: r.age, heritage: r.h };
+      // Only what the text states outright (casting/extract.ts). A nationality or an accent is NEVER turned into a heritage.
+      const ex = about ? extractStated(c.name, about) : undefined;
+      const g = ex?.spec.vocalGender === "masculine" ? ("m" as const) : ex?.spec.vocalGender === "feminine" ? ("f" as const) : undefined;
+      const age = ex?.spec.vocalAge?.[0];
+      return { name: c.name, lines: counts.get(c.id) ?? 0, about, gender: g, age };
     });
   if (characters.length > 60) warnings.push(`${characters.length} different speakers were found, which is a lot. Check that names were read correctly.`);
   if (parsed.lines.length === 0) warnings.push("No lines of dialogue were found in this file.");

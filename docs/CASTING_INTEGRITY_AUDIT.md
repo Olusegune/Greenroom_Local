@@ -4,7 +4,7 @@ Written 2026-11-10 against the code at `41983b5` (0.12.8). The assignment named 
 
 The path traced: character definition (`script.ts`, `types.ts`) → voice discovery (`castcall.ts`, `Voices.tsx`, `finder.ts`) → matching (`autocast.ts`, `presets/match.ts`, `agent/services.ts`) → approval (`voiceDna.ts`) → persistence (`ctx.tsx`, `cast.ts`) → generation (`generate.ts`, `Perform.tsx`, `agentEnv.ts`) → playback and export (`manifest.ts`, `markers.ts`, `exportScene.ts`).
 
-## Confirmed causes
+## Confirmed causes (13)
 
 | # | Cause | Evidence (before) | Fix | Test |
 |---|---|---|---|---|
@@ -20,6 +20,7 @@ The path traced: character definition (`script.ts`, `types.ts`) → voice discov
 | 10 | **Export named the wrong voice.** The manifest listed the character's current voice for each line, not the voice that spoke the chosen take. | `manifest.ts:122` (old). | The manifest gives `spokenBy` and `matchesCharacter`; `auditCasting` flags mismatches. | "the manifest names the voice that actually spoke" |
 | 11 | **Saved data was trusted.** `api.projectLoad` was cast with `as Project`; `voices.json` was loaded as is. | `ctx.tsx` `openProject`, `libraryLoad`. | `readProjectCasting` and `readLibraryMeta` check every casting field; a file cannot invent an approval or a "verified" fact. | "a damaged file cannot invent an approval", "a hand-edited voices.json…" |
 | 12 | **A default was treated as a statement.** Every new character is created with the language "English" (`script.ts:91`), and language was only a +100 score, so a Yoruba character could receive an English voice. | `script.ts:91`, old `planCast`. | The default is a preference; a language the owner sets is required. | "the default label English… are preferences; a set language is a rule" |
+| 13 | **Pictures guessed the person.** A voice card chose a face with `autoAvatar` from a Piper first-name table (`Voices.tsx`, `CastingCall.tsx`) or from words in the description ("old", "boy", "Nigerian"); an accent became a heritage, and the script importer read a heritage from a nationality (`scriptImport.ts`; the AI reader was asked for one too). So faces contradicted voices, and the "race" of a face came from an accent. | `avatar.tsx` fallback, `avatarLibrary.ts` `readVoice`/`autoAvatar`, `scriptImport.ts:208`, `scriptAi.ts` | A voice has no face: it shows a neutral waveform mark (`voiceMark.tsx`) or the picture the owner chose. A character's face is drawn only from what the owner stated (its look), else initials. Heritage is never read from a script or an accent. Voice chips say "claimed" until confirmed. | `voiceMark.test.tsx`, `scriptImport.test.ts`, `scriptAi.test.ts` |
 
 ## Checked and not confirmed
 

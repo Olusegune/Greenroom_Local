@@ -1,3 +1,4 @@
+import { CharacterMark } from "../voiceMark";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { api } from "../api";
@@ -26,13 +27,12 @@ export function CharacterFace({ character, voice, size = 44, emotion, editable =
   const [open, setOpen] = useState(false);
   const face = currentFace(character?.avatarId, emotion ? expressionFor(emotion) : undefined);
   const src = face ? (size >= 96 ? face.card : size >= 48 ? face.small : face.thumb) : null;
-  const seed = (voice?.id ?? character?.id ?? "x") + (voice?.name ?? character?.name ?? "");
-  // a character the script or the owner has described is shown as that person; otherwise it shares its voice's face
+  // A face is drawn only from what the owner STATED about this character (its look). Not from its name, a description, its language or its
+  // voice: with nothing stated there is nothing to draw, so the character shows its initials.
   const look = character?.look;
-  const described = !!(look?.gender || look?.age || look?.heritage || character?.about);
-  const cGender = look?.gender === "f" ? "female" : look?.gender === "m" ? "male" : voice?.gender;
-  const cHint = `${character?.name ?? ""} ${character?.language ?? ""} ${character?.about ?? ""}`;
-  const inner = src ? <img className="avatar" src={src} alt={character?.name ?? ""} width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} /> : <Avatar seed={described && character ? `char:${character.id}${character.name}` : seed} gender={cGender} size={size} hint={cHint} own={described} meta={described ? { age: look?.age, heritage: look?.heritage } : undefined} />;
+  const described = !!(look?.gender || look?.age || look?.heritage);
+  const cGender = look?.gender === "f" ? "female" : look?.gender === "m" ? "male" : undefined;
+  const inner = src ? <img className="avatar" src={src} alt={character?.name ?? ""} width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} /> : described && character ? <Avatar seed={`char:${character.id}`} gender={cGender} size={size} own meta={{ age: look?.age, heritage: look?.heritage }} /> : <CharacterMark name={character?.name ?? voice?.name ?? "?"} size={size} />;
   if (!character || !editable) return inner;
   return (
     <>

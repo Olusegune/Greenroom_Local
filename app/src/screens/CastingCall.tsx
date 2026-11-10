@@ -1,8 +1,7 @@
-import { pipergender } from "../avatarLibrary";
+import { VoiceMark } from "../voiceMark";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl } from "../api";
 import { useApp } from "../ctx";
-import { Avatar } from "../avatar";
 import { ALL_PIPER_ROLES, DESIGN_RECIPES, VOICE_PACKS, WAZOBIA_ROLES, baseKey, type PiperRole, type VoicePack, documentedGender } from "../castcall";
 import { wazobiaVoiceEntry } from "../wazobia";
 
@@ -83,7 +82,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
       <div className="stack">
         <div><h3>ONE-PRESS PACKS</h3><p className="muted small">Free, offline, no account. One confirmation installs the engine if needed, downloads the voices and puts them in your library.</p></div>
         <div className="shelf-grid">{VOICE_PACKS.map((pk) => <article className="shelf-voice" key={pk.id}>
-          <Avatar seed={pk.id} size={54} />
+          <VoiceMark id={pk.id} provider="piper" size={54} />
           <div className="shelf-info"><strong>{pk.name}</strong><span>{pk.keys.length} voices</span><small>{pk.blurb}</small></div>
           <div className="shelf-actions"><button className="primary sm" disabled={busy === `pack:${pk.id}` || packDone(pk)} onClick={() => void addPack(pk)}>{packDone(pk) ? "In library" : busy === `pack:${pk.id}` ? "Adding…" : "Add pack"}</button></div>
         </article>)}</div>
@@ -91,7 +90,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
 
       <div className="chips" role="group" aria-label="Accent filter">{accents.map((a) => <button key={a} className="chip" aria-pressed={accent === a} onClick={() => setAccent(a)}>{a}</button>)}</div>
       <div className="shelf-grid">{shown.map((r) => <article className="shelf-voice" key={r.key}>
-        <Avatar seed={r.key} size={54} gender={pipergender(r.key) === "f" ? "female" : pipergender(r.key) === "m" ? "male" : undefined} hint={`${r.accent} ${r.language}`} />
+        <VoiceMark id={r.key} provider="piper" size={54} />
         <div className="shelf-info"><strong>{r.name}</strong><span>{r.accent} · {r.language}</span><small>{r.use} · {r.mb} MB</small></div>
         <div className="shelf-actions">
           <button className="sm" disabled={busy === r.key} onClick={() => void preview(r)} aria-label={`${playing === r.key ? "Pause" : paused === r.key ? "Resume" : "Hear"} ${r.name}`}>{playing === r.key ? "Pause" : paused === r.key ? "Resume" : "Hear"}</button>
@@ -110,7 +109,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
       <div className="stack">
         <div><h3>DESIGN RECIPES · ELEVENLABS (PAID)</h3><p className="muted small">Ready-written descriptions for characters the local voices cannot cover. Opening one fills Design a voice. Nothing is spent until you press generate.</p></div>
         <div className="shelf-grid">{DESIGN_RECIPES.map((r) => <article className="shelf-voice" key={r.id}>
-          <Avatar seed={r.id} size={54} hint={`${r.accent} ${r.description}`} />
+          <VoiceMark id={r.id} provider="elevenlabs" size={54} />
           <div className="shelf-info"><strong>{r.name}</strong><span>{r.accent}</span><small>{r.description.slice(0, 70)}…</small></div>
           <div className="shelf-actions"><button className="sm" onClick={() => onDesign(r.description, r.line)}>Open in Design</button></div>
         </article>)}</div>

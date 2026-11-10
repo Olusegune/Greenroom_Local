@@ -85,6 +85,9 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
 
+## New in 0.13.1
+- **A voice has no face.** Voice lists show a neutral waveform mark, or the picture you chose, instead of a person guessed from its name, description or accent. A character's face comes only from what you stated about them, else initials. A heritage is never read from a script or an accent.
+
 ## New in 0.13.0
 - **Casting integrity.** A voice is only called a match when it is proven. Every fact about a voice shows its status and where it came from; nothing is guessed from a name; an approved voice is locked and only you can change it; generation and export are checked against it. See `docs/CASTING_MATCH_ENGINE.md` and `docs/CASTING_INTEGRITY_AUDIT.md`.
 - **Voice metadata** (sidebar): record what you heard about each voice, with evidence and history. **Cast**: a casting panel per character (what they need, ranked voices with reasons, side-by-side audition, Approve and lock).

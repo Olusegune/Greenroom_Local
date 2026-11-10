@@ -52,3 +52,12 @@
 
 /* One open casting panel must not stretch its neighbours. */
 .cast-grid { align-items: start; }
+
+/* ---- a voice has no face: a neutral waveform mark; a character with nothing stated shows initials --------------------- */
+.voice-mark { flex: none; display: block; --vm: 200; }
+.voice-mark .vm-bg { fill: hsl(var(--vm) 40% 22% / .55); stroke: hsl(var(--vm) 55% 55% / .55); stroke-width: 1.2; }
+.voice-mark .vm-bar { fill: hsl(var(--vm) 75% 72%); }
+:root[data-theme="light"] .voice-mark .vm-bg { fill: hsl(var(--vm) 55% 90%); stroke: hsl(var(--vm) 45% 55% / .7); }
+:root[data-theme="light"] .voice-mark .vm-bar { fill: hsl(var(--vm) 55% 32%); }
+.char-mark { flex: none; display: inline-grid; place-items: center; border-radius: 50%; font-weight: 700; letter-spacing: .02em; color: hsl(var(--cm) 70% 80%); background: hsl(var(--cm) 35% 22%); border: 1px solid hsl(var(--cm) 45% 45% / .6); }
+:root[data-theme="light"] .char-mark { color: hsl(var(--cm) 60% 24%); background: hsl(var(--cm) 60% 88%); border-color: hsl(var(--cm) 40% 50% / .6); }

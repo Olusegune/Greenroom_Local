@@ -24,8 +24,8 @@ describe("a model's reply is checked before it is used", () => {
   it("reads a clean reply", () => {
     const r = parseCasting(good, names);
     expect(r).toHaveLength(3);
-    expect(r[0]).toEqual({ name: "Ada", about: "A stern grandmother in her sixties.", gender: "f", age: "old", heritage: "black" });
-    expect(r[1]).toMatchObject({ name: "Tunde", gender: "m", age: "young", heritage: "black" });
+    expect(r[0]).toEqual({ name: "Ada", about: "A stern grandmother in her sixties.", gender: "f", age: "old", heritage: undefined });
+    expect(r[1]).toMatchObject({ name: "Tunde", gender: "m", age: "young", heritage: undefined });
     expect(r[2]).toEqual({ name: "Mama", about: undefined, gender: undefined, age: undefined, heritage: undefined });
   });
   it("reads a reply in a code fence or with words around it", () => {

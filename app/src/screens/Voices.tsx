@@ -1,6 +1,6 @@
+import { VoiceMark } from "../voiceMark";
 import { documentedGender } from "../castcall";
 import { useCasting } from "../casting/useCasting";
-import { pipergender } from "../avatarLibrary";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl, type DesignPreview, type PiperVoice } from "../api";
 import { useApp } from "../ctx";
@@ -15,9 +15,8 @@ import { fromBase64 } from "../audio";
 import type { Consent, ConsentBasis, LicenceUse, VoiceEntry } from "../types";
 import { BASIS_LABEL, LICENCE_LABEL, rightsFor } from "../trust";
 import { Note, PlayButton, Tabs, useBusy } from "../ui";
-import { Avatar } from "../avatar";
 import { WaveMark } from "../cardArt";
-import { favouritesFirst, voiceChips } from "../voiceMeta";
+import { favouritesFirst, voiceChipsChecked } from "../voiceMeta";
 import AccentSheet from "./AccentSheet";
 import CastingCall from "./CastingCall";
 import { DESIGN_ACCENTS } from "../accents";
@@ -157,7 +156,7 @@ function Mine({ goFind }: { goFind: () => void }) {
               </button>
               <div className="vc-top">
                 <span className="vc-face">
-                  <AvatarButton voice={v} seed={v.id + v.name} gender={v.gender} size={72} />
+                  <AvatarButton voice={v} seed={v.id + v.name} size={72} />
                   <PlayButton round label={`Hear ${shortName(v.name)}`} get={() => sample(v)} />
                 </span>
                 <div className="vc-id">
@@ -169,8 +168,8 @@ function Mine({ goFind }: { goFind: () => void }) {
               <div className="vc-meta">
                 <span className="vc-engine">{ENGINES[v.provider].label}</span>
                 <span className="vc-sep" aria-hidden="true" />
-                {voiceChips(v, voiceLine(v)).map((c) => (
-                  <span key={c.kind + c.text} className="vc-chip">
+                {voiceChipsChecked(v, voiceLine(v)).map((c) => (
+                  <span key={c.kind + c.text} className="vc-chip" title={c.title}>
                     {c.kind === "language" && <Globe size={14} />}{c.kind === "accent" && <Pin size={14} />}{c.kind === "gender" && <Person size={14} />}
                     {c.text}
                   </span>
@@ -294,7 +293,7 @@ function LocalVoiceShelf() {
     {error && <Note>Could not load the voice catalogue: {error}. Check your connection or try Find a voice.</Note>}
     {!loading && !error && shown.length === 0 && <p className="muted">No voices match your search.</p>}
     <div className="shelf-grid">{shown.map((v) => <article className={selected === v.key ? "shelf-voice selected" : "shelf-voice"} key={v.key}>
-      <Avatar seed={v.key} size={54} gender={pipergender(v.key) === "f" ? "female" : pipergender(v.key) === "m" ? "male" : undefined} hint={`${v.language} ${v.country}`} />
+      <VoiceMark id={v.key} provider="piper" size={54} />
       <div className="shelf-info"><strong>{v.name}</strong><span>{v.language} · {v.country}</span><small>{v.quality} quality · {v.sizeMb} MB</small>{project && library.some((x) => x.provider === "piper" && x.id === v.key) && <select aria-label={`Select character for ${v.name}`} value="" onChange={(e) => { const id = e.target.value; if (id) { edit((p) => ({ ...p, characters: p.characters.map((c) => c.id === id ? { ...c, voiceId: v.key } : c) })); toast(`${v.name} assigned.`); } }}><option value="">Assign to character…</option>{project.characters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>}</div>
       <div className="shelf-actions"><div className="shelf-mini-actions"><button className="shelf-icon" aria-label={`${favorites.includes(v.key) ? "Remove from" : "Add to"} favorites: ${v.name}`} title={favorites.includes(v.key) ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorites.includes(v.key)} onClick={() => favorite(v.key)}>{favorites.includes(v.key) ? "★" : "☆"}</button><button className="shelf-icon play" disabled={!!busy} aria-label={`${playing === v.key ? "Pause" : "Play"} ${v.name}`} title="Play voice sample" onClick={() => void play(v)}>{playing === v.key ? "Ⅱ" : "▶"}</button></div>{library.some((x) => x.provider === "piper" && x.id === v.key) ? !project && <button className="sm shelf-add" onClick={() => go("home")}>Use voice</button> : <button className="sm shelf-add" disabled={!!busy} onClick={() => void download(v)}>{busy === v.key ? "Adding…" : "Add voice"}</button>}</div>
     </article>)}</div>
@@ -495,7 +494,7 @@ function Find() {
                 <div key={f.engine + f.id} className="card voice-card vc">
                   <div className="vc-top">
                     <span className="vc-face">
-                      <Avatar seed={f.id + f.name} gender={f.gender} size={72} hint={`${f.accent} ${f.language} ${f.description}`} />
+                      <VoiceMark id={f.id + f.name} provider={f.engine} size={72} />
                       {f.engine !== "piper" && <PlayButton round label={`Hear ${shortName(f.name)}`} get={hear(f)} disabled={!f.previewUrl && f.engine === "elevenlabs"} />}
                     </span>
                     <div className="vc-id">

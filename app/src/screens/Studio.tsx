@@ -1,8 +1,8 @@
+import { VoiceFace } from "../voiceMark";
 import { useState } from "react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { api, inApp } from "../api";
 import { fromBase64, textBase64 } from "../audio";
-import { Avatar } from "../avatar";
 import { useApp } from "../ctx";
 import { chosenTake } from "../direct";
 import { DEFAULT_PRICES, ENGINES, type Engine, type Prices } from "../engines";
@@ -137,7 +137,7 @@ export default function Studio() {
               const v = library.find((x) => x.id === r.voiceId);
               return (
                 <div key={r.voiceId + r.engine} className="right-row">
-                  <Avatar seed={r.voiceId + r.name} gender={v?.gender} size={40} />
+                  <VoiceFace voice={v} id={r.voiceId} provider={r.engine} size={40} />
                   <span className="right-text">
                     <strong>{r.name}</strong>
                     <span className="muted small">

@@ -8,7 +8,7 @@ const voice = (over: Partial<VoiceEntry>): VoiceEntry => ({ id: "v1", name: "Chl
 describe("the voice looks editor", () => {
   it("shows the stored gender, age and heritage as selected", () => {
     const html = renderToStaticMarkup(<VoiceLooks v={voice({ age: "child", heritage: "black" })} onChange={() => undefined} />);
-    expect(html).toContain("Who is this voice?");
+    expect(html).toContain("Picture look (appearance only, optional)");
     expect(html).toMatch(/<option value="child" selected/);
     expect(html).toMatch(/<option value="black" selected/);
     expect(html).toMatch(/<option selected[^>]*>Female/);

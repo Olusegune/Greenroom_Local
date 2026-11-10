@@ -1,32 +1,32 @@
+import { VoiceFace, VoiceMark } from "../voiceMark";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { api } from "../api";
-import { Avatar } from "../avatar";
 import { useApp } from "../ctx";
 import { portraitPrompt, toPortrait, validPortrait } from "../portrait";
 import { AGE_CHOICES, HERITAGE_CHOICES } from "../avatarLibrary";
 import type { VoiceEntry } from "../types";
 
 /** A voice's face. Press it to give the voice a real picture: choose a file, or describe one and have an image model make it. */
-export function AvatarButton({ voice, seed, gender, size = 44, role = "" }: { voice?: VoiceEntry; seed: string; gender?: string; size?: number; role?: string }) {
+export function AvatarButton({ voice, seed, size = 44, role = "" }: { voice?: VoiceEntry; seed: string; size?: number; role?: string }) {
   const [open, setOpen] = useState(false);
-  if (!voice) return <Avatar seed={seed} gender={gender} size={size} />;
+  if (!voice) return <VoiceMark id={seed} size={size} />;
   return (
     <>
       <button className="avatar-btn" aria-label={`Change the picture for ${voice.name}`} title="Change the picture" onClick={() => setOpen(true)} style={{ background: "none", border: 0, padding: 0, cursor: "pointer", borderRadius: "50%", lineHeight: 0 }}>
-        <Avatar seed={seed} gender={gender} size={size} />
+        <VoiceFace voice={voice} size={size} />
       </button>
-      {open && createPortal(<PortraitDialog voice={voice} seed={seed} gender={gender} role={role} onClose={() => setOpen(false)} />, document.body)}
+      {open && createPortal(<PortraitDialog voice={voice} role={role} onClose={() => setOpen(false)} />, document.body)}
     </>
   );
 }
 
-/** Gender, age and heritage of the person a voice is meant to be. Only used to choose its automatic picture. */
+/** What the owner says the person in a picture looks like. Appearance only: it never changes how the voice is matched, and a voice shows no person unless a picture is chosen for it. */
 export function VoiceLooks({ v, onChange }: { v: VoiceEntry; onChange: (p: Partial<VoiceEntry>) => void }) {
   const g = /^f/i.test(v.gender) ? "Female" : /^m/i.test(v.gender) ? "Male" : /neutral/i.test(v.gender) ? "Neutral" : "";
   return (
     <fieldset className="row wrap" style={{ border: 0, padding: 0, margin: 0, gap: 8 }}>
-      <legend className="muted small">Who is this voice? Used only to pick its picture.</legend>
+      <legend className="muted small">Picture look (appearance only, optional)</legend>
       <label className="field" style={{ minWidth: 120 }}>
         Gender
         <select aria-label={`Gender of ${v.name}`} value={g} onChange={(e) => onChange({ gender: e.target.value })}>
@@ -60,7 +60,7 @@ export function VoiceLooks({ v, onChange }: { v: VoiceEntry; onChange: (p: Parti
   );
 }
 
-function PortraitDialog({ voice, seed, gender, role, onClose }: { voice: VoiceEntry; seed: string; gender?: string; role: string; onClose: () => void }) {
+function PortraitDialog({ voice, role, onClose }: { voice: VoiceEntry; role: string; onClose: () => void }) {
   const { keys, saveLibrary, confirmSpend, toast, go } = useApp();
   const [prompt, setPrompt] = useState(() => portraitPrompt(voice, role));
   const [busy, setBusy] = useState(false);
@@ -103,7 +103,7 @@ function PortraitDialog({ voice, seed, gender, role, onClose }: { voice: VoiceEn
         <h2 id="pt-t">Picture for {voice.name}</h2>
         <div className="row wrap" style={{ alignItems: "flex-start" }}>
           <div className="stack" style={{ alignItems: "center" }}>
-            {made && validPortrait(made) ? <img src={made} alt="The new picture" width={128} height={128} style={{ borderRadius: "50%", objectFit: "cover" }} /> : <Avatar seed={seed} gender={gender} size={128} />}
+            {made && validPortrait(made) ? <img src={made} alt="The new picture" width={128} height={128} style={{ borderRadius: "50%", objectFit: "cover" }} /> : <VoiceFace voice={voice} size={128} />}
             <span className="muted small">{made ? "New" : "Now"}</span>
           </div>
           <div className="stack" style={{ flex: 1, minWidth: 260 }}>

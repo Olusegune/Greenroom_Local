@@ -55,7 +55,7 @@ describe("a Fountain or screenplay file is turned into the app's script format",
     expect(ada.about).toMatch(/60s, Nigerian/);
     expect(ada.gender).toBe("f");
     expect(ada.age).toBe("old");
-    expect(ada.heritage).toBe("black");
+    expect(ada.heritage).toBeUndefined(); // a nationality is never turned into a heritage (0.13.1)
     expect(c.characters.find((x) => x.name === "Tunde")!.lines).toBe(2);
   });
   it("makes a script the app reads back to the same lines", () => {
