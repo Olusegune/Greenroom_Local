@@ -10,6 +10,8 @@ import { useCasting } from "../casting/useCasting";
 import { profileOf } from "../casting/voiceProfile";
 import type { Character, VoiceEntry } from "../types";
 import { PlayButton } from "../ui";
+import IntegrityCard, { IntegrityTable } from "./IntegrityCard";
+import { integrityOf } from "../casting/integrity";
 import { useSample } from "../useSample";
 
 const AGES: { id: VocalAge; label: string }[] = [{ id: "child", label: "Child" }, { id: "teen", label: "Teen" }, { id: "young", label: "Young adult" }, { id: "mid", label: "Adult" }, { id: "old", label: "Older" }];
@@ -37,6 +39,7 @@ export default function CastingPanel({ character }: { character: Character }) {
   const scripts = auditionScripts({ language: req.language?.value, accent: req.accent?.value, ...(firstLine ? { characterLine: firstLine } : {}) });
   const script = scripts.find((s) => s.id === scriptId) ?? scripts[0]!;
   const voiceOf = (id: string): VoiceEntry | undefined => library.find((v) => v.id === id);
+  const current = character.voiceId ? voiceOf(character.voiceId) : undefined;
 
   const setSpec = (patch: Partial<CastingSpec>) => edit((p) => ({ ...p, characters: p.characters.map((c) => (c.id === character.id ? { ...c, cast: { ...(c.cast ?? { version: 1 as const }), ...patch } } : c)) }), "cast-spec");
   const toggleAge = (a: VocalAge) => { const cur = spec.vocalAge ?? []; const next = cur.includes(a) ? cur.filter((x) => x !== a) : [...cur, a]; setSpec({ vocalAge: next.length ? next : [] }); };
@@ -70,6 +73,7 @@ export default function CastingPanel({ character }: { character: Character }) {
           <span className={`status-chip s-${m.status.toLowerCase()}`} title={m.reasons.map((r) => r.text).join("\n")}>{isApproved ? "Approved" : STATUS_LABEL[m.status]}</span>
         </div>
         <p className="muted small">{summaryOf(m)}</p>
+        <details className="cand-why"><summary className="small">Why</summary><IntegrityTable t={integrityOf(character, v, ctx)} /></details>
         <div className="row wrap">
           <PlayButton label="Hear" get={() => sample(v, script.text)} />
           {!isApproved && <button className="sm" onClick={() => void casting.assign(character.id, v)}>Use for now</button>}
@@ -93,6 +97,7 @@ export default function CastingPanel({ character }: { character: Character }) {
           <button className="sm" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? "Hide casting" : "Choose or check the voice"}</button>
         </span>
       </div>
+      {current && <IntegrityCard character={character} voice={current} context={ctx} />}
       {open && (
         <div className="stack">
           <fieldset className="cast-req">

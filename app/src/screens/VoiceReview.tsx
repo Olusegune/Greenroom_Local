@@ -8,6 +8,8 @@ import { applyMetaChange, profileOf, type MetaChange } from "../casting/voicePro
 import type { VoiceEntry } from "../types";
 import { PlayButton } from "../ui";
 import { useSample } from "../useSample";
+import ListeningSession from "./ListeningSession";
+import { sessionQueue } from "../casting/session";
 
 
 const SOURCE_LABEL: Record<FactSource, string> = {
@@ -37,6 +39,8 @@ export default function VoiceReview() {
   const [listened, setListened] = useState(false);
   const [evidence, setEvidence] = useState("");
   const [busy, setBusy] = useState(false);
+  const [session, setSession] = useState(false);
+  const todo = useMemo(() => sessionQueue(library).length, [library]);
 
   const shown = useMemo(() => library.filter((v) => `${v.name} ${v.provider} ${v.language} ${v.accent}`.toLowerCase().includes(q.trim().toLowerCase()) && (!onlyReview || needsReview(v))), [library, q, onlyReview]);
   const sel = library.find((v) => v.id === selId);
@@ -85,6 +89,9 @@ export default function VoiceReview() {
       <header><span className="eyebrow">VOICES</span><h1>Voice metadata</h1>
         <p className="lede">What Greenroom knows about each voice, and where it came from. Nothing is guessed from a voice's name. Listen, then record what you heard: only a fact you confirmed by listening is "verified".</p>
       </header>
+      {session ? <ListeningSession engine="all" onClose={() => setSession(false)} /> : (
+        <div className="card row between wrap"><span><strong>{todo} voice{todo === 1 ? "" : "s"} to confirm.</strong> <span className="muted small">A listening session plays each one and you say what you hear. About 10 seconds per voice.</span></span><button className="primary" disabled={todo === 0} onClick={() => setSession(true)}>Start a listening session</button></div>
+      )}
       <div className="row wrap">
         <input type="search" aria-label="Search voices" placeholder="Search voices" value={q} onChange={(e) => setQ(e.target.value)} />
         <label className="row small"><input type="checkbox" checked={onlyReview} onChange={(e) => setOnlyReview(e.target.checked)} /> Only voices with something unconfirmed</label>

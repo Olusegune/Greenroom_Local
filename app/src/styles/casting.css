@@ -61,3 +61,37 @@
 :root[data-theme="light"] .voice-mark .vm-bar { fill: hsl(var(--vm) 55% 32%); }
 .char-mark { flex: none; display: inline-grid; place-items: center; border-radius: 50%; font-weight: 700; letter-spacing: .02em; color: hsl(var(--cm) 70% 80%); background: hsl(var(--cm) 35% 22%); border: 1px solid hsl(var(--cm) 45% 45% / .6); }
 :root[data-theme="light"] .char-mark { color: hsl(var(--cm) 60% 24%); background: hsl(var(--cm) 60% 88%); border-color: hsl(var(--cm) 40% 50% / .6); }
+
+/* ---- the Casting Integrity card ------------------------------------------------------------------------------------ */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.stack.tight { gap: 0; }
+.integrity-card { border: 1px solid var(--line-strong); border-radius: var(--r-card); padding: var(--s3); background: var(--surface-2); display: flex; flex-direction: column; gap: var(--s2); }
+.integrity-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.integrity-table thead th { text-align: left; font-weight: 600; font-size: var(--fs-xs); color: var(--text-2, var(--text)); padding: 2px 6px 6px; opacity: .8; }
+.integrity-table tbody tr { border-top: 1px solid var(--line); }
+.integrity-table th[scope="row"] { text-align: left; font-weight: 400; padding: 6px; width: 42%; }
+.integrity-table td { padding: 6px; }
+.it-label { display: block; font-weight: 600; }
+.it-req { display: block; font-size: var(--fs-xs); opacity: .85; }
+.it-state { width: 36px; text-align: center; }
+.it-icon { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font-weight: 700; font-size: 13px; border: 1.5px solid currentColor; }
+.it-icon.it-verified { color: #52d68a; }
+.it-icon.it-claimed { color: #f0c674; }
+.it-icon.it-unknown { color: #9aa8a0; border-style: dashed; }
+.it-icon.it-conflict { color: #ff8a80; }
+.it-icon.it-limit { color: #7dc4f0; }
+.it-icon.it-none { color: #7b8a82; border-color: transparent; }
+:root[data-theme="light"] .it-icon.it-verified { color: #17713f; }
+:root[data-theme="light"] .it-icon.it-claimed { color: #8a5a00; }
+:root[data-theme="light"] .it-icon.it-unknown { color: #55645b; }
+:root[data-theme="light"] .it-icon.it-conflict { color: #a32a1e; }
+:root[data-theme="light"] .it-icon.it-limit { color: #1d5f8a; }
+:root[data-theme="light"] .it-icon.it-none { color: #55645b; }
+.it-summary { margin: 0; }
+.cand-why summary { cursor: pointer; }
+
+/* ---- the listening session ------------------------------------------------------------------------------------------ */
+.listening-session kbd { font-family: var(--font-mono); font-size: 11px; padding: 0 5px; border: 1px solid var(--line-strong); border-radius: 4px; margin-left: 4px; opacity: .8; }
+.ls-group { border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--s3); display: flex; flex-direction: column; gap: var(--s2); }
+.ls-group legend { padding: 0 var(--s2); font-weight: 600; }
+.ls-group button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, var(--surface-2)); font-weight: 700; }
