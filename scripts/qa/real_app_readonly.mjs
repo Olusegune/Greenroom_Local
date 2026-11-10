@@ -5,7 +5,7 @@
 // How: start the exe with WebView2 remote debugging on, then run this script.
 //   PowerShell:  $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333"; Start-Process "<path to Greenroom Local.exe>"
 //   then:        node scripts/qa/real_app_readonly.mjs <outdir> 9333
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 const out = process.argv[2] ?? ".";
 const port = Number(process.argv[3] ?? 9333);
 mkdirSync(out, { recursive: true });
@@ -36,7 +36,7 @@ check("running inside the real app (Tauri backend present)", (await ev(`!!(windo
 check("the Projects screen is showing, with the sidebar", (await ev(`!!document.querySelector('.rail')`)) === true && flat(await ev(`document.body.innerText`)).includes("Projects"));
 await shot("0-start");
 await nav("Settings"); await sleep(1200);
-check("the version shown in Settings matches the build", flat(await ev(`document.querySelector('main.stage')?.innerText ?? ''`)).includes(process.argv[4] ?? "0.13.0"));
+check("the version shown in Settings matches the build", flat(await ev(`document.querySelector('main.stage')?.innerText ?? ''`)).includes(process.argv[4] ?? JSON.parse(readFileSync(new URL("../../app/package.json", import.meta.url), "utf8")).version));
 
 const SCREENS = ["Voices", "Voice metadata", "Presets", "Model Center", "Engines", "SFX Studio", "Voice lab", "Settings", "Help & guide"];
 for (const s of SCREENS) {
