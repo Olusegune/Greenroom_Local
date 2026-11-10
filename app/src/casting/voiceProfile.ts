@@ -29,9 +29,10 @@ const genderOfWord = (g: string): VocalGender | null => {
 
 /** The speaker number or language variant carried in the voice id: "file@7" (Piper speaker 7) or "ife@yo" (Wazobia voice ife in Yoruba). */
 export function speakerOf(v: Pick<VoiceEntry, "id" | "provider" | "meta">): string | null {
-  if (v.meta?.speakerId !== undefined) return v.meta.speakerId;
+  const ok = (s: string | null | undefined) => (typeof s === "string" && /^[A-Za-z0-9_-]{1,40}$/.test(s) ? s : null);
+  if (v.meta?.speakerId !== undefined) return ok(v.meta.speakerId);
   const at = v.id.indexOf("@");
-  return at > 0 && (v.provider === "piper" || v.provider === "wazobia") ? v.id.slice(at + 1) : null;
+  return at > 0 && (v.provider === "piper" || v.provider === "wazobia") ? ok(v.id.slice(at + 1)) : null;
 }
 
 const isL2 = (v: Pick<VoiceEntry, "id">) => v.id.includes("l2arctic");

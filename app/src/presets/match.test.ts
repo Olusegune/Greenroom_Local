@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { fitOf, rankVoices, voiceAge, voiceGender } from "./match";
 import { STARTER_PRESETS } from "./index";
+import { listened } from "../casting/fixtures";
 import type { VoiceEntry } from "../types";
 
 const mine = JSON.parse(readFileSync(join(__dirname, "..", "fixtures", "voices.sample.json"), "utf8")) as VoiceEntry[];
@@ -11,39 +12,46 @@ const woman = { gender: "female" as const, ageRange: ["young_adult", "adult"] as
 const man = { ...woman, gender: "male" as const };
 
 describe("which voices fit a preset", () => {
-  it("a male voice does not fit a female preset, and the reverse", () => {
+  const heard = (id: string, facts: Parameters<typeof listened>[1], over: Partial<VoiceEntry> = {}) => listened(v(id, over), { languages: ["english"], ...facts });
+  it("a voice recorded as the other gender does not fit, and a confirmed one fits", () => {
     expect(fitOf(woman, v("m", { gender: "male" })).fit).toBe("poor");
     expect(fitOf(man, v("f", { gender: "female" })).fit).toBe("poor");
-    expect(fitOf(woman, v("f", { gender: "female" })).fit).toBe("good");
-    expect(fitOf(woman, v("m", { gender: "male" })).notes.join(" ")).toMatch(/male voice; this preset is a woman/);
+    expect(fitOf(woman, heard("f", { gender: "feminine", age: "young" })).fit).toBe("good");
+    expect(fitOf(woman, v("m", { gender: "male" })).notes.join(" ")).toMatch(/masculine voice; the preset calls for a feminine voice/);
+  });
+  it("a provider label that agrees is only a claim: listen first", () => {
+    const f = fitOf(woman, v("f", { gender: "female", age: "young" }));
+    expect(f.status).toBe("NEEDS_AUDITION");
+    expect(f.fit).toBe("partial");
   });
   it("a voice that states nothing is unknown, never a mismatch", () => {
     const f = fitOf(woman, v("x", {}));
     expect(f.fit).toBe("partial");
-    expect(f.notes.join(" ")).toMatch(/does not say/);
+    expect(f.status).toBe("UNKNOWN_METADATA");
+    expect(f.notes.join(" ")).toMatch(/no recorded vocal presentation/);
   });
   it("age: a child preset does not fit an adult voice, and an adult preset does not fit a child voice", () => {
     const kid = { ...woman, ageRange: ["child"] as never };
-    expect(fitOf(kid, v("a", { gender: "female", age: "mid" })).fit).toBe("poor");
-    expect(fitOf(woman, v("c", { gender: "female", age: "child" })).fit).toBe("poor");
-    expect(fitOf(kid, v("c", { gender: "female", age: "child" })).fit).toBe("good");
-    expect(fitOf({ ...woman, ageRange: ["older_adult"] as never }, v("y", { gender: "female", age: "young" })).fit).not.toBe("good");
+    expect(fitOf(kid, heard("a", { gender: "feminine", age: "mid" })).fit).toBe("poor");
+    expect(fitOf(woman, heard("c", { gender: "feminine", age: "child" })).fit).toBe("poor");
+    expect(fitOf(kid, heard("c", { gender: "feminine", age: "child" })).fit).toBe("good");
+    expect(fitOf({ ...woman, ageRange: ["older_adult"] as never }, heard("y", { gender: "feminine", age: "young" })).fit).not.toBe("good");
   });
   it("a language code and its name are the same language", () => {
-    expect(fitOf(woman, v("c", { gender: "female", language: "en" })).fit).toBe("good");
-    expect(fitOf({ ...woman, language: "Yoruba" }, v("c", { gender: "female", language: "yo" })).notes.join(" ")).not.toMatch(/speaks/);
+    expect(fitOf(woman, heard("c", { gender: "feminine", age: "young" }, { language: "en" })).fit).toBe("good");
   });
-  it("another language does not fit", () => {
-    expect(fitOf(woman, v("es", { gender: "female", language: "Spanish" })).fit).not.toBe("good");
+  it("another language does not fit a preset in a language other than English", () => {
+    expect(fitOf({ ...woman, language: "Yoruba" }, heard("es", { gender: "feminine", age: "young", languages: ["spanish"] }, { language: "Spanish" })).fit).toBe("poor");
   });
-  it("local voices have a gender from the known list, and a description can state age", () => {
-    expect(voiceGender(v("en_GB-alan-low", { provider: "piper" }))).toBe("m");
-    expect(voiceGender(v("en_GB-alba-medium", { provider: "piper" }))).toBe("f");
+  it("a name is not evidence: a Piper voice has no gender until someone records one, and a description does not state an age", () => {
+    expect(voiceGender(v("en_GB-alan-low", { provider: "piper" }))).toBeUndefined();
+    expect(voiceGender(v("en_GB-alba-medium", { provider: "piper" }))).toBeUndefined();
     expect(voiceGender(v("x", { gender: "neutral" }))).toBeUndefined();
-    expect(voiceAge(v("x", { notes: "A middle-aged man with a resonant tone" }))).toBe("mid");
+    expect(voiceAge(v("x", { notes: "A middle-aged man with a resonant tone" }))).toBeUndefined();
+    expect(voiceGender(heard("h", { gender: "masculine" }, { provider: "piper" }))).toBe("m");
   });
   it("the best fit comes first and ties keep the library order", () => {
-    const r = rankVoices(woman, [v("m", { gender: "male" }), v("u", {}), v("f", { gender: "female" })]);
+    const r = rankVoices(woman, [v("m", { gender: "male" }), v("u", {}), heard("f", { gender: "feminine", age: "young" })]);
     expect(r.map((x) => x.voice.id)).toEqual(["f", "u", "m"]);
     expect(rankVoices(woman, [v("a", {}), v("b", {})]).map((x) => x.voice.id)).toEqual(["a", "b"]);
   });

@@ -26,11 +26,13 @@ describe("saved casts", () => {
   it("give voices by name, ignoring case, and leave everyone else alone", () => {
     const cast = { id: "k", name: "K", createdAt: "", members: [{ name: "ada", voiceId: "v1", voiceName: "Ada voice", provider: "elevenlabs" as const, language: "English (British)" }, { name: "TUNDE", voiceId: "v2", voiceName: "Deep Tunde", provider: "kie" as const, language: "English" }, { name: "BO", voiceId: "v1", voiceName: "x", provider: "elevenlabs" as const, language: "" }] };
     const r = applyCast(project(), cast, lib);
-    expect(r.characters.find((c) => c.id === "c1")).toMatchObject({ voiceId: "v1", language: "English (British)" });
+    // ADA already has a voice the library holds, so the saved cast leaves her exactly as she was.
+    expect(r.characters.find((c) => c.id === "c1")).toMatchObject({ voiceId: "v1", language: "English" });
     expect(r.characters.find((c) => c.id === "c2")).toMatchObject({ voiceId: "v2", language: "English" });
     expect(r.characters.find((c) => c.id === "c3")?.voiceId).toBeUndefined();
     expect(r.characters.find((c) => c.id === "c4")?.voiceId).toBe("v1");
-    expect(r.applied).toEqual(["ADA", "Tunde"]);
+    expect(r.applied).toEqual(["Tunde"]);
+    expect(r.kept).toEqual(["ADA"]);
     expect(r.unmatched).toEqual(["BO"]);
     expect(r.uncast).toEqual(["MAMA"]);
   });
@@ -41,7 +43,8 @@ describe("saved casts", () => {
     expect(r.characters[0]).toMatchObject({ voiceId: "v1", language: "English" });
     expect(r.characters[1]!.voiceId).toBe("gone");
     expect(r.lostVoices).toEqual(["Tunde"]);
-    expect(appliedSummary(r)).toContain("Gave voices to ADA.");
+    expect(r.kept).toEqual(["ADA"]);
+    expect(appliedSummary(r)).toContain("ADA already has a voice, so it was kept.");
     expect(appliedSummary(r)).toContain("Tunde: the voice is no longer in your library.");
     expect(appliedSummary(applyCast(project(), { ...cast, members: [] }, lib))).toContain("No character matched");
   });

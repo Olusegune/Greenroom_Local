@@ -56,7 +56,12 @@ export interface ManifestLine {
   /** The director's performance plan for the line, as saved, or null. */
   performance: PerformancePlan | null;
   cueSeconds: number | null;
+  /** The voice the chosen take was made with when there is one, else the character's current voice. */
   voice: ManifestVoice | null;
+  /** The voice id that spoke the chosen take, or null when there is no take. */
+  spokenBy: string | null;
+  /** False when the chosen take was made with a different voice than the one the character has (or is approved with) now. */
+  matchesCharacter: boolean | null;
   take: ManifestTake | null;
   takeCount: number;
   /** Not measured by Greenroom, so null. */
@@ -70,7 +75,7 @@ export interface Manifest {
   generatedBy: string;
   generatedAt: string;
   project: { id: string; name: string; scenes: string[] };
-  characters: { id: string; name: string; voiceId: string | null }[];
+  characters: { id: string; name: string; voiceId: string | null; approvedVoiceId: string | null; approvalVersion: number | null }[];
   lines: ManifestLine[];
   notes: string[];
 }
@@ -106,7 +111,7 @@ export function buildManifest(project: Project, library: VoiceEntry[], appVersio
     generatedBy: `Greenroom Local ${appVersion}`,
     generatedAt: now,
     project: { id: project.id, name: project.name, scenes: project.scenes },
-    characters: project.characters.map((c) => ({ id: c.id, name: c.name, voiceId: c.voiceId ?? null })),
+    characters: project.characters.map((c) => ({ id: c.id, name: c.name, voiceId: c.voiceId ?? null, approvedVoiceId: c.casting?.approval?.voiceId ?? null, approvalVersion: c.casting?.approval?.version ?? null })),
     lines: project.lines.map((l, i) => {
       const c = chars.get(l.characterId);
       return {
@@ -119,7 +124,9 @@ export function buildManifest(project: Project, library: VoiceEntry[], appVersio
         direction: { emotion: l.direction.emotion, note: l.direction.note ?? "", sounds: l.direction.sounds, speed: l.direction.speed, pauseAfterSeconds: l.direction.pauseAfter, gainDb: l.direction.gain ?? 0 },
         performance: migratePerformance(l.performance) ?? null,
         cueSeconds: l.cue ?? null,
-        voice: voiceOf(c?.voiceId ? lib.get(c.voiceId) : undefined),
+        voice: voiceOf(((): VoiceEntry | undefined => { const t = chosenTake(l); const id = t?.voiceId || c?.voiceId; return id ? lib.get(id) : undefined; })()),
+        spokenBy: chosenTake(l)?.voiceId ?? null,
+        matchesCharacter: ((): boolean | null => { const t = chosenTake(l); const want = c?.casting?.approval?.voiceId ?? c?.voiceId; return t && want ? t.voiceId === want : null; })(),
         take: takeOf(chosenTake(l)),
         takeCount: l.takes.length,
         wordTiming: null,

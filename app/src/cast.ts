@@ -1,3 +1,4 @@
+import { isLocked } from "./casting/lock";
 import type { Character, Project, VoiceEntry } from "./types";
 import { migrateDna, type VoiceDna } from "./voiceDna";
 
@@ -46,6 +47,8 @@ export interface Applied {
   lostVoices: string[];
   /** Speaking characters in this project the saved cast has no one for. */
   uncast: string[];
+  /** Characters that already have a voice or an approved voice: the saved cast left them exactly as they were. */
+  kept: string[];
 }
 
 function findVoice(m: CastMember, library: VoiceEntry[]): VoiceEntry | undefined {
@@ -56,11 +59,14 @@ function findVoice(m: CastMember, library: VoiceEntry[]): VoiceEntry | undefined
 export function applyCast(project: Pick<Project, "characters" | "lines">, cast: SavedCast, library: VoiceEntry[]): Applied {
   const applied: string[] = [];
   const lostVoices: string[] = [];
+  const kept: string[] = [];
   const used = new Set<string>();
   const characters = project.characters.map((c) => {
     const m = cast.members.find((x) => norm(x.name) === norm(c.name));
     if (!m) return c;
     used.add(norm(m.name));
+    // A character that already has a voice, or an approved one, is never overwritten by a saved cast. Only the owner can change it.
+    if (isLocked(c) || (c.voiceId && library.some((x) => x.id === c.voiceId))) { kept.push(c.name); return c; }
     const v = findVoice(m, library);
     if (!v) {
       lostVoices.push(c.name);
@@ -74,6 +80,7 @@ export function applyCast(project: Pick<Project, "characters" | "lines">, cast: 
     characters,
     applied,
     lostVoices,
+    kept,
     unmatched: cast.members.filter((m) => !used.has(norm(m.name))).map((m) => m.name),
     uncast: project.characters.filter((c) => speaking.has(c.id) && !cast.members.some((m) => norm(m.name) === norm(c.name))).map((c) => c.name),
   };
@@ -83,6 +90,7 @@ export function applyCast(project: Pick<Project, "characters" | "lines">, cast: 
 export function appliedSummary(a: Applied): string {
   const parts = [a.applied.length ? `Gave voices to ${a.applied.join(", ")}.` : "No character matched this cast."];
   if (a.lostVoices.length) parts.push(`${a.lostVoices.join(", ")}: the voice is no longer in your library.`);
+  if (a.kept.length) parts.push(`${a.kept.join(", ")} already ${a.kept.length === 1 ? "has" : "have"} a voice, so it was kept.`);
   if (a.uncast.length) parts.push(`No voice in this cast for ${a.uncast.join(", ")}.`);
   return parts.join(" ");
 }

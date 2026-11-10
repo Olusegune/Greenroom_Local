@@ -1,6 +1,8 @@
 // Using a preset on a character. A preset never changes a project by itself: the screen shows what will change and
 // the owner presses Apply. Existing profile text is kept unless the owner asks to replace it.
 
+import { isLocked } from "../casting/lock";
+import { specFromPreset } from "../casting/presetSpec";
 import type { KeyStatus } from "../api";
 import { ENGINE_ORDER, type Engine } from "../engines";
 import type { Character, VoiceEntry } from "../types";
@@ -72,7 +74,10 @@ export function applyPreset(character: Character, preset: VoicePreset, opts: { v
     }, opts.now ?? "", opts.appVersion ?? ""),
   };
   filled.push("profile");
-  if (opts.voice) {
+  const lockedVoice = isLocked(character);
+  const keepsVoice = lockedVoice || (!!character.voiceId && !opts.replace);
+  if (opts.voice && keepsVoice) warnings.push(lockedVoice ? `${character.name} has an approved voice, so the preset did not change it. Unlock it in Casting first if you want a different voice.` : `${character.name} already has a voice, so the preset did not change it.`);
+  if (opts.voice && !keepsVoice) {
     const compat = compatibleEngines(preset);
     if (!compat.includes(opts.voice.provider)) warnings.push(`${opts.voice.name} is on an engine that cannot perform everything this preset asks for.`);
     next = setIdentity(next, opts.voice, opts.modelId ?? null);
@@ -88,7 +93,9 @@ export function applyPreset(character: Character, preset: VoicePreset, opts: { v
   if (preset.gender && !look.gender && preset.gender !== "nonbinary") { look.gender = preset.gender === "male" ? "m" : "f"; filled.push("presentation"); }
   const out: Character = {
     ...character,
-    ...(opts.voice ? { voiceId: opts.voice.id } : {}),
+    ...(opts.voice && !keepsVoice ? { voiceId: opts.voice.id } : {}),
+    // What the preset says about the character becomes the casting requirement, but only where the owner has not set one.
+    ...(character.cast ? {} : { cast: specFromPreset(preset) }),
     // The picture is separate from the voice: a character that already has one keeps it.
     ...(opts.avatarId && !character.avatarId ? { avatarId: opts.avatarId } : {}),
     language: !character.language || character.language === "English" ? preset.language : character.language,
