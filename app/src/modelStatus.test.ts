@@ -12,10 +12,9 @@ describe("model status", () => {
     const q = modelStatus(m("qwen3-tts-17b"), "installed", true, hw);
     expect(q.status).toBe("ready");
     expect(modelStatus(m("qwen3-tts-17b"), "available", true, hw).status).toBe("download-required");
-    // Kokoro has a route but has never run on a real install: it is Installed, not Ready, until someone has heard it work.
+    // Kokoro is Ready: two real lines (American and British) made valid audio on a real install (2026-11-09).
     const k = modelStatus(m("kokoro-82m"), "installed", true, hw);
-    expect(k.status).toBe("installed");
-    expect(k.detail).toMatch(/not marked Ready/);
+    expect(k.status).toBe("ready");
     expect(modelStatus(m("kokoro-82m"), "available", true, hw).status).toBe("download-required");
     expect(modelStatus(m("chatterbox-multilingual-v3"), "installed", true, hw).status).toBe("ready");
     expect(modelStatus(m("director-qwen3-4b"), "installed", false, hw).status).toBe("ready");

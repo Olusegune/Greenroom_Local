@@ -449,14 +449,18 @@ fn chatterbox_run(root: &std::path::Path, text: &str, model: &std::path::Path, e
     let python = chatterbox_python(root);
     if !python.is_file() { return Err("Chatterbox runtime is not installed on this computer yet. Install it in Model Center.".into()); }
     let mut cmd = Command::new(python);
-    cmd.args(["-c", include_str!("../../../runtime/chatterbox_once.py")]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
+    cmd.args(["-c", include_str!("../../../runtime/chatterbox_once.py")]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
     #[cfg(windows)] { use std::os::windows::process::CommandExt; cmd.creation_flags(0x08000000); }
     let mut child = cmd.spawn().map_err(|_| "Could not start the Chatterbox runtime.")?;
     let mut input = serde_json::json!({"text": text, "model_dir": model});
     if let (Some(o), Some(e)) = (input.as_object_mut(), extra.as_object()) { o.extend(e.clone()); }
     child.stdin.take().ok_or("Could not send text to Chatterbox.")?.write_all(input.to_string().as_bytes()).map_err(|_| "Could not send text to Chatterbox.")?;
     let output = child.wait_with_output().map_err(|_| "Chatterbox stopped unexpectedly.")?;
-    if !output.status.success() || !output.stdout.starts_with(b"RIFF") { return Err("Chatterbox could not generate this line. Check that its runtime and model files are intact.".into()); }
+    if !output.status.success() || !output.stdout.starts_with(b"RIFF") {
+        let why = setup_check::why(&String::from_utf8_lossy(&output.stderr));
+        setup_check::append_log(root, &format!("chatterbox worker failed ({}): {}", output.status, why));
+        return Err(format!("Chatterbox could not generate this line. Check that its runtime and model files are intact. Detail: {why}"));
+    }
     Ok(output.stdout)
 }
 

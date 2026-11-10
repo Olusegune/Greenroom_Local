@@ -5,7 +5,7 @@ import { engineLabel } from "../engineCaps";
 import type { Engine, InworldModel } from "../engines";
 import { ACCENT_QUALITY, ACCENT_QUALITY_LABEL, compatibleEngines, duplicatePreset, exportPresets, filterPresets, GENRE_LABEL, GENRES, importPresets, readiness, STARTER_PRESETS, type AccentQuality, type Gender, type Genre, type VoicePreset } from "../presets";
 import { applyPreset, readyEnginesFrom, voicesFor } from "../presets/cast";
-import { FIT_LABEL, rankVoices, voiceGender } from "../presets/match";
+import { rankVoices, voiceGender } from "../presets/match";
 import { auditionPlan } from "../presets/audition";
 import AccentPanel from "./AccentPanel";
 import { addReview, buildAccentTests, earnedQuality, exportReviews, importReviews, loadReviews, saveReviews, type AccentReview } from "../presets/accentTests";
@@ -250,21 +250,18 @@ function PresetCard(props: {
         <PresetFace src={props.face} name={p.name} />
         <div className="grow">
           <h3>{p.name}</h3>
-          <div className="muted small">{GENRE_LABEL[p.genre]}{p.availability !== "starter" ? ` · ${p.availability}` : ""}</div>
+          <div className="muted small">{GENRE_LABEL[p.genre]} · {p.language} · {p.ageRange.map((a) => AGE_LABEL[a]).join(", ")}{p.availability !== "starter" ? ` · ${p.availability}` : ""}</div>
         </div>
         <button className="sm ghost" aria-pressed={props.favorite} aria-label={props.favorite ? `Remove ${p.name} from favorites` : `Add ${p.name} to favorites`} onClick={props.onFavorite}>{props.favorite ? "★" : "☆"}</button>
       </header>
-      <p>{p.description}</p>
+      <p className="preset-desc">{p.description}</p>
       <div className="row wrap preset-tags">
-        <span className="badge">{p.language}</span>
         <span className="badge" title={ACCENT_QUALITY_LABEL[p.accent.quality]}>{p.accent.label}</span>
-        <span className={quality === "experimental" || quality === "unsupported" ? "badge warn" : "badge"} title={props.test && chosen ? earnedQuality(props.reviews, props.test.id, chosen.provider, chosen.name, p.accent.quality).because : undefined}>{ACCENT_QUALITY_LABEL[quality]}</span>
-        <span className="badge">{p.ageRange.map((a) => AGE_LABEL[a]).join(", ")}</span>
+        {(quality === "experimental" || quality === "unsupported") && <span className="badge warn" title={props.test && chosen ? earnedQuality(props.reviews, props.test.id, chosen.provider, chosen.name, p.accent.quality).because : "The accent is not yet reliable on this voice. Listen before you rely on it."}>{ACCENT_QUALITY_LABEL[quality]}</span>}
+        <span className={`badge ${st.cls} status`}>{st.label}</span>
       </div>
-      <div className="muted small">Works on: {engines.length ? engines.map(engineLabel).join(", ") : "no engine"}</div>
-      <div className={`badge ${st.cls} status`}>{st.label}</div>
       {r.state === "ready" && voices.length > 0 && (
-        <label className="small">Hear with
+        <label className="small preset-voice">Hear with
           <select value={chosen?.id ?? ""} onChange={(e) => props.onVoice(e.target.value)} aria-label={`Voice to hear ${p.name} with`}>
             {!chosen && <option value="">None of your voices fit: choose one anyway, or add a matching voice</option>}
             {(["good", "partial", "poor"] as const).map((f) => {
@@ -275,53 +272,58 @@ function PresetCard(props: {
         </label>
       )}
       {r.state === "ready" && chosen && chosenFit && (
-        <div className={chosenFit.fit === "poor" ? "small warn-text" : "muted small"} role="status">
-          {chosenFit.fit === "good" ? `${chosen.name} fits this preset.` : chosenFit.notes.length ? `${FIT_LABEL[chosenFit.fit]}: ${chosenFit.notes.join(" ")} It will play, but it will not sound like the character.` : `${chosen.name}: not enough is known about this voice to say if it fits.`}
-          {noFit ? " None of your voices fit this preset. Add a matching voice in Voices, or use the free preview." : ""}
+        <div className={chosenFit.fit === "poor" ? "small warn-text" : chosenFit.fit === "good" ? "small fit-ok" : "muted small"} role="status">
+          {chosenFit.fit === "good" ? "✓ Fits this preset" : chosenFit.notes.length ? `${chosenFit.notes.join(" ")} It will play, but will not sound like the character.` : "Not enough is known about this voice to say if it fits."}
+          {noFit ? " None of your voices fit this preset. Add a matching voice in Voices." : ""}
         </div>
       )}
       {r.state === "ready" && chosen && (p.gender === "male" || p.gender === "female") && !voiceGender(chosen) && (
         <div className="small warn-text" role="group" aria-label={`Say whether ${chosen.name} is a male or female voice`}>
-          Greenroom does not know if {chosen.name} is a male or a female voice, so it cannot check it against this preset. Listen to it, then tell it:{" "}
-          <button className="sm" onClick={() => props.onTag(chosen, "male")}>It is male</button>{" "}
-          <button className="sm" onClick={() => props.onTag(chosen, "female")}>It is female</button>
+          Is {chosen.name} a male or female voice?{" "}
+          <button className="sm" onClick={() => props.onTag(chosen, "male")}>Male</button>{" "}
+          <button className="sm" onClick={() => props.onTag(chosen, "female")}>Female</button>
         </div>
       )}
       {r.state === "ready" && !chosen && voices.length > 0 && <div className="small warn-text" role="status">No voice in your library fits this preset (gender, age or language). Add a matching voice in Voices.</div>}
-      {r.state === "ready" && chosen && !isLocalVoice(chosen) && localRanked.length > 0 && (
-        <label className="small">Free preview voice
-          <select value={standIn?.id ?? ""} onChange={(e) => props.onStandIn(e.target.value)} aria-label={`Local voice for the free preview of ${p.name}`}>
-            {!standIn && <option value="">None of your free voices fit this preset</option>}
-            {localRanked.map((x) => <option key={x.voice.id} value={x.voice.id}>{x.voice.name}{x.fit === "poor" ? " (different gender or age)" : ""}</option>)}
-          </select>
-        </label>
-      )}
       <div className="row wrap preset-actions">
         {r.state === "ready" && chosen
           ? (standIn && !isLocalVoice(chosen)
             ? (<>
-              <PlayButton label={props.localFirst ? "Audition (free, on this PC)" : "Free preview on this PC"} get={() => props.onAuditionLocal(standIn!)} />
-              <PlayButton label={props.localFirst ? "Hear the real voice (uses credits)" : "Audition"} get={() => props.onAudition(chosen)} />
+              <PlayButton label={props.localFirst ? "Audition (free)" : "Free preview"} get={() => props.onAuditionLocal(standIn!)} />
+              <PlayButton label={props.localFirst ? "Real voice (credits)" : "Audition"} get={() => props.onAudition(chosen)} />
             </>)
             : <PlayButton label="Audition" get={() => props.onAudition(chosen)} />)
           : r.state === "needs_voice"
             ? <button className="sm" onClick={() => props.go("voices")}>Pick a voice</button>
             : <button className="sm" onClick={() => props.go("models")}>Set up an engine</button>}
+        <span className="spacer" />
         <button className="sm primary" onClick={props.onCast}>Add to Cast</button>
-        <button className="sm" aria-pressed={props.comparing} onClick={props.onCompare}>{props.comparing ? "Comparing" : "Compare"}</button>
-        <details className="vc-more"><summary className="sm">More</summary>
-          <div className="stack">
+      </div>
+      <details className="preset-more">
+        <summary>More</summary>
+        <div className="stack">
+          <div className="muted small">Works on: {engines.length ? engines.map(engineLabel).join(", ") : "no engine"}</div>
+          {r.state === "ready" && chosen && !isLocalVoice(chosen) && localRanked.length > 0 && (
+            <label className="small">Free preview voice
+              <select value={standIn?.id ?? ""} onChange={(e) => props.onStandIn(e.target.value)} aria-label={`Local voice for the free preview of ${p.name}`}>
+                {!standIn && <option value="">None of your free voices fit this preset</option>}
+                {localRanked.map((x) => <option key={x.voice.id} value={x.voice.id}>{x.voice.name}{x.fit === "poor" ? " (different gender or age)" : ""}</option>)}
+              </select>
+            </label>
+          )}
+          {r.state === "ready" && chosen && standIn && !isLocalVoice(chosen) && <div className="muted small">The free preview is {standIn.name}, a plain read on this PC. It does not sound like {chosen.name}.</div>}
+          {r.state === "ready" && chosen && (() => {
+            const a = auditionPlan(p, chosen, props.inworldModel);
+            return <div className="muted small">{a.directed ? "The audition reads “" + p.audition + "” with this preset's acting direction." : "The audition reads “" + p.audition + "” as a plain read."} {a.notSent.length ? "Not sent: " + a.notSent.join("; ") + "." : ""} Cloud voices ask before they spend.</div>;
+          })()}
+          <div className="row wrap">
+            <button className="sm" aria-pressed={props.comparing} onClick={props.onCompare}>{props.comparing ? "Comparing" : "Compare"}</button>
             {props.test && <button className="sm ghost" onClick={props.onTest}>Listening test for this accent</button>}
             <button className="sm ghost" onClick={props.onDuplicate}>Duplicate to edit</button>
             {props.onRemove && <button className="sm ghost" onClick={props.onRemove}>Remove this preset</button>}
           </div>
-        </details>
-      </div>
-      {r.state === "ready" && chosen && standIn && !isLocalVoice(chosen) && <div className="muted small">The free preview is {standIn.name}, a plain read on this PC. It matches the preset's language, gender and age only; it does not sound like {chosen.name}.</div>}
-      {r.state === "ready" && chosen && (() => {
-        const a = auditionPlan(p, chosen, props.inworldModel);
-        return <div className="muted small">{a.directed ? "The audition reads “" + p.audition + "” with this preset's acting direction." : "The audition reads “" + p.audition + "” as a plain read."} {a.notSent.length ? "Not sent: " + a.notSent.join("; ") + "." : ""} Cloud voices ask before they spend.</div>;
-      })()}
+        </div>
+      </details>
     </article>
   );
 }

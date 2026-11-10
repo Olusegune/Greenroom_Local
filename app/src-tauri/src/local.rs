@@ -260,6 +260,25 @@ pub fn piper_args(model: &Path, config: &Path, out: &Path, speed: f64, speaker: 
     a
 }
 
+/// Newer voice files in `rhasspy/piper-voices` list diphthongs ("aɪ", "eɪ") as multi-letter phoneme keys, which the Piper release
+/// Greenroom installs (2023.11.14-2) refuses ("not a single codepoint"), so those voices (Amy, Thorsten, Siwis and more) never
+/// spoke. This drops those keys: Piper then reads the diphthong as its two single sounds, which the same file also lists.
+/// Idempotent; returns whether it changed the file.
+pub fn sanitize_voice_config(config: &Path) -> Result<bool, String> {
+    let raw = fs::read(config).map_err(|_| "Could not read the voice's settings file.".to_string())?;
+    // a file that is not JSON is left alone: Piper reports its own error for it
+    let Ok(mut json) = serde_json::from_slice::<serde_json::Value>(&raw) else { return Ok(false) };
+    let Some(map) = json.get_mut("phoneme_id_map").and_then(|m| m.as_object_mut()) else { return Ok(false) };
+    let before = map.len();
+    map.retain(|k, _| k.chars().count() <= 1);
+    if map.len() == before {
+        return Ok(false);
+    }
+    let out = serde_json::to_vec_pretty(&json).map_err(|_| "Could not rewrite the voice's settings file.".to_string())?;
+    crate::store::atomic_write(config, &out)?;
+    Ok(true)
+}
+
 pub fn piper_speak(root: &Path, key: &str, text: &str, speed: f64, runner: &dyn Runner) -> Result<Vec<u8>, String> {
     let Some((key, speaker)) = split_speaker(key) else {
         return Err("Pick a Piper voice first.".into());
@@ -272,6 +291,7 @@ pub fn piper_speak(root: &Path, key: &str, text: &str, speed: f64, runner: &dyn 
     if !model.is_file() || !config.is_file() {
         return Err("That Piper voice is not downloaded yet.".into());
     }
+    sanitize_voice_config(&config)?;
     let clean: String = text.chars().map(|c| if c.is_control() { ' ' } else { c }).collect::<String>().split_whitespace().collect::<Vec<_>>().join(" ");
     if clean.is_empty() || clean.chars().count() > 5000 {
         return Err("The text is empty or too long for Piper.".into());
@@ -330,6 +350,26 @@ pub fn server_voices(cfg: &ServerCfg) -> Result<Vec<String>, String> {
 mod tests {
     use super::*;
     use crate::eleven::fake::*;
+
+    #[test]
+    fn multi_letter_phoneme_keys_are_dropped_so_old_piper_accepts_the_voice() {
+        let dir = std::env::temp_dir().join(format!("greenroom-sanitize-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        let cfg = dir.join("v.onnx.json");
+        fs::write(&cfg, r#"{"audio":{"sample_rate":22050},"phoneme_id_map":{"a":[14],"ɪ":[74],"aɪ":[161],"eɪ":[162],"_":[0]},"num_speakers":1}"#).unwrap();
+        assert!(sanitize_voice_config(&cfg).unwrap(), "changed the first time");
+        let after: serde_json::Value = serde_json::from_slice(&fs::read(&cfg).unwrap()).unwrap();
+        let keys: Vec<&String> = after["phoneme_id_map"].as_object().unwrap().keys().collect();
+        assert_eq!(keys.len(), 3, "kept the single sounds: {keys:?}");
+        assert!(keys.iter().all(|k| k.chars().count() == 1));
+        assert_eq!(after["audio"]["sample_rate"], 22050, "everything else is untouched");
+        assert!(!sanitize_voice_config(&cfg).unwrap(), "idempotent");
+        fs::write(&cfg, b"not json").unwrap();
+        assert!(!sanitize_voice_config(&cfg).unwrap(), "a damaged file is left for Piper to report");
+        assert!(sanitize_voice_config(&dir.join("missing.json")).is_err());
+        let _ = fs::remove_dir_all(&dir);
+    }
 
     fn tmp(tag: &str) -> PathBuf {
         let p = std::env::temp_dir().join(format!("greenroom-local-{tag}-{}", std::process::id()));
