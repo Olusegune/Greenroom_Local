@@ -5,7 +5,7 @@ import { engineLabel } from "../engineCaps";
 import type { Engine, InworldModel } from "../engines";
 import { ACCENT_QUALITY, ACCENT_QUALITY_LABEL, compatibleEngines, duplicatePreset, exportPresets, filterPresets, GENRE_LABEL, GENRES, importPresets, readiness, STARTER_PRESETS, type AccentQuality, type Gender, type Genre, type VoicePreset } from "../presets";
 import { applyPreset, readyEnginesFrom, voicesFor } from "../presets/cast";
-import { FIT_LABEL, rankVoices } from "../presets/match";
+import { FIT_LABEL, rankVoices, voiceGender } from "../presets/match";
 import { auditionPlan } from "../presets/audition";
 import AccentPanel from "./AccentPanel";
 import { addReview, buildAccentTests, earnedQuality, exportReviews, importReviews, loadReviews, saveReviews, type AccentReview } from "../presets/accentTests";
@@ -23,7 +23,7 @@ const MAX_COMPARE = 3;
 const store = (): Storage | null => { try { return window.localStorage; } catch { return null; } };
 
 export default function Presets() {
-  const { project, library, keys, edit, go, toast, engines } = useApp();
+  const { project, library, keys, edit, go, toast, engines, saveLibrary } = useApp();
   const sample = useSample();
   const [state, setState] = useState<PresetState>(() => loadState(store()));
   const [reviews, setReviews] = useState<AccentReview[]>(() => loadReviews(store()));
@@ -98,6 +98,7 @@ export default function Presets() {
       voices={voicesFor(p, library, ready)}
       voiceId={picked[p.id]}
       onVoice={(id) => setPicked((s) => ({ ...s, [p.id]: id }))}
+      onTag={(v, g) => saveLibrary((l) => l.map((x) => (x.id === v.id && x.provider === v.provider ? { ...x, gender: g } : x)))}
       test={testOf(p.id)}
       reviews={reviews}
       onTest={() => setTesting(p.id)}
@@ -227,19 +228,19 @@ function PresetFace({ src, name, size = 56 }: { src?: string; name: string; size
 
 function PresetCard(props: {
   test?: import("../presets/accentTests").AccentTest | undefined; reviews: AccentReview[]; onTest: () => void; inworldModel?: InworldModel | undefined; preset: VoicePreset; face?: string | undefined; favorite: boolean; comparing: boolean; ready: Engine[]; libraryEngines: Engine[]; voices: VoiceEntry[]; voiceId: string | undefined; localVoices: VoiceEntry[]; standInId: string | undefined; onStandIn: (id: string) => void;
-  onVoice: (id: string) => void; onFavorite: () => void; onCompare: () => void; onAudition: (v: VoiceEntry) => Promise<string>; standIn: VoiceEntry | null; localFirst: boolean; onAuditionLocal: (v: VoiceEntry) => Promise<string>; onCast: () => void; onDuplicate: () => void; onRemove: (() => void) | undefined; go: (t: "voices" | "models") => void;
+  onVoice: (id: string) => void; onTag: (v: VoiceEntry, gender: "male" | "female") => void; onFavorite: () => void; onCompare: () => void; onAudition: (v: VoiceEntry) => Promise<string>; standIn: VoiceEntry | null; localFirst: boolean; onAuditionLocal: (v: VoiceEntry) => Promise<string>; onCast: () => void; onDuplicate: () => void; onRemove: (() => void) | undefined; go: (t: "voices" | "models") => void;
 }) {
   const { preset: p, voices } = props;
   const st = statusOf(p, props.ready, props.libraryEngines);
   const r = readiness(p, props.ready, props.libraryEngines);
   const ranked = rankVoices(p, voices);
   // the default is the voice that fits the preset best, never just the first one in the library
-  const chosen = (ranked.find((x) => x.voice.id === props.voiceId) ?? ranked[0])?.voice;
+  // (a voice that does not fit is only used when the owner picks it by hand)
+  const chosen = (ranked.find((x) => x.voice.id === props.voiceId) ?? (ranked[0] && ranked[0].fit !== "poor" ? ranked[0] : undefined))?.voice;
   const chosenFit = ranked.find((x) => x.voice.id === chosen?.id);
-  const noFit = ranked.length > 0 && ranked[0]!.fit === "poor";
-  // the free preview runs on this PC: the best fitting local voice, or the one the owner picked
+  const noFit = ranked.length > 0 && ranked[0]!.fit === "poor";  // the free preview runs on this PC: the best fitting local voice, or the one the owner picked
   const localRanked = rankVoices(p, props.localVoices);
-  const standIn = props.localVoices.find((v) => v.id === props.standInId) ?? (localRanked[0] && localRanked[0].fit !== "poor" ? localRanked[0].voice : props.standIn);
+  const standIn = props.localVoices.find((v) => v.id === props.standInId) ?? (localRanked[0] && localRanked[0].fit !== "poor" ? localRanked[0].voice : null); // never a stand-in of the wrong gender or age: no free preview is better than a male voice on a woman
   const engines = compatibleEngines(p);
   // The label a voice has earned from recorded reviews; without a review it is the label the preset shipped with.
   const quality = props.test && chosen ? earnedQuality(props.reviews, props.test.id, chosen.provider, chosen.name, p.accent.quality).quality : p.accent.quality;
@@ -265,6 +266,7 @@ function PresetCard(props: {
       {r.state === "ready" && voices.length > 0 && (
         <label className="small">Hear with
           <select value={chosen?.id ?? ""} onChange={(e) => props.onVoice(e.target.value)} aria-label={`Voice to hear ${p.name} with`}>
+            {!chosen && <option value="">None of your voices fit: choose one anyway, or add a matching voice</option>}
             {(["good", "partial", "poor"] as const).map((f) => {
               const group = ranked.filter((x) => (f === "poor" ? x.fit === "poor" : x.fit === f));
               return group.length ? <optgroup key={f} label={f === "poor" ? "Does not fit this preset (different gender, age or language)" : f === "good" ? "Fits this preset" : "Could fit (not enough is known)"}>{group.map((x) => <option key={x.voice.id} value={x.voice.id}>{x.voice.name}</option>)}</optgroup> : null;
@@ -278,9 +280,18 @@ function PresetCard(props: {
           {noFit ? " None of your voices fit this preset. Add a matching voice in Voices, or use the free preview." : ""}
         </div>
       )}
-      {r.state === "ready" && chosen && !isLocalVoice(chosen) && localRanked.length > 1 && (
+      {r.state === "ready" && chosen && (p.gender === "male" || p.gender === "female") && !voiceGender(chosen) && (
+        <div className="small warn-text" role="group" aria-label={`Say whether ${chosen.name} is a male or female voice`}>
+          Greenroom does not know if {chosen.name} is a male or a female voice, so it cannot check it against this preset. Listen to it, then tell it:{" "}
+          <button className="sm" onClick={() => props.onTag(chosen, "male")}>It is male</button>{" "}
+          <button className="sm" onClick={() => props.onTag(chosen, "female")}>It is female</button>
+        </div>
+      )}
+      {r.state === "ready" && !chosen && voices.length > 0 && <div className="small warn-text" role="status">No voice in your library fits this preset (gender, age or language). Add a matching voice in Voices.</div>}
+      {r.state === "ready" && chosen && !isLocalVoice(chosen) && localRanked.length > 0 && (
         <label className="small">Free preview voice
           <select value={standIn?.id ?? ""} onChange={(e) => props.onStandIn(e.target.value)} aria-label={`Local voice for the free preview of ${p.name}`}>
+            {!standIn && <option value="">None of your free voices fit this preset</option>}
             {localRanked.map((x) => <option key={x.voice.id} value={x.voice.id}>{x.voice.name}{x.fit === "poor" ? " (different gender or age)" : ""}</option>)}
           </select>
         </label>

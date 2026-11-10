@@ -351,7 +351,13 @@ function Find() {
           .catch((err: Error) => guard(() => set(e, { state: "error", items: [], error: err.message })));
       };
       needLang("voicekiller", async () => voicekillerFor(tile!, (vkCache ??= await api.voicesVoiceKiller())));
-      needLang("inworld", async () => inworldFor(tile!, (inworldCache.list ??= (await api.voicesInworld()).voices)));
+      // Inworld lists its whole account at once, so it does not wait for a language to be chosen
+      if (ok("inworld")) {
+        set("inworld", { state: "loading", items: [] });
+        void (async () => inworldFor(tile, (inworldCache.list ??= (await api.voicesInworld()).voices)))()
+          .then((items) => guard(() => set("inworld", { state: "done", items: items.filter((i) => (!gender || !i.gender || i.gender === gender) && (!text || i.name.toLowerCase().includes(text.toLowerCase()) || i.description.toLowerCase().includes(text.toLowerCase()))) })))
+          .catch((err: Error) => guard(() => set("inworld", { state: "error", items: [], error: err.message })));
+      } else set("inworld", idle);
       needLang("kie", async () => kieFor(tile!));
       needLang("piper", async () => piperFor(tile!, (piperCache ??= await api.piperCatalog())));
     }, 250);
@@ -466,7 +472,7 @@ function Find() {
       </div>
 
       <h3>{tile ? `Voices for ${tile.name}` : "Popular voices on ElevenLabs"}</h3>
-      {!tile && <p className="muted small">Choose a language above to also see Inworld, VoiceKiller, Kie and offline Piper voices.</p>}
+      {!tile && <p className="muted small">{keys.inworld ? "Your Inworld voices are listed below. " : ""}Choose a language above to also see VoiceKiller, Kie and offline Piper voices.</p>}
       {tile?.mixed && <Note>{tile.name} has no language of its own. Write the lines the way they are spoken and pick a voice with a matching accent. Piper and Kie are not offered for it.</Note>}
 
       {engineList.map((e) => {

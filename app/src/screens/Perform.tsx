@@ -830,20 +830,20 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
             if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && voice && !busy) void go(1);
           }}
         />
-        <div className="dir-foot">
+        <details className="dir-foot quick-styles" open={STYLES.some((st) => hasStyle(note, st)) || d.sounds.some((t) => QUICK_SOUNDS.includes(t))}>
+          <summary>Quick styles and sounds{(() => { const n = STYLES.filter((st) => hasStyle(note, st)).length + d.sounds.filter((t) => QUICK_SOUNDS.includes(t)).length; return n ? ` · ${n} on` : ""; })()}</summary>
           <span className="chips dir-quick" role="group" aria-label="Quick styles">
             {STYLES.map((st) => chip(st.id, hasStyle(note, st), st.label, () => setDir((x) => ({ ...x, note: toggleStyle(x.note, st) })), st.sentence))}
             {QUICK_SOUNDS.map((t) => chip(t, d.sounds.includes(t), label(SOUNDS, t), () => setDir((x) => ({ ...x, sounds: toggleIn(x.sounds, t) }))))}
           </span>
-          {note.length > 300 && <span className="muted small num">{note.length}/{NOTE_MAX}</span>}
-        </div>
-        {reach === "ok" && <p className="dir-reach ok small">{ENGINES[voice!.provider].label} will act on your direction.</p>}
+        </details>
+        {note.length > 300 && <span className="muted small num">{note.length}/{NOTE_MAX}</span>}
         {reach === "none" && (
           <p className="dir-reach warn small">
             {ENGINES[voice!.provider].label} cannot act on written direction. {capable.length > 0 ? `Voices in your library that can: ${capable.slice(0, 4).map((v) => v.name).join(", ")}.` : "None of your library voices can: add an ElevenLabs, Inworld or VoiceKiller voice in Voices."} Or use Re-voice a recording to perform it yourself.
           </p>
         )}
-        {voice && ENGINES[voice.provider].tags && fitCut.sent < fitCut.total && <p className="dir-reach warn small">This line is short, so {ENGINES[voice.provider].label} gets {fitCut.sent === 0 ? "none" : `only ${fitCut.sent} of ${fitCut.total}`} of your direction's sentences. A long direction in front of a few words can make a voice read it aloud or repeat the line. Write a shorter direction, or see exactly what is sent under Advanced.</p>}
+        {voice && ENGINES[voice.provider].tags && fitCut.sent < fitCut.total && <p className="dir-reach warn small" title="A long direction in front of a few words can make a voice read it aloud or repeat the line. Write a shorter direction, or see exactly what is sent under Advanced.">Short line: {ENGINES[voice.provider].label} gets {fitCut.sent === 0 ? "none" : `${fitCut.sent} of ${fitCut.total}`} of your direction's sentences. Shorten the direction.</p>}
         {reach === "inworld-flash" && <p className="dir-reach warn small">{engines.inworldModel === "inworld-tts-2-flash" ? "Inworld TTS 2 Flash does not follow written direction. Switch to Inworld TTS 2 in Voices, or choose another voice." : "Inworld could not use that direction."}</p>}
         {voice?.provider === "inworld" && (planned?.notSent?.length ?? 0) > 0 && <p className="dir-reach warn small">Inworld will not get: {planned!.notSent!.join("; ")}.</p>}
         {noTags && vkUnsupported(line).length > 0 && <p className="dir-reach warn small">{ENGINES[voice!.provider].label} cannot make {vkUnsupported(line).join(", ")}. Add a sound clip instead.</p>}
@@ -852,7 +852,7 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
 
       <div className="lc-quick">
         <div className="lc-tiles" role="group" aria-label="What is set for this line">
-          {summaryTiles(line, label).map((t) => (
+          {summaryTiles(line, label).filter((t) => t.name !== "Delivery" && !/^none set$/i.test(t.value.trim())).map((t) => (
             <button key={t.name} className="lc-tile" onClick={() => onDirector()} title={`${t.name}: press to open the Director panel`}>
               <span className="lt-name">{t.name}</span>
               <span className="lt-val">{t.value}</span>
@@ -860,7 +860,6 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
           ))}
         </div>
         <div className="lc-presets" aria-label="Performance presets">
-          <span className="eyebrow">Performance presets</span>
           <select aria-label="Acting preset" value="" onChange={(e) => { const pr = ACTING_PRESETS.find((x) => x.id === e.target.value); if (pr) patch((l) => ({ ...l, performance: applyActingPreset(l.performance, pr) })); }}>
             <option value="">Choose an acting preset…</option>
             {ACTING_PRESETS.map((pr) => (
@@ -963,13 +962,6 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
         />
       )}
 
-      {line.takes.length >= 2 && (
-        <div>
-          <button className="sm ghost" onClick={() => setCompare(true)} title="Listen to two takes side by side with their waveforms and timing">
-            Compare takes
-          </button>
-        </div>
-      )}
       {compare && <TakeCompare projectId={project!.id} line={line} onClose={() => setCompare(false)} />}
       {line.takes.map((t, i) => (
         <TakeRow key={t.id} t={t} n={i + 1} lineId={line.id} projectId={project!.id} chosen={t.id === chosen?.id} choose={() => patch((l) => ({ ...l, chosen: t.id }))} reference={voice && character ? () => makeRef(t) : undefined} remake={voice ? (i) => remake(t, i) : undefined} />
@@ -1003,6 +995,11 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
         <button className="primary" disabled={busy || !voice} onClick={() => void go(1)} title={voice ? "Ctrl+Enter in the direction box does the same" : "Choose a voice for this character first"}>
           {busy ? "Working…" : line.takes.length ? "Another take" : "Make a take"}
         </button>
+        {line.takes.length >= 2 && (
+          <button className="ghost" onClick={() => setCompare(true)} title="Listen to two takes side by side with their waveforms and timing">
+            Compare takes
+          </button>
+        )}
         <div className="more-wrap">
           <button className="ghost" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
             More ▾

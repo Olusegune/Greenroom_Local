@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ACCENTS, applyPalette, readPalette, savePalette } from "../palette";
 import { api, type KeyName } from "../api";
 import { inworldCache } from "../finder";
+import { ageBand } from "../avatarLibrary";
+import type { VoiceEntry } from "../types";
 import { useApp } from "../ctx";
 import { checkForUpdates, installUpdate, useUpdates } from "../updates";
 import { APP_VERSION } from "../version";
@@ -133,6 +135,27 @@ function InworldConnection({ saved }: { saved: boolean }) {
       setBusy(false);
     }
   };
+  const { saveLibrary, library } = useApp();
+  // Puts every Inworld voice in the library, so they show up in the voice pickers, Presets and Cast. Free: it only lists voices.
+  const addAll = async () => {
+    setBusy(true);
+    setMessage("");
+    try {
+      const page = await api.voicesInworld();
+      inworldCache.list = page.voices;
+      const have = new Set(library.filter((v) => v.provider === "inworld").map((v) => v.id));
+      const fresh: VoiceEntry[] = page.voices.filter((v) => !have.has(v.voiceId)).map((v) => {
+        const age = ageBand(v.ageGroup);
+        return { id: v.voiceId, name: v.displayName, provider: "inworld", source: v.source === "IVC" || v.source === "PVC" ? "cloned" : v.source === "TVD" ? "designed" : "library", language: v.language, accent: "", gender: v.gender.toLowerCase(), ...(age ? { age } : {}), notes: v.description, createdAt: new Date().toISOString() };
+      });
+      saveLibrary((l) => [...l, ...fresh.filter((f) => !l.some((x) => x.provider === "inworld" && x.id === f.id))]);
+      setMessage(`Added ${fresh.length} Inworld voice${fresh.length === 1 ? "" : "s"} to your library (${page.voices.length - fresh.length} were already there). Find them in Voices, Presets and the voice pickers.`);
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
   const refresh = async () => {
     setBusy(true);
     setMessage("");
@@ -150,6 +173,7 @@ function InworldConnection({ saved }: { saved: boolean }) {
     <div className="card stack">
       <div className="row wrap">
         <button disabled={!saved || busy} onClick={() => void check()}>{busy ? "Checking…" : "Test Inworld connection"}</button>
+        <button className="primary" disabled={!saved || busy} onClick={() => void addAll()}>Add all my Inworld voices to my library</button>
         <button disabled={!saved || busy} onClick={() => void refresh()}>Refresh voices</button>
         <button onClick={() => { void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl("https://platform.inworld.ai/")); }}>Open the Inworld Portal</button>
       </div>

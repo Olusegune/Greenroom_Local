@@ -547,13 +547,17 @@ fn qwen_speak(root: &std::path::Path, text: &str, voice: &str) -> Result<Vec<u8>
     if !python.is_file() { return Err("The Qwen3-TTS runtime is not installed on this computer yet. Install it in Model Center.".into()); }
     let _guard = GENERATION.lock().map_err(|_| "Qwen3-TTS is unavailable. Restart Greenroom and try again.")?;
     let mut cmd = Command::new(python);
-    cmd.args(["-c", include_str!("../../../runtime/qwen_once.py")]).env("HF_HOME", qwen_dir(root).join("hf")).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
+    cmd.args(["-c", include_str!("../../../runtime/qwen_once.py")]).env("HF_HOME", qwen_dir(root).join("hf")).env("HF_HUB_DOWNLOAD_TIMEOUT", "60").stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
     #[cfg(windows)] { use std::os::windows::process::CommandExt; cmd.creation_flags(0x08000000); }
     let mut child = cmd.spawn().map_err(|_| "Could not start the Qwen3-TTS runtime.")?;
     let input = serde_json::json!({"text": text, "instruct": instruct, "language": "English", "model": QWEN_MODEL});
     child.stdin.take().ok_or("Could not send text to Qwen3-TTS.")?.write_all(input.to_string().as_bytes()).map_err(|_| "Could not send text to Qwen3-TTS.")?;
     let output = child.wait_with_output().map_err(|_| "Qwen3-TTS stopped unexpectedly.")?;
-    if !output.status.success() || !output.stdout.starts_with(b"RIFF") { return Err("Qwen3-TTS could not generate this line. If this is the first run, check your internet connection (it downloads its model once) and try Set up again.".into()); }
+    if !output.status.success() || !output.stdout.starts_with(b"RIFF") {
+        let why = setup_check::why(&String::from_utf8_lossy(&output.stderr));
+        setup_check::append_log(root, &format!("qwen worker failed ({}): {}", output.status, why));
+        return Err(format!("Qwen3-TTS could not generate this line. If this is the first run, check your internet connection (it downloads its model once; it picks up where it stopped) and press Set up again. Detail: {why}"));
+    }
     Ok(output.stdout)
 }
 

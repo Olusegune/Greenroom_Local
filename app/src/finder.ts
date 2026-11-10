@@ -43,10 +43,10 @@ export const inworldKind = (source: string): NonNullable<Found["kind"]> => (sour
 export const KIND_LABEL: Record<NonNullable<Found["kind"]>, string> = { system: "System voice", cloned: "Cloned voice", designed: "Designed voice", other: "Workspace voice" };
 
 /** Inworld voices for a language. Voices with no stated language are kept: many system voices speak several. */
-export function inworldFor(t: Tile, all: InworldVoice[]): Found[] {
-  if (t.mixed) return [];
+export function inworldFor(t: Tile | null, all: InworldVoice[]): Found[] {
+  if (t?.mixed) return [];
   return all
-    .filter((v) => !v.language || localeMatches(t, v.language))
+    .filter((v) => !t || !v.language || localeMatches(t, v.language))
     .map((v) => {
       const kind = inworldKind(v.source);
       return { engine: "inworld" as const, id: v.voiceId, name: v.displayName, language: v.language, accent: "", gender: v.gender.toLowerCase(), description: [KIND_LABEL[kind], v.description].filter(Boolean).join(" · "), kind };

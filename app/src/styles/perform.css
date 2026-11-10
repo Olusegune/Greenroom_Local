@@ -118,3 +118,21 @@ button.rc-text:hover strong { color: var(--accent); }
 .av-dialog { max-height: 94vh; overflow: auto; display: grid; gap: 12px; }
 @media (max-width: 860px) { .av-body { grid-template-columns: 1fr; } }
 .av-preview-tag { position: absolute; bottom: 30px; right: 8px; font-size: 10px; padding: 1px 6px; border-radius: 99px; background: rgba(0, 0, 0, 0.65); color: var(--text-2); }
+
+/* ---- Calmer line card (0.12.5): one toolbar row instead of a wall of boxes ---- */
+.lc-quick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; grid-template-columns: none; padding-top: 4px; border-top: 1px solid var(--line); }
+.lc-tiles { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; min-width: 0; }
+.lc-tile { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 10px; min-height: 0; border-radius: 99px; background: transparent; }
+.lc-tile .lt-name, .lc-tile .lt-val { display: inline; }
+.lt-name { font-size: 10.5px; letter-spacing: 0.1em; }
+.lt-val { font-size: 12.5px; }
+.lc-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 0; border: 0; background: transparent; }
+.lc-presets select { min-height: 32px; font-size: 13px; }
+.lc-presets input[type="range"] { width: 96px; }
+.quick-styles { display: block; }
+.quick-styles > summary { cursor: pointer; font-size: 12.5px; color: var(--text-3); list-style: none; padding: 2px 0; }
+.quick-styles > summary::-webkit-details-marker { display: none; }
+.quick-styles > summary::before { content: "▸ "; }
+.quick-styles[open] > summary::before { content: "▾ "; }
+.quick-styles > summary:hover { color: var(--text-2); }
+.quick-styles .dir-quick { display: flex; flex-wrap: wrap; margin-top: 6px; }
