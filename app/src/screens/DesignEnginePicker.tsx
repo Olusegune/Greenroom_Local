@@ -13,10 +13,10 @@ export function useQwenReady(): boolean | null {
 /** Choose who designs the voice. Each option says what it costs and what it needs, and says so when it is not available yet. */
 export default function DesignEnginePicker({ engine, onChange, qwenReady, onClose }: { engine: DesignEngine; onChange: (e: DesignEngine) => void; qwenReady: boolean | null; onClose?: () => void }) {
   const { keys, go } = useApp();
-  const opt = (id: DesignEngine, title: string, cost: string, ok: boolean) => (
+  const opt = (id: DesignEngine, title: string, cost: string, ok: boolean | null) => (
     <label className={`design-engine${engine === id ? " on" : ""}`}>
       <input type="radio" name="design-engine" checked={engine === id} onChange={() => onChange(id)} />
-      <span><strong>{title}</strong><br /><span className="small muted">{cost}{ok ? "" : " Not set up yet."}</span></span>
+      <span><strong>{title}</strong><br /><span className="small muted">{cost}{ok === null ? " Checking…" : ok ? "" : " Not set up yet."}</span></span>
     </label>
   );
   const leave = (tab: "settings" | "models") => () => { onClose?.(); go(tab); };
@@ -24,7 +24,7 @@ export default function DesignEnginePicker({ engine, onChange, qwenReady, onClos
     <fieldset className="stack design-engines">
       <legend className="small">Design this voice with</legend>
       <div className="row wrap">
-        {opt("qwen", "Qwen3-TTS on this PC", "Free. Nothing is sent anywhere. A few minutes for three previews on a processor, much faster on a graphics card.", qwenReady === true)}
+        {opt("qwen", "Qwen3-TTS on this PC", "Free. Nothing is sent anywhere. A few minutes for three previews on a processor, much faster on a graphics card.", qwenReady)}
         {opt("elevenlabs", "ElevenLabs", "Uses credits, and keeping the voice needs a free voice slot on your account.", keys.elevenlabs)}
       </div>
       {engine === "qwen" && qwenReady === false && <p className="small">Qwen3-TTS is not set up on this PC. <button className="sm" onClick={leave("models")}>Set it up in Model Center</button> It is free; the download is several GB.</p>}
