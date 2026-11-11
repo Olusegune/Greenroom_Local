@@ -95,10 +95,33 @@ export function Provider({ children }: { children: ReactNode }) {
 
   useEffect(() => void api.enginesLoad().then((c) => setEngines({ ...DEFAULT_ENGINES_CFG, ...c, localServer: { ...DEFAULT_ENGINES_CFG.localServer, ...(c.localServer ?? {}) } })).catch(() => undefined), []);
 
+  const noteTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const noteHover = useRef(false);
+  const clearNote = useCallback(() => { clearTimeout(noteTimer.current); setNote(null); }, []);
   const toast = useCallback((text: string, bad = false) => {
+    clearTimeout(noteTimer.current);
     setNote({ text, bad });
-    setTimeout(() => setNote((n) => (n?.text === text ? null : n)), bad ? 8000 : 3500);
+    // A long message needs time to read: errors stay at least 12 s and longer ones about 60 ms a character. Hovering or focusing the box holds it.
+    const ms = bad ? Math.min(30000, Math.max(12000, text.length * 60)) : 3500;
+    const tick = () => { if (noteHover.current) { noteTimer.current = setTimeout(tick, 1500); return; } setNote((n) => (n?.text === text ? null : n)); };
+    noteTimer.current = setTimeout(tick, ms);
   }, []);
+
+  // Escape: first the message box, then the topmost open dialog (through its own Cancel / Close / Done button, so each dialog's own clean-up runs).
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      if (document.querySelector(".toast")) { clearNote(); return; }
+      const scrims = [...document.querySelectorAll<HTMLElement>(".scrim:not([data-esc])")];
+      const top = scrims[scrims.length - 1];
+      if (!top) return;
+      const buttons = [...top.querySelectorAll<HTMLButtonElement>(".dialog button")];
+      const btn = buttons.find((b) => /^(close|cancel|done|not now|back)/i.test(b.textContent?.trim() ?? "") || b.getAttribute("aria-label")?.toLowerCase().startsWith("close"));
+      if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+    };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [clearNote]);
 
   const saveEngines = useCallback(
     (c: EnginesCfg) => {
@@ -263,8 +286,9 @@ export function Provider({ children }: { children: ReactNode }) {
     <C.Provider value={value}>
       {children}
       {note && (
-        <div className={note.bad ? "toast err" : "toast"} role={note.bad ? "alert" : "status"}>
-          {note.text}
+        <div className={note.bad ? "toast err" : "toast"} role={note.bad ? "alert" : "status"} onMouseEnter={() => { noteHover.current = true; }} onMouseLeave={() => { noteHover.current = false; }} onFocus={() => { noteHover.current = true; }} onBlur={() => { noteHover.current = false; }}>
+          <span className="toast-text">{note.text}</span>
+          <button className="toast-x" aria-label="Dismiss this message" title="Dismiss (Esc)" onClick={clearNote}>✕</button>
         </div>
       )}
       {ask && <SpendSheet ask={ask.a} onDone={(ok, skip) => (skip && ask.a.skipKey && skipped.current.add(ask.a.skipKey), ask.done(ok), setAsk(null))} />}
@@ -280,7 +304,7 @@ function SpendSheet({ ask, onDone }: { ask: SpendAsk; onDone: (ok: boolean, skip
     return () => window.removeEventListener("keydown", k);
   }, [onDone]);
   return (
-    <div className="scrim" role="presentation">
+    <div className="scrim" role="presentation" data-esc>
       <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="spend-t">
         <h2 id="spend-t">{ask.title}</h2>
         {ask.warn && <p className="note err" role="alert">{ask.warn}</p>}

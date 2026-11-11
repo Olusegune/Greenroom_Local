@@ -29,3 +29,7 @@ Qwen3-TTS VoiceDesign makes a new voice from a text description on every line, s
 - Locking applies to the four built-in Qwen voices. Locking costs one Base model download (about 4 GB, 1058 s on this connection) and one short local generation.
 - The speaker tool is a separate download of about 100 MB and runs offline.
 - The real run is an ignored Rust test (`real_qwen_gpu_and_lock`), run only when asked: it downloads several GB.
+
+## Designing your own voice on this PC (0.14.1)
+
+Voices, Design a voice, and the script screen's Design a voice dialog now offer Qwen3-TTS as a free designer next to ElevenLabs. Three previews are made from the description, each with its own seed; the preview you keep is stored as `qwen-managed/designed/<id>.wav` plus a small JSON (description, seed, sentence, kept). A kept voice speaks later lines by copying its own preview clip with the Base model; without the Base model it is designed again from the same description and seed, which can drift. Unkept previews are pruned (newest 6 stay). Real run: 3 previews in 156 s on the RTX 3060 (including model load), a new line spoken afterwards with the first preview's voice. Not judged by ear; speaker similarity of a designed voice across lines was not measured.

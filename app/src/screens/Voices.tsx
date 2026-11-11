@@ -21,6 +21,8 @@ import AccentSheet from "./AccentSheet";
 import CastingCall from "./CastingCall";
 import { DESIGN_ACCENTS } from "../accents";
 import { useSample, voiceLine } from "../useSample";
+import { defaultEngine, designFailure, keepPreview, makePreviews, type DesignEngine } from "../voiceDesigner";
+import DesignEnginePicker, { useQwenReady } from "./DesignEnginePicker";
 
 type TabId = "mine" | "cast" | "find" | "design" | "clone" | "accents";
 const now = () => new Date().toISOString();
@@ -543,14 +545,18 @@ const EXAMPLES = [
 ];
 
 function Design({ seed }: { seed?: { description: string; line: string; n: number } }) {
-  const { confirmSpend, toast, keys, priceLines, addLedger } = useApp();
+  const { confirmSpend, keys, priceLines, addLedger } = useApp();
   const add = useAdd();
   const { busy, run } = useBusy();
   const [desc, setDesc] = useState("");
   const [sample, setSample] = useState("");
   const [accent, setAccent] = useState("");
   useEffect(() => { if (seed) { setDesc(seed.description.slice(0, 1000)); setSample(seed.line); } }, [seed]);
-  const [previews, setPreviews] = useState<{ p: DesignPreview; url: string; name: string }[]>([]);
+  const [previews, setPreviews] = useState<{ p: DesignPreview; url: string; name: string; engine: DesignEngine }[]>([]);
+  const qwenReady = useQwenReady();
+  const [engine, setEngine] = useState<DesignEngine>(() => defaultEngine(keys.elevenlabs));
+  const [problem, setProblem] = useState<{ text: string; offerLocal: boolean } | null>(null);
+  const available = engine === "qwen" ? qwenReady === true : keys.elevenlabs;
   const [vault, setVault] = useState<{ id: string; name: string; description: string; audioB64: string; createdAt: string }[]>(() => {
     try { return JSON.parse(localStorage.getItem("greenroom-designed-voice-vault") ?? "[]"); } catch { return []; }
   });
@@ -567,35 +573,48 @@ function Design({ seed }: { seed?: { description: string; line: string; n: numbe
   };
 
   const make = async () => {
-    const price = priceLines([{ kind: "design", count: 3 }]);
-    const go = await confirmSpend({ title: "Design a voice?", lines: ["Makes up to 3 preview voices from your description", "Uses ElevenLabs credits for each preview. Saving a voice to your account needs a plan that allows it.", ...price.lines], warn: price.warn });
-    if (!go) return;
+    setProblem(null);
+    if (engine === "elevenlabs") {
+      const price = priceLines([{ kind: "design", count: 3 }]);
+      const go = await confirmSpend({ title: "Design a voice?", lines: ["Makes up to 3 preview voices from your description", "Uses ElevenLabs credits for each preview. Saving a voice to your account needs a plan that allows it.", ...price.lines], warn: price.warn });
+      if (!go) return;
+    }
     await run(async () => {
       try {
-        const out = await api.voiceDesign(desc, sample.trim() || undefined);
-        addLedger({ kind: "design", engine: "ElevenLabs voice design", chars: desc.length, items: [{ kind: "design", count: out.length }] });
-        const made = out.map((p, i) => ({ p, url: URL.createObjectURL(new Blob([fromBase64(p.audioB64) as BlobPart], { type: "audio/mpeg" })), name: `Designed voice ${i + 1}` }));
+        const out = await makePreviews(engine, desc, sample);
+        if (engine === "elevenlabs") addLedger({ kind: "design", engine: "ElevenLabs voice design", chars: desc.length, items: [{ kind: "design", count: out.length }] });
+        const made = out.map(({ p, mime }, i) => ({ p, url: URL.createObjectURL(new Blob([fromBase64(p.audioB64) as BlobPart], { type: mime })), name: `Designed voice ${i + 1}`, engine }));
         setPreviews(made);
-        persistVault([...vault, ...made.map((x) => ({ id: x.p.generatedVoiceId, name: x.name, description: desc, audioB64: x.p.audioB64, createdAt: new Date().toISOString() }))]);
+        if (engine === "elevenlabs") persistVault([...vault, ...made.map((x) => ({ id: x.p.generatedVoiceId, name: x.name, description: desc, audioB64: x.p.audioB64, createdAt: new Date().toISOString() }))]);
       } catch (e) {
-        toast((e as Error).message, true);
+        setProblem(designFailure(engine, (e as Error).message, "make"));
       }
     });
   };
   const save = async (i: number) => {
     const it = previews[i]!;
+    setProblem(null);
     try {
-      const id = await api.voiceDesignSave(it.p.generatedVoiceId, it.name, desc);
-      add({ id, name: it.name, provider: "elevenlabs", source: "designed", language: "", accent: accent, gender: "", notes: desc.slice(0, 160), consent: { speaker: "No real person: designed from a description", basis: "designed", reference: desc.slice(0, 120), date: new Date().toISOString().slice(0, 10) } });
+      const entry = await keepPreview(it.engine, it.p.generatedVoiceId, it.name, desc, accent);
+      add(entry);
     } catch (e) {
-      toast(`ElevenLabs could not save this voice. The preview is safe in your local Design Vault. ${(e as Error).message}`, true);
+      setProblem(designFailure(it.engine, (e as Error).message, "keep"));
     }
   };
 
   return (
     <>
       <p className="muted">Describe the voice you imagine, including age, accent, tone and pace. You get three previews to choose from. Keeping one in your account may need a paid ElevenLabs plan; if it does, the app will say so.</p>
-      {!keys.elevenlabs && <Note kind="warn">Add your ElevenLabs key in Settings first.</Note>}
+      <DesignEnginePicker engine={engine} onChange={(e) => { setEngine(e); setProblem(null); }} qwenReady={qwenReady} />
+      {problem && (
+        <Note kind="err">
+          {problem.text}
+          <span className="row wrap" style={{ marginTop: 8 }}>
+            {problem.offerLocal && engine === "elevenlabs" && <button className="sm primary" onClick={() => { setEngine("qwen"); setProblem(null); }}>Design it on this PC instead</button>}
+            <button className="sm ghost" onClick={() => setProblem(null)}>Dismiss</button>
+          </span>
+        </Note>
+      )}
       <div className="card stack">
         <label className="field">
           Describe the voice (20 to 1000 characters)
@@ -625,7 +644,7 @@ function Design({ seed }: { seed?: { description: string; line: string; n: numbe
           <textarea rows={2} value={sample} onChange={(e) => setSample(e.target.value)} />
         </label>
         <div className="row">
-          <button className="primary" disabled={!ok || busy || !keys.elevenlabs} onClick={() => void make()}>
+          <button className="primary" disabled={!ok || busy || !available} onClick={() => void make()}>
             {busy ? "Designing…" : "Make 3 previews"}
           </button>
           {!ok && desc.length > 0 && <span className="muted small">A little more detail, please.</span>}

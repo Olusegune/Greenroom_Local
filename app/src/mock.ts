@@ -131,6 +131,8 @@ export const mock: Api = {
   voiceAddShared: async (_o, v) => (await wait(), "added-" + v),
   voiceDesign: async () => (await wait(700), [1, 2, 3].map((i) => ({ generatedVoiceId: "gen" + i, audioB64: tone(2.5, 150 + i * 60), seconds: 2.5 }))),
   voiceDesignSave: async (g) => (await wait(), "designed-" + g),
+  qwenDesignPreview: async () => (await wait(900), [1, 2, 3].map((i) => ({ generatedVoiceId: "qwen-design-0000000" + i, audioB64: tone(2.5, 120 + i * 50), seconds: 2.5 }))),
+  qwenDesignSave: async (g) => (await wait(), g),
   voiceClone: async (name, _f, _m, _a, permission) => {
     if (!permission) throw new Error("Confirm that you have permission to clone this voice first.");
     await wait(600);

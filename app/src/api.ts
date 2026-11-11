@@ -188,6 +188,9 @@ const real = {
   voiceAddShared: (owner: string, voice: string, name: string) => call<string>("voice_add_shared", { owner, voice, name }),
   voiceDesign: (description: string, sample?: string) => call<DesignPreview[]>("voice_design", { description, sample }),
   voiceDesignSave: (generated: string, name: string, description: string) => call<string>("voice_design_save", { generated, name, description }),
+  /** Free, on this PC: three previews of a voice designed with Qwen3-TTS. */
+  qwenDesignPreview: (description: string, sample: string) => call<DesignPreview[]>("qwen_design_preview", { description, sample }),
+  qwenDesignSave: (generated: string) => call<string>("qwen_design_save", { generated }),
   voiceClone: (name: string, filename: string, mime: string, audioB64: string, permission: boolean) => call<string>("voice_clone", { name, filename, mime, audioB64, permission }),
   voiceDelete: (id: string) => call<void>("voice_delete", { id }),
   previewFetch: (url: string) => call<Audio>("preview_fetch", { url }),

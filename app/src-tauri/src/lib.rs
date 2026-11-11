@@ -12,6 +12,7 @@ mod managed_python;
 mod mux;
 mod net;
 mod script_import;
+mod qwen_design;
 mod qwen_warm;
 mod speaker;
 mod setup_check;
@@ -557,13 +558,28 @@ fn qwen_weights_marker(root: &std::path::Path) -> PathBuf { qwen_dir(root).join(
 fn qwen_base_marker(root: &std::path::Path) -> PathBuf { qwen_dir(root).join("base-ok") }
 fn qwen_ref_wav(root: &std::path::Path, voice: &str) -> PathBuf { qwen_dir(root).join("refs").join(format!("{voice}.wav")) }
 /// A voice is locked when its reference clip exists and the Base model is on this PC: every line then copies that one clip's voice.
-fn qwen_locked(root: &std::path::Path, voice: &str) -> bool { qwen_voice_description(voice).is_some() && qwen_base_marker(root).is_file() && qwen_ref_wav(root, voice).is_file() }
+fn qwen_locked(root: &std::path::Path, voice: &str) -> bool {
+    if qwen_design::is_designed_id(voice) { return qwen_design::load(&qwen_dir(root), voice).is_some() && qwen_base_marker(root).is_file(); }
+    qwen_voice_description(voice).is_some() && qwen_base_marker(root).is_file() && qwen_ref_wav(root, voice).is_file()
+}
 
 fn qwen_speak(root: &std::path::Path, text: &str, voice: &str) -> Result<Vec<u8>, String> {
     use std::io::Write;
     use std::process::{Command, Stdio};
     static GENERATION: Mutex<()> = Mutex::new(());
-    let instruct = qwen_voice_description(voice).ok_or("That Qwen voice is not available.")?;
+    // A built-in voice, or a voice the owner designed on this PC (its own preview clip is its reference).
+    let designed = qwen_design::load(&qwen_dir(root), voice);
+    let instruct: String = match (&designed, qwen_voice_description(voice)) {
+        (Some(d), _) => d.description.clone(),
+        (None, Some(s)) => s.to_string(),
+        _ => return Err("That Qwen voice is not available.".into()),
+    };
+    let instruct = instruct.as_str();
+    let seed = designed.as_ref().map_or_else(|| qwen_seed(voice), |d| d.seed);
+    let (ref_path, ref_text) = match &designed {
+        Some(d) => (qwen_design::wav_path(&qwen_dir(root), voice), d.text.clone()),
+        None => (qwen_ref_wav(root, voice), QWEN_REFERENCE_TEXT.to_string()),
+    };
     if text.chars().count() > 600 { return Err("Qwen3-TTS supports up to 600 characters per line here.".into()); }
     let python = qwen_python(root);
     if !python.is_file() { return Err("The Qwen3-TTS runtime is not installed on this computer yet. Install it in Model Center.".into()); }
@@ -571,9 +587,9 @@ fn qwen_speak(root: &std::path::Path, text: &str, voice: &str) -> Result<Vec<u8>
     // (the first download) the one-shot worker below does the downloading. If the warm worker cannot start, the one-shot still works.
     if qwen_weights_marker(root).is_file() {
         let request = if qwen_locked(root, voice) {
-            serde_json::json!({"op": "clone", "text": text, "language": "English", "base_model": QWEN_BASE, "ref_path": qwen_ref_wav(root, voice), "ref_text": QWEN_REFERENCE_TEXT, "seed": qwen_seed(voice)})
+            serde_json::json!({"op": "clone", "text": text, "language": "English", "base_model": QWEN_BASE, "ref_path": ref_path, "ref_text": ref_text, "seed": seed})
         } else {
-            serde_json::json!({"op": "design", "text": text, "instruct": instruct, "language": "English", "model": QWEN_MODEL, "seed": qwen_seed(voice)})
+            serde_json::json!({"op": "design", "text": text, "instruct": instruct, "language": "English", "model": QWEN_MODEL, "seed": seed})
         };
         let log = setup_check::log_path(root).with_file_name("qwen-server.log");
         match qwen_warm::speak(&python, include_str!("../../../runtime/qwen_server.py"), &qwen_dir(root).join("hf"), &log, &request, std::time::Duration::from_secs(1500)) {
@@ -677,6 +693,39 @@ struct QwenLockStatus { base_ready: bool, gpu: bool, gpu_name: String, voices: V
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct QwenVoiceLock { id: String, locked: bool }
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct QwenDesignPreview { generated_voice_id: String, audio_b64: String, seconds: f64 }
+
+/// Three previews of a voice designed from a description, made on this PC with Qwen3-TTS VoiceDesign. Free, and nothing is sent anywhere.
+fn qwen_design_preview_blocking(root: &std::path::Path, description: &str, sample: &str) -> Result<Vec<QwenDesignPreview>, String> {
+    qwen_design::check_inputs(description, sample)?;
+    if !qwen_weights_marker(root).is_file() || !qwen_python(root).is_file() { return Err("Qwen3-TTS is not set up on this PC yet. Set it up in Model Center first (it is free).".into()); }
+    let qd = qwen_dir(root);
+    qwen_design::prune_unsaved(&qd, 6);
+    let log = setup_check::log_path(root).with_file_name("qwen-server.log");
+    let mut out = Vec::new();
+    for i in 0..3u32 {
+        let id = (0..20).map(|k| qwen_design::new_id(i * 31 + k)).find(|id| !qwen_design::wav_path(&qd, id).exists()).ok_or("Could not make a new voice id.")?;
+        let seed = (qwen_seed(&id).wrapping_add(i * 7919)) % 2_000_000_000 + 1;
+        let request = serde_json::json!({"op": "design", "text": sample.trim(), "instruct": description.trim(), "language": "English", "model": QWEN_MODEL, "seed": seed});
+        let done = qwen_warm::speak(&qwen_python(root), include_str!("../../../runtime/qwen_server.py"), &qd.join("hf"), &log, &request, std::time::Duration::from_secs(1500))?;
+        qwen_design::write(&qd, &id, &qwen_design::Designed { description: description.trim().to_string(), seed, text: sample.trim().to_string(), saved: false }, &done.wav)?;
+        out.push(QwenDesignPreview { generated_voice_id: id, seconds: qwen_design::wav_seconds(&done.wav), audio_b64: b64(&done.wav) });
+    }
+    Ok(out)
+}
+
+#[tauri::command]
+async fn qwen_design_preview(app: tauri::AppHandle, description: String, sample: String) -> Result<Vec<QwenDesignPreview>, String> { let docs = root(&app)?; blocking(move || qwen_design_preview_blocking(&docs, &description, &sample)).await }
+
+/// Keeps one preview as a voice. Returns its id, which is the voice id in the library.
+#[tauri::command]
+async fn qwen_design_save(app: tauri::AppHandle, generated: String) -> Result<String, String> {
+    let docs = root(&app)?;
+    blocking(move || { qwen_design::mark_saved(&qwen_dir(&docs), &generated)?; Ok(generated) }).await
+}
 
 const QWEN_VOICE_IDS: [&str; 4] = ["qwen-warm-narrator", "qwen-gravel-man", "qwen-bright-young-woman", "qwen-gentle-older-man"];
 
@@ -2135,7 +2184,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, setup_check, setup_report, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_base_download, qwen_lock_voice, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
+            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_design_preview, qwen_design_save, qwen_base_download, qwen_lock_voice, qwen_design_preview, qwen_design_save, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
         ])
         .build(tauri::generate_context!())
         .expect("error while building Greenroom")
@@ -2222,6 +2271,20 @@ mod qwen_tests {
                 println!("locked {v} in {:?}: {:?}", t.elapsed(), st.voices.iter().map(|x| (x.id.clone(), x.locked)).collect::<Vec<_>>());
             }
         }
+        if step == "design" {
+            let t = std::time::Instant::now();
+            let previews = qwen_design_preview_blocking(&root, "A 500 year old male robot powered by nuclear fusion energy, calm and slow, with a faint metallic resonance", "A robot! A real, actual robot, and he is stuck in the mud! Four hundred years? You must be starving.").expect("design");
+            println!("design: {} previews in {:?}", previews.len(), t.elapsed());
+            for (i, p) in previews.iter().enumerate() {
+                std::fs::write(out.join(format!("designed_{i}.wav")), unb64(&p.audio_b64).unwrap()).unwrap();
+                println!("preview {i}: {} {:.1}s locked={}", p.generated_voice_id, p.seconds, qwen_locked(&root, &p.generated_voice_id));
+            }
+            let first = &previews[0].generated_voice_id;
+            let line = qwen_speak(&root, "Good evening. I do hope you are well.", first).expect("speak with designed voice");
+            std::fs::write(out.join("designed_spoken.wav"), &line).unwrap();
+            println!("spoke a new line with the designed voice: {} bytes", line.len());
+            qwen_warm::stop();
+        }
         if step == "speak" {
             let texts = ["Good evening. I do hope you are well.", "Your soul is overdue.", "Nobody leaves this room until I say so.", "It was a quiet morning in the harbour town.", "Please state your name and your purpose here.", "I have seen this before, and it never ends well."];
             let tag = std::env::var("GREENROOM_TAG").unwrap_or("locked".into());
@@ -2235,6 +2298,30 @@ mod qwen_tests {
             }
             qwen_warm::stop();
         }
+    }
+
+    #[test]
+    fn a_voice_designed_on_this_pc_is_accepted_only_when_it_exists_and_is_locked_by_its_own_clip() {
+        let tmp = std::env::temp_dir().join(format!("gr-qwen-design-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&tmp);
+        let qd = qwen_dir(&tmp);
+        std::fs::create_dir_all(&qd).unwrap();
+        let id = "qwen-design-0a1b2c3d";
+        // Not made yet: not a voice.
+        assert!(qwen_speak(&tmp, "hi", id).unwrap_err().contains("not available"));
+        assert!(!qwen_locked(&tmp, id));
+        let meta = qwen_design::Designed { description: "A 500 year old robot with a calm, slow voice".into(), seed: 5, text: "Good evening, I am glad that you could come.".into(), saved: true };
+        qwen_design::write(&qd, id, &meta, b"RIFF").unwrap();
+        // Made, but no runtime yet: it gets as far as the runtime check.
+        assert!(qwen_speak(&tmp, "hi", id).unwrap_err().contains("not installed"));
+        // Locked to its own clip once the Base model is on this PC.
+        assert!(!qwen_locked(&tmp, id));
+        std::fs::write(qwen_base_marker(&tmp), b"x").unwrap();
+        assert!(qwen_locked(&tmp, id));
+        // Previews need the runtime and a sensible description, and never spend or send anything.
+        assert!(qwen_design_preview_blocking(&tmp, "short", "Good evening, I am glad that you could come.").unwrap_err().contains("20 to 1000"));
+        assert!(qwen_design_preview_blocking(&tmp, "A 500 year old robot with a calm, slow voice", "Good evening, I am glad that you could come.").unwrap_err().contains("Model Center"));
+        let _ = std::fs::remove_dir_all(&tmp);
     }
 
     #[test]

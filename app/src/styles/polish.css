@@ -148,3 +148,19 @@ aside.card { min-width: 0; }
 .more-sounds > summary { cursor: pointer; padding: 6px 2px; color: var(--text-2); font-size: 13.5px; font-weight: 500; }
 .more-sounds[open] > summary { color: var(--text); }
 .more-sounds .stack-s { display: grid; gap: 6px; margin-top: 12px; }
+
+/* Message box: top centre so it never covers a dialog's buttons; always has a close button; long errors scroll instead of running off screen. */
+.toast { right: auto; bottom: auto; top: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: flex-start; gap: 12px; width: max-content; max-width: min(560px, calc(100vw - 32px)); max-height: 40vh; overflow: auto; z-index: 300; user-select: text; }
+.toast .toast-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.toast .toast-x { flex: none; min-width: 32px; min-height: 32px; padding: 0; line-height: 1; border-radius: 50%; background: transparent; border: 1px solid var(--line-strong, currentColor); }
+.toast .toast-x:hover { background: rgba(255, 255, 255, 0.1); }
+@keyframes gr-drop { from { opacity: 0; translate: 0 -8px; } to { opacity: 1; translate: 0 0; } }
+.toast { animation: gr-drop 200ms var(--ease, ease); }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+/* Voice designer: who designs the voice. */
+.design-engines { border: 0; padding: 0; margin: 0 0 10px; }
+.design-engines legend { padding: 0; margin-bottom: 6px; color: var(--text-2); }
+.design-engine { display: flex; gap: 10px; align-items: flex-start; flex: 1 1 240px; padding: 12px 14px; border: 1px solid var(--line-strong, var(--line)); border-radius: 10px; cursor: pointer; }
+.design-engine.on { border-color: var(--accent, #4ade80); background: rgba(74, 222, 128, 0.07); }
+.design-engine input { margin-top: 4px; }
