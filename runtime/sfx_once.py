@@ -13,7 +13,7 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 with contextlib.redirect_stdout(sys.stderr):
     import torch
-    import torchaudio
+    import wave
     from stable_audio_tools.inference.generation import generate_diffusion_cond
     from stable_audio_tools.models.factory import create_model_from_config
     from stable_audio_tools.models.utils import load_ckpt_state_dict
@@ -23,7 +23,8 @@ with contextlib.redirect_stdout(sys.stderr):
     # Point the text encoder at the local copy so nothing is downloaded.
     for cond in config.get("model", {}).get("conditioning", {}).get("configs", []):
         if cond.get("id") == "prompt":
-            cond.setdefault("config", {})["t5_model_name"] = request["t5_dir"]
+            # The library only accepts known model names; its model_path option says where the files really are.
+            cond.setdefault("config", {})["model_path"] = request["t5_dir"]
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = create_model_from_config(config)
@@ -47,4 +48,10 @@ with contextlib.redirect_stdout(sys.stderr):
     clip = audio[0].to(torch.float32).cpu()[:, : seconds * sample_rate]
     peak = clip.abs().max().clamp(min=1e-6)
     clip = (clip / peak).clamp(-1, 1) * 0.89
-    torchaudio.save(request["out"], clip, sample_rate, encoding="PCM_S", bits_per_sample=16)
+    # Written with the standard library: torchaudio has no audio backend in this private engine.
+    pcm = (clip.t().contiguous() * 32767.0).round().clamp(-32768, 32767).to(torch.int16).numpy().tobytes()
+    with wave.open(request["out"], "wb") as w:
+        w.setnchannels(clip.shape[0])
+        w.setsampwidth(2)
+        w.setframerate(int(sample_rate))
+        w.writeframes(pcm)

@@ -1861,6 +1861,15 @@ async fn sfx_local_generate(app: tauri::AppHandle, project: String, req: LocalSf
 mod local_sfx_tests {
     use super::*;
     fn req(p: &str, s: u32) -> LocalSfxReq { LocalSfxReq { prompt: p.into(), seconds: s, seed: None } }
+    /// Found by running the real engine on 2026-11-12: the library rejects a folder as "t5_model_name" (it wants model_path), and the
+    /// private engine has no torchaudio audio backend, so the file must be written with the standard library.
+    #[test]
+    fn sfx_worker_uses_the_local_text_encoder_and_the_standard_wav_writer() {
+        let s = include_str!("../../../runtime/sfx_once.py");
+        assert!(s.contains("[\"model_path\"] = request[\"t5_dir\"]"));
+        assert!(!s.contains("[\"t5_model_name\"] = "));
+        assert!(s.contains("wave.open(") && !s.contains("import torchaudio") && !s.contains("torchaudio.save"));
+    }
     #[test]
     fn request_limits_are_enforced_before_anything_starts() {
         assert!(check_local_sfx(&req("door slam", 3)).is_ok());
