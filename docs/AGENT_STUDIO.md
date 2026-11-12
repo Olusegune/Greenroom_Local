@@ -49,3 +49,7 @@ Flags missing takes, **clipping** (counts runs of flat-topped samples; a take no
 - Agent-made **music**; agent-driven picture sync; more than six sounds per run.
 - Exporting stems, OTIO, EDL, cue sheets or the production report from the agent (use Export).
 - A run against live cloud engines. It has been run for real only against Piper, in local-only mode (see `DEMO_RESULTS.md`).
+
+## Delivery to a destination (0.15.0)
+
+After you approve delivery, the export step reads the brief for a destination and for stems. "Export this as a podcast with stems" gives two reviewable proposals: the Podcast preset and stems. Words are matched only when an export verb (export, deliver, master, publish, hand, send) is in the same sentence, so story words such as "film" never choose a format. Files written: the full mix; one file per scene when the preset asks (audiobook, training); a Stems folder with one track per character, sound clips, atmosphere and music; and each chosen line in a folder per character (game, editor). All share the gain of the full mix. The step reports the preset, the loudness target, and the file list. OTIO, EDL, the cue sheet and the production report remain on the Export screen. The agent makes no music.

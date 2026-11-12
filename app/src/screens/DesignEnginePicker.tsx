@@ -6,7 +6,7 @@ import type { DesignEngine } from "../voiceDesigner";
 /** Whether Qwen3-TTS is set up on this PC (so voices can be designed for free). */
 export function useQwenReady(): boolean | null {
   const [ready, setReady] = useState<boolean | null>(null);
-  useEffect(() => { let live = true; void api.qwenRuntimeStatus().then((s) => live && setReady(s.installed && s.modelReady)).catch(() => live && setReady(false)); return () => { live = false; }; }, []);
+  useEffect(() => { let live = true; void api.qwenDesignReady().then((ok) => live && setReady(ok)).catch(() => live && setReady(false)); return () => { live = false; }; }, []);
   return ready;
 }
 

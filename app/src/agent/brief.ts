@@ -2,6 +2,8 @@
 // into explicit, reviewable proposals. It never edits anything: each proposal says what it would change and why, and the
 // person accepts or rejects it. Rule based and offline, so the same words always give the same proposals.
 
+import { asksForStems, presetFromWords } from "../exportPresets";
+
 export type Proposal =
   | { kind: "set_budget"; amount: number; text: string }
   | { kind: "local_only"; text: string }
@@ -11,7 +13,9 @@ export type Proposal =
   | { kind: "genre"; genre: "animation" | "film_tv" | "games" | "education" | "audiobooks" | "family"; text: string }
   | { kind: "accent_where_apt"; accent: string; text: string }
   | { kind: "regenerate_flagged"; text: string }
-  | { kind: "naturalness"; text: string };
+  | { kind: "naturalness"; text: string }
+  | { kind: "delivery"; preset: string; text: string }
+  | { kind: "stems"; text: string };
 
 export interface Interpretation {
   proposals: Proposal[];
@@ -46,6 +50,9 @@ export function interpret(text: string): Interpretation {
     else if (/\beducational|\blesson|\bexplainer|\btutorial/.test(l)) proposals.push({ kind: "genre", genre: "education", text: "Treat this as educational narration: clear, patient presets." });
     if (/(regenerate|redo|remake|re-?make|fix)\b.*\b(only|just)?.*\b(unnatural|robotic|flat|wrong|bad|off|weak)\b/.test(l) || /only the lines that (sound|are|feel)/.test(l)) proposals.push({ kind: "regenerate_flagged", text: "Remake only the lines the checks flagged, or you mark as unnatural. Approved takes are kept." });
     if (/(less|not) (so |too )?robotic|more (natural|human|lifelike|real)/.test(l)) proposals.push({ kind: "naturalness", text: "Add natural-speech direction (breath, varied pace) and remake only the flat lines. You review the result." });
+    const dest = /\b(?:export|deliver|delivery|master|publish|hand|send)\b/.test(l) ? presetFromWords(l) : null;
+    if (dest) proposals.push({ kind: "delivery", preset: dest.id, text: `Deliver in the ${dest.label} format: ${dest.note}` });
+    if (asksForStems(l)) proposals.push({ kind: "stems", text: "Also write a separate track for each character, the sound clips and the atmosphere. They are all the same length and add back to the mix." });
     if (proposals.length === before) unmatched.push(p);
   }
   return { proposals, unmatched };

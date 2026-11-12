@@ -116,7 +116,7 @@ export function Provider({ children }: { children: ReactNode }) {
       const top = scrims[scrims.length - 1];
       if (!top) return;
       const buttons = [...top.querySelectorAll<HTMLButtonElement>(".dialog button")];
-      const btn = buttons.find((b) => /^(close|cancel|done|not now|back)/i.test(b.textContent?.trim() ?? "") || b.getAttribute("aria-label")?.toLowerCase().startsWith("close"));
+      const btn = buttons.find((b) => /^(close|cancel|done|not now|back)\b/i.test(b.textContent?.trim() ?? "") || b.getAttribute("aria-label")?.toLowerCase().startsWith("close"));
       if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
     };
     window.addEventListener("keydown", k);

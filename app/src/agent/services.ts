@@ -12,7 +12,8 @@ import { requirementsOf, describeRequirements } from "../casting/requirements";
 import { STATUS_LABEL } from "../casting/types";
 import type { Line, Project, Take, VoiceEntry } from "../types";
 import { foleyPlan } from "../foley";
-import type { SceneExport } from "../exportScene";
+import type { Delivery, SceneExport } from "../exportScene";
+import { EXPORT_PRESETS, type ExportPreset } from "../exportPresets";
 import { MAX_SOUNDS } from "./plan";
 import { auditionPlan } from "../presets/audition";
 import type { Executors } from "./graph";
@@ -39,6 +40,8 @@ export interface Env {
   embed?: (take: string[]) => Promise<Record<string, number[]>>;
   /** Mixes and writes the full scene. Only ever called after the person has approved delivery. */
   exportScene?: (project: Project) => Promise<SceneExport>;
+  /** Delivery to a destination: the mix plus the scenes, stems and lines the preset or the brief asks for. */
+  exportDelivery?: (project: Project, opts: { preset: ExportPreset | null; stems: boolean }) => Promise<Delivery>;
 }
 
 
@@ -210,6 +213,14 @@ export function executors(env: Env): Executors {
       if (bad.length) throw new Error(`${bad.length} problem(s) must be fixed before export: ${bad[0]!.text}`);
       const unsupported = [...new Set(f.filter((x) => x.kind === "unsupported").map((x) => x.text))];
       // This step is behind the delivery gate: it only runs after the person approved it.
+      const props = env.interpretation?.proposals ?? [];
+      const asked = props.find((x): x is Extract<typeof x, { kind: "delivery" }> => x.kind === "delivery");
+      const preset = asked ? EXPORT_PRESETS.find((x) => x.id === asked.preset) ?? null : null;
+      const stems = props.some((x) => x.kind === "stems");
+      if (env.exportDelivery) {
+        const d = await env.exportDelivery(p, { preset, stems });
+        return { output: { ...(d.scene ?? {}), preset: preset?.label ?? "the project's own export settings", loudness: d.cfg.target, files: d.files.map((f) => (f.folder ? f.folder + "/" : "") + f.name), counts: d.counts, unsupported, note: `Written ${d.files.length} file${d.files.length === 1 ? "" : "s"}${preset ? ` for ${preset.label}` : ""}. Loudness targets are published starting points: check the destination's current spec. OTIO, EDL, cue sheet and the production report are on the Export screen.` } };
+      }
       if (!env.exportScene) return { output: { ready: true, unsupported, note: "Ready. Open Export to choose a format and deliver." } };
       const out = await env.exportScene(p);
       return { output: { ...out, unsupported, note: "Written. Stems, OTIO, EDL, cue sheet and the production report are on the Export screen." } };

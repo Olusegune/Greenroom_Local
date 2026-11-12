@@ -698,10 +698,17 @@ struct QwenVoiceLock { id: String, locked: bool }
 #[serde(rename_all = "camelCase")]
 struct QwenDesignPreview { generated_voice_id: String, audio_b64: String, seconds: f64 }
 
+/// Is Qwen3-TTS set up on this PC? Looks only at the files the setup leaves behind, so it answers at once (the full self-check imports
+/// PyTorch and can take many seconds, which left the Make previews button off while it ran).
+fn qwen_files_ready(root: &std::path::Path) -> bool { qwen_python(root).is_file() && qwen_weights_marker(root).is_file() }
+
+#[tauri::command]
+async fn qwen_design_ready(app: tauri::AppHandle) -> Result<bool, String> { let docs = root(&app)?; Ok(qwen_files_ready(&docs)) }
+
 /// Three previews of a voice designed from a description, made on this PC with Qwen3-TTS VoiceDesign. Free, and nothing is sent anywhere.
 fn qwen_design_preview_blocking(root: &std::path::Path, description: &str, sample: &str) -> Result<Vec<QwenDesignPreview>, String> {
     qwen_design::check_inputs(description, sample)?;
-    if !qwen_weights_marker(root).is_file() || !qwen_python(root).is_file() { return Err("Qwen3-TTS is not set up on this PC yet. Set it up in Model Center first (it is free).".into()); }
+    if !qwen_files_ready(root) { return Err("Qwen3-TTS is not set up on this PC yet. Set it up in Model Center first (it is free).".into()); }
     let qd = qwen_dir(root);
     qwen_design::prune_unsaved(&qd, 6);
     let log = setup_check::log_path(root).with_file_name("qwen-server.log");
@@ -2184,7 +2191,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, setup_check, setup_report, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_design_preview, qwen_design_save, qwen_base_download, qwen_lock_voice, qwen_design_preview, qwen_design_save, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
+            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_design_preview, qwen_design_save, qwen_design_ready, qwen_base_download, qwen_lock_voice, qwen_design_preview, qwen_design_save, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
         ])
         .build(tauri::generate_context!())
         .expect("error while building Greenroom")

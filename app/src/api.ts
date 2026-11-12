@@ -190,6 +190,8 @@ const real = {
   voiceDesignSave: (generated: string, name: string, description: string) => call<string>("voice_design_save", { generated, name, description }),
   /** Free, on this PC: three previews of a voice designed with Qwen3-TTS. */
   qwenDesignPreview: (description: string, sample: string) => call<DesignPreview[]>("qwen_design_preview", { description, sample }),
+  /** Instant: are the Qwen files on this PC? (The full status check is slow.) */
+  qwenDesignReady: () => call<boolean>("qwen_design_ready"),
   qwenDesignSave: (generated: string) => call<string>("qwen_design_save", { generated }),
   voiceClone: (name: string, filename: string, mime: string, audioB64: string, permission: boolean) => call<string>("voice_clone", { name, filename, mime, audioB64, permission }),
   voiceDelete: (id: string) => call<void>("voice_delete", { id }),

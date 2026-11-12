@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { exportFullScene, exportStem } from "../exportScene";
+import { exportDelivery, exportFullScene, exportStem } from "../exportScene";
+import { EXPORT_PRESETS } from "../exportPresets";
+import { interpret } from "./brief";
 import { foleyPlan } from "../foley";
 import { newProject, type Project, type Take, type VoiceEntry } from "../types";
 import { approve, runAll, type AgentRun } from "./graph";
@@ -182,5 +184,68 @@ describe("the quality step and speaker consistency", () => {
     expect((await qc(withTakes())).consistency).toMatch(/not checked/);
     expect((await qc(withTakes(), { embed: async () => { throw new Error("not installed"); } })).consistency).toBe("not checked (the speaker tool is not installed)");
     expect((await qc(withTakes(), { embed: async () => { throw new Error("boom"); } })).consistency).toBe("not checked (the speaker tool failed)");
+  });
+});
+
+describe("delivery to a destination", () => {
+  const sine = (n: number, rate: number) => Float32Array.from({ length: n }, (_, i) => 0.1 * Math.sin((2 * Math.PI * 220 * i) / rate));
+  const written: { folder: string; name: string }[] = [];
+  const deps = {
+    render: async (planned: { total: number }, _bed: number, rate: number) => [sine(Math.ceil(planned.total * rate), rate)],
+    renderFiltered: async (planned: { total: number }, _bed: number, rate: number) => [sine(Math.ceil(planned.total * rate), rate)],
+    write: async (n: string) => n,
+    writeIn: async (folder: string, name: string) => { written.push({ folder, name }); return `C:/exports/${folder}/${name}`; },
+    readTake: async () => ({ audioB64: "UklGRg==", ext: "wav" }),
+    sha256: async () => "abc123",
+  };
+  const preset = (id: string) => EXPORT_PRESETS.find((p) => p.id === id)!;
+
+  it("uses the preset's format and loudness and says which preset it used", async () => {
+    written.length = 0;
+    const d = await exportDelivery(scene(), deps, { preset: preset("podcast") });
+    expect(d.preset).toBe("podcast");
+    expect(d.cfg).toMatchObject({ rate: 44100, bits: 24, target: "web", ceiling: -1 });
+    expect(d.scene!.lufs).toBeCloseTo(-16, 0);
+    expect(written.some((w) => w.name === "My Scene - full scene.wav")).toBe(true);
+  });
+  it("writes a stem per character only when asked, in a Stems folder, and keeps names safe", async () => {
+    written.length = 0;
+    const none = await exportDelivery(scene(), deps, { preset: preset("podcast") });
+    expect(none.counts.stems).toBe(0);
+    written.length = 0;
+    const withStems = await exportDelivery(scene(), deps, { preset: preset("podcast"), stems: true });
+    expect(withStems.counts.stems).toBeGreaterThan(0);
+    const stems = written.filter((w) => w.folder === "Stems");
+    expect(stems.length).toBe(withStems.counts.stems);
+    for (const s of stems) expect(s.name).not.toMatch(/[:?\/]/);
+  });
+  it("training writes one file per scene, a game writes every line on its own, and the project is never changed", async () => {
+    const p = scene();
+    p.scenes = ["Intro", "Opening"];
+    const before = JSON.stringify(p);
+    written.length = 0;
+    const t = await exportDelivery(p, deps, { preset: preset("training") });
+    expect(t.counts.scenes).toBeGreaterThan(0);
+    written.length = 0;
+    const g = await exportDelivery(p, deps, { preset: preset("game") });
+    expect(g.counts.lines).toBe(2);
+    expect(written.filter((w) => w.folder.startsWith("Lines - "))).toHaveLength(2);
+    expect(JSON.stringify(p)).toBe(before);
+  });
+  it("refuses a line with no take, like the single mix", async () => {
+    const p = scene();
+    p.lines[1] = { ...p.lines[1]!, takes: [], chosen: undefined };
+    await expect(exportDelivery(p, deps, {})).rejects.toThrow(/no take/);
+  });
+  it("the agent's export step asks for the preset and the stems the brief named, after approval only", async () => {
+    const p = { current: scene() };
+    const seen: { preset: string | null; stems: boolean }[] = [];
+    const interpretation = interpret("Export this as a podcast with stems.");
+    const e = env(p, { interpretation, exportDelivery: async (_p, o) => { seen.push({ preset: o.preset?.id ?? null, stems: o.stems }); return { preset: o.preset?.id ?? null, cfg: { rate: 44100, bits: 24, target: "web", ceiling: -1 }, files: [{ kind: "full", folder: "", name: "a.wav", path: "x" }, { kind: "stem", folder: "Stems", name: "b.wav", path: "y" }], scene: null, counts: { scenes: 0, stems: 1, lines: 0 } }; } });
+    let r = await runAll(plan(p.current), executors(e), now);
+    expect(seen).toHaveLength(0);
+    r = await runAll(approve(r, "export", NOW), executors(e), now);
+    expect(seen).toEqual([{ preset: "podcast", stems: true }]);
+    expect(r.nodes.find((n) => n.id === "export")!.output).toMatchObject({ preset: "Podcast", files: ["a.wav", "Stems/b.wav"], counts: { stems: 1 } });
   });
 });

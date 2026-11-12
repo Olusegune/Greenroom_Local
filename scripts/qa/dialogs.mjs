@@ -59,8 +59,16 @@ if (opened) {
   check("the close button closes the designer", !(await ev(`!!document.querySelector('[role=dialog]')`)));
 }
 
-// 3. Every other dialog that can be opened from the demo closes with Escape.
-for (const [screen, button] of [["Voices", "Design a voice"]]) { void screen; void button; }
+// 3. A dialog whose only way out is a Cancel button (the script importer) also closes with Escape.
+await click("Script", ".rail button"); await sleep(800);
+const imp = await click("Import a script");
+check("the script importer opens", imp);
+if (imp) {
+  await sleep(500);
+  check("the importer is a dialog with a Cancel button", await ev(`[...document.querySelectorAll('[role=dialog] button')].some(b=>/^Cancel/.test(b.textContent.trim()))`));
+  await esc();
+  check("Escape closes a dialog that only has Cancel", !(await ev(`!!document.querySelector('[role=dialog]')`)));
+}
 
 console.log(checks.join("\n"));
 console.log("exceptions:", errors.length, errors.slice(0, 3).join(" | "));

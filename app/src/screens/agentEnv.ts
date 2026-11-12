@@ -12,10 +12,10 @@ import { readyEnginesFrom } from "../presets/cast";
 import { DEFAULT_PRICES, ENGINES, qualityFormat, soundEngineOf } from "../engines";
 import { api } from "../api";
 import { renderPlan } from "../audio";
-import { exportFullScene } from "../exportScene";
+import { exportDelivery, exportFullScene } from "../exportScene";
 import { sha256Hex } from "../trust";
 import { assembledFor, makeBeatTake, makeSound, makeTake } from "../generate";
-import { takeBuffer } from "../media";
+import { takeAudio, takeBuffer } from "../media";
 import { estimateCost } from "../trust";
 import type { Project } from "../types";
 import { dictFor } from "../voiceDna";
@@ -66,6 +66,17 @@ export function agentEnv({ app, live }: { app: ReturnType<typeof useApp>; live: 
         write: (name, b64) => api.exportWrite(project.id, "", name, b64),
         sha256: sha256Hex,
       });
+    },
+    async exportDelivery(project, opts) {
+      const load = (ref: { id: string }) => takeBuffer(project.id, ref.id);
+      return exportDelivery(project, {
+        render: (plan, bedVolume, rate) => renderPlan(plan, bedVolume, load, rate),
+        renderFiltered: (plan, bedVolume, rate, filter) => renderPlan(plan, bedVolume, load, rate, filter),
+        write: (name, b64) => api.exportWrite(project.id, "", name, b64),
+        writeIn: (folder, name, b64) => api.exportWrite(project.id, folder, name, b64),
+        readTake: async (id) => { const a = await takeAudio(project.id, id); return { audioB64: a.audioB64, ext: /mpeg|mp3/i.test(a.mime) ? "mp3" : "wav" }; },
+        sha256: sha256Hex,
+      }, opts);
     },
     async embed(takes) {
       const st = await api.speakerStatus();
