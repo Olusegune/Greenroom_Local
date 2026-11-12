@@ -206,6 +206,10 @@ export interface Query {
   genre?: string;
   age?: string;
   style?: string;
+  /** The gender the portrait presents (from the library's own look labels). A portrait with no label never passes this filter. */
+  gender?: "m" | "f";
+  /** The heritage the portrait shows (appearance only). A portrait with no label never passes this filter. */
+  heritage?: Heritage;
   /** Limit to these ids (favourites, recently used). */
   only?: Set<string>;
 }
@@ -225,6 +229,8 @@ export function filterAvatars(list: AvatarEntry[], q: Query): AvatarEntry[] {
     if (q.genre && !a.genre.includes(q.genre)) return false;
     if (q.age && a.age_category !== q.age) return false;
     if (q.style && a.style !== q.style) return false;
+    if (q.gender && LOOKS[a.id]?.g !== q.gender) return false;
+    if (q.heritage && LOOKS[a.id]?.h !== q.heritage) return false;
     if (!terms.length) return true;
     const hay = searchText(a);
     return terms.every((t) => hay.includes(t));
@@ -533,6 +539,13 @@ const LOOKS_DATA: Record<string, Look> = {
   everyday_hijab_reporter_001: f("black"),
   everyday_green_blazer_woman_001: f("black"),
   everyday_blue_gele_woman_001: f("black"),
+  // Labelled 2026-11-12 from the thumbnails by Claude (not by the library's builder): these 22 had no label, so they could never be matched.
+  // Unverified. Heritage is left out where the picture does not make it plain. Please look at them and say which are wrong.
+  contemporary_teen_headphones_001: m("black"), global_elder_embroidered_001: m("black"), scifi_alien_envoy_001: NONE, medieval_hooded_knight_001: m("white"),
+  contemporary_courier_001: f("black"), fantasy_elf_lady_001: f(), horror_vampire_001: m(), contemporary_boy_stripes_001: m(), global_straw_hat_sage_001: m("east_asian"),
+  scifi_cyber_operator_001: f(), fantasy_orc_warrior_001: NONE, global_red_veil_001: f("south_asian"), global_grandmother_001: f("black"), western_cowboy_001: m("white"),
+  scifi_pilot_001: f("east_asian"), global_headwrap_woman_001: f("black"), contemporary_curly_girl_001: f("white"), scifi_robot_001: NONE,
+  contemporary_old_gentleman_001: m("black"), contemporary_grinning_boy_001: m("east_asian"), fantasy_gorgon_001: f(), contemporary_doctor_001: f("white"),
 };
 export const LOOKS: Record<string, Look> = Object.assign(Object.create(null) as Record<string, Look>, LOOKS_DATA);
 
@@ -640,7 +653,7 @@ export function readVoice(gender: string | undefined, hint: string | undefined):
   return { g, age, h, story };
 }
 
-const AGE_FIT: Record<VoiceAge, Age[]> = {
+export const AGE_FIT: Record<VoiceAge, Age[]> = {
   child: ["child", "teen"],
   teen: ["teen", "young_adult"],
   young: ["teen", "young_adult", "adult"],
@@ -714,7 +727,7 @@ export const HERITAGE_CHOICES: { value: Heritage | ""; label: string }[] = [
   { value: "indigenous", label: "Indigenous" },
 ];
 
-const isChildish = (a: Pick<AvatarEntry, "age_category">) => a.age_category === "child" || a.age_category === "teen";
+export const isChildish = (a: Pick<AvatarEntry, "age_category">) => a.age_category === "child" || a.age_category === "teen";
 
 /**
  * A steady built-in portrait for a voice or character with no chosen picture. Hard rules, never relaxed: the gender is never
@@ -785,4 +798,13 @@ export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender
     pool = pool.filter((a) => (usage.get(a.id) ?? 0) === least);
   }
   return pool.length ? pick(pool) : null;
+}
+
+/** What a built-in portrait shows, in words, for a tile or tooltip: "Female, Black / African". Empty when the library has no label for it. */
+export function lookLabel(id: string): string {
+  const l = LOOKS[id];
+  if (!l) return "";
+  const g = l.g === "m" ? "Male" : l.g === "f" ? "Female" : "Not a person";
+  const h = l.h ? HERITAGE_CHOICES.find((c) => c.value === l.h)?.label : "";
+  return h ? `${g}, ${h}` : g;
 }

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { api } from "../api";
 import { Avatar } from "../avatar";
-import { addCustom, AGE_LABEL, AGES, assignAvatar, COLLECTION_LABEL, COLLECTIONS, EXPRESSIONS, expressionFor, facets, filterAvatars, isCustomId, progress, removeCustom, STYLE_LABEL, suggestAvatars, toggleFavorite, touchRecent, type AvatarEntry, type CustomAvatar, type Expression } from "../avatarLibrary";
+import { HERITAGE_CHOICES, lookLabel, type Heritage, addCustom, AGE_LABEL, AGES, assignAvatar, COLLECTION_LABEL, COLLECTIONS, EXPRESSIONS, expressionFor, facets, filterAvatars, isCustomId, progress, removeCustom, STYLE_LABEL, suggestAvatars, toggleFavorite, touchRecent, type AvatarEntry, type CustomAvatar, type Expression } from "../avatarLibrary";
 import { currentFace, updateStore, useAvatars } from "../avatarState";
 import { useApp } from "../ctx";
 import { avatarPrompt, squareJpeg } from "../portrait";
@@ -84,7 +84,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
   const { manifest, store, problems } = useAvatars();
   const builtin = manifest?.avatars ?? [];
   const [text, setText] = useState("");
-  const [f, setF] = useState({ collection: "", period: "", genre: "", age: "", style: "" });
+  const [f, setF] = useState({ collection: "", period: "", genre: "", age: "", style: "", gender: "", heritage: "" });
   const [mode, setMode] = useState<"all" | "favorites" | "recent" | "mine">("all");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [sel, setSel] = useState<string | undefined>(character.avatarId);
@@ -95,10 +95,10 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
   const fac = useMemo(() => facets(builtin), [builtin]);
 
   const items: Item[] = useMemo(() => {
-    const filtersOn = !!(f.collection || f.period || f.genre || f.age || f.style);
+    const filtersOn = !!(f.collection || f.period || f.genre || f.age || f.style || f.gender || f.heritage);
     const only = mode === "favorites" ? new Set(store.favorites) : mode === "recent" ? new Set(store.recent) : undefined;
-    const b = mode === "mine" ? [] : filterAvatars(builtin, { text, ...f, only });
-    const toItem = (a: AvatarEntry): Item => ({ id: a.id, name: a.name, thumb: `./avatars/${a.assets.thumbnail}`, card: `./avatars/${a.assets.card ?? a.assets.card_small}`, meta: `${COLLECTION_LABEL[a.collection]} · ${AGE_LABEL[a.age_category]}${a.tier === "preview" ? " · preview" : ""}`, builtin: a });
+    const b = mode === "mine" ? [] : filterAvatars(builtin, { text, collection: f.collection, period: f.period, genre: f.genre, age: f.age, style: f.style, ...(f.gender ? { gender: f.gender as "m" | "f" } : {}), ...(f.heritage ? { heritage: f.heritage as Heritage } : {}), only });
+    const toItem = (a: AvatarEntry): Item => ({ id: a.id, name: a.name, thumb: `./avatars/${a.assets.thumbnail}`, card: `./avatars/${a.assets.card ?? a.assets.card_small}`, meta: `${COLLECTION_LABEL[a.collection]} · ${AGE_LABEL[a.age_category]}${lookLabel(a.id) ? ` · ${lookLabel(a.id)}` : ""}${a.tier === "preview" ? " · preview" : ""}`, builtin: a });
     const terms = text.toLowerCase().split(/\s+/).filter(Boolean);
     const c = (filtersOn || mode === "recent" && !only ? [] : store.custom)
       .filter((x) => (mode !== "favorites" || store.favorites.includes(x.id)) && (mode !== "recent" || store.recent.includes(x.id)))
@@ -120,7 +120,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
   const save = (fn: Parameters<typeof updateStore>[0]) => void updateStore(fn).catch((e: Error) => toast(e.message, true));
 
   const cell = (i: Item) => (
-    <button className="av-cell" aria-pressed={sel === i.id} onClick={() => setSel(i.id)} onDoubleClick={() => assign(i.id)} title={i.name} style={{ width: "100%", height: "100%" }}>
+    <button className="av-cell" aria-pressed={sel === i.id} onClick={() => setSel(i.id)} onDoubleClick={() => assign(i.id)} title={i.builtin && lookLabel(i.id) ? `${i.name} (${lookLabel(i.id)})` : i.name} style={{ width: "100%", height: "100%" }}>
       <img src={i.thumb} alt="" loading="lazy" decoding="async" width={view === "grid" ? 112 : 44} height={view === "grid" ? 112 : 44} />
       <span className="av-name">{i.name}</span>
       {character.avatarId === i.id && <span className="av-badge">In use</span>}
@@ -174,11 +174,19 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
             <option value="">Any age</option>
             {AGES.filter((a) => fac.ages.includes(a)).map((a) => <option key={a} value={a}>{AGE_LABEL[a]}</option>)}
           </select>
+          <select aria-label="Looks like (gender)" value={f.gender} onChange={(e) => setF({ ...f, gender: e.target.value })}>
+            <option value="">Any gender shown</option>
+            <option value="f">Female</option>
+            <option value="m">Male</option>
+          </select>
+          <select aria-label="Looks like (heritage)" value={f.heritage} onChange={(e) => setF({ ...f, heritage: e.target.value })}>
+            {HERITAGE_CHOICES.map((c) => <option key={c.value} value={c.value}>{c.value ? c.label : "Any heritage shown"}</option>)}
+          </select>
           <select aria-label="Visual style" value={f.style} onChange={(e) => setF({ ...f, style: e.target.value })}>
             <option value="">Any style</option>
             {fac.styles.map((x) => <option key={x} value={x}>{STYLE_LABEL[x] ?? x}</option>)}
           </select>
-          {(f.collection || f.period || f.genre || f.age || f.style || text) && <button className="sm ghost" onClick={() => { setF({ collection: "", period: "", genre: "", age: "", style: "" }); setText(""); }}>Clear filters</button>}
+          {(f.collection || f.period || f.genre || f.age || f.style || f.gender || f.heritage || text) && <button className="sm ghost" onClick={() => { setF({ collection: "", period: "", genre: "", age: "", style: "", gender: "", heritage: "" }); setText(""); }}>Clear filters</button>}
         </div>
 
         <div className="row wrap" style={{ alignItems: "flex-end" }}>
@@ -252,7 +260,7 @@ function AvatarBrowser({ character, voice, onClose }: { character: Character; vo
           <button className="primary" onClick={onClose}>Done</button>
         </div>
         {importing && <PortraitImporter onClose={() => setImporting(false)} onAdded={(ids) => { setMode("mine"); setSel(ids[0]); }} />}
-        {create && <CreateAvatar onSaved={(a) => { setSel(a.id); setMode("mine"); setCreate(false); setText(""); setF({ collection: "", period: "", genre: "", age: "", style: "" }); }} />}
+        {create && <CreateAvatar onSaved={(a) => { setSel(a.id); setMode("mine"); setCreate(false); setText(""); setF({ collection: "", period: "", genre: "", age: "", style: "", gender: "", heritage: "" }); }} />}
       </div>
     </div>
   );

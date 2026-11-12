@@ -16,6 +16,28 @@ with contextlib.redirect_stdout(sys.stderr):
     import torchaudio
     import chatterbox.mtl_tts as mtl
     from chatterbox.mtl_tts import ChatterboxMultilingualTTS
+    def trim_tail(wav, sr):
+        """Cuts the silence after the last speech. The WazobiaVoice weights never signal the end of a line, so the model keeps going until
+        its length limit and a 3-second sentence came back as 40 seconds. Speech is the last 50 ms frame louder than 2% of the peak (and
+        above a small floor); 0.3 s is kept after it, with a short fade so the cut makes no click. Audio with no speech is returned as is."""
+        mono = wav.abs().max(dim=0).values if wav.dim() > 1 else wav.abs()
+        peak = float(mono.max()) if mono.numel() else 0.0
+        if peak <= 0.0:
+            return wav
+        frame = max(1, int(sr * 0.05))
+        limit = max(0.004, 0.02 * peak)
+        last = -1
+        for i in range(0, mono.numel() - frame + 1, frame):
+            if float(mono[i:i + frame].max()) > limit:
+                last = i + frame
+        if last < 0:
+            return wav
+        end = min(wav.shape[-1], last + int(sr * 0.3))
+        out = wav[..., :end].clone()
+        fade = min(int(sr * 0.05), end)
+        if fade > 1:
+            out[..., end - fade:] *= torch.linspace(1.0, 0.0, fade)
+        return out
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     t3_model = request.get("t3_model", "v3")
@@ -38,11 +60,23 @@ with contextlib.redirect_stdout(sys.stderr):
 
         mtl.load_safetensors = load_safetensors
         model = ChatterboxMultilingualTTS.from_local(Path(request["model_dir"]), device=device)
+    if t3_model == "v2":
+        # The WazobiaVoice weights do not reliably emit the end-of-speech token, so generation ran to the library's limit of 1000 speech
+        # tokens (40 s, about 75 s of waiting) for every line. Speech takes well under 2.5 speech tokens per character even read slowly,
+        # so 4 tokens per character plus a margin is a ceiling no real line reaches, and a line that does not stop is cut there.
+        _infer = model.t3.inference
+        _cap = min(1000, max(100, 4 * len(request["text"]) + 50))
+
+        def _capped(*args, **kwargs):
+            kwargs["max_new_tokens"] = _cap
+            return _infer(*args, **kwargs)
+
+        model.t3.inference = _capped
     options = {"language_id": request.get("language", "en")}
     if request.get("prompt"):
         options["audio_prompt_path"] = request["prompt"]  # reference voice for cloned or built-in voices
     with torch.inference_mode():
         audio = model.generate(request["text"], **options)
         result = io.BytesIO()
-        torchaudio.save(result, audio.cpu(), model.sr, format="wav")
+        torchaudio.save(result, trim_tail(audio.cpu(), model.sr), model.sr, format="wav")
 sys.stdout.buffer.write(result.getvalue())

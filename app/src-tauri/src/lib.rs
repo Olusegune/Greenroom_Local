@@ -2174,6 +2174,16 @@ mod convert_tests {
         assert!(convert_voice(&tmp, &tmp, &ok, "exe", &ok, "wav").is_err());
     }
     #[test]
+    fn the_chatterbox_worker_trims_the_silence_wazobia_leaves_and_caps_its_generation_length() {
+        // Real run 2026-11-12: every WazobiaVoice line came back 40 s long (3 s of speech, then silence) and took 75 s, because those
+        // weights never signal the end of speech. The worker cuts the silent tail and caps the speech tokens by the text's length.
+        let script = include_str!("../../../runtime/chatterbox_once.py");
+        assert!(script.contains("def trim_tail"));
+        assert!(script.contains("trim_tail(audio.cpu(), model.sr)"));
+        assert!(script.contains("max_new_tokens"));
+        assert!(script.contains("4 * len(request[\"text\"]) + 50"));
+    }
+    #[test]
     fn the_health_check_requires_the_watermarker_that_failed_in_real_testing() {
         assert!(CHATTERBOX_CHECK.contains("perth.PerthImplicitWatermarker is not None"));
         assert!(CHATTERBOX_CHECK_FULL.contains("ChatterboxVC") && CHATTERBOX_CHECK_FULL.contains("perth"));

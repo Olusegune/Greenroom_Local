@@ -7,7 +7,8 @@
 // its age range and its stated presentation (never inferred), using the same hard rules as the rest of the app: a child
 // preset gets only a child or teen face, an adult preset never does, and a stated gender is never crossed.
 
-import { autoAvatar, readVoice, type AvatarEntry, type AvatarManifest, type VoiceAge, type VoiceMeta } from "../avatarLibrary";
+import { LOOKS, readVoice, type AvatarManifest, type Heritage, type VoiceAge, type VoiceMeta } from "../avatarLibrary";
+import { matchFaces, pickFace, type FaceWant } from "../avatarMatch";
 import type { VoicePreset } from "./schema";
 
 /** Words from the preset that say what the character IS (role, mood, job), with anything heritage-like taken out. */
@@ -40,8 +41,32 @@ export function presetMeta(p: Pick<VoicePreset, "ageRange">): VoiceMeta | undefi
 }
 
 /**
- * A portrait id for every preset, in library order. Each takes the least-used fitting face, so 120 presets show a spread of
- * faces and not the same one many times. Stable: the same presets and library always give the same faces, and adding a preset
+ * What an author has said these presets LOOK like, when the preset is about a particular people. It is a written statement on the
+ * preset, shown and editable like any other field; nothing is read from an accent, a name or a language at run time. A preset that
+ * states a culture but has no entry here gets no face at all: a neutral mark is better than a guess.
+ */
+export const PRESET_APPEARANCE: Record<string, Heritage> = {
+  "international.yoruba-english": "black",
+  "international.igbo-english": "black",
+  "international.hausa-english": "black",
+  "international.nigerian-pidgin": "black",
+  "international.filipino-english": "east_asian",
+  "international.indian-english": "south_asian",
+};
+
+/** Why a preset has the face it has, or why it has none. For the preset card and for the audit. */
+export function presetFaceFacts(p: Pick<VoicePreset, "id" | "gender" | "ageRange" | "culture">): { want: FaceWant; blocked?: string } {
+  const gender = p.gender === "male" ? "m" : p.gender === "female" ? "f" : undefined;
+  const heritage = PRESET_APPEARANCE[p.id];
+  const want: FaceWant = { ...(gender ? { gender } : {}), ...(presetAge(p) ? { age: presetAge(p)! } : {}), ...(heritage ? { heritage } : {}) };
+  if (p.culture && !heritage) return { want, blocked: "This preset states a culture but not how the character looks, so no face is guessed." };
+  return { want };
+}
+
+/**
+ * A portrait id for the presets that STATE enough to choose one, in library order. A preset with no stated gender gets no face (the card
+ * shows a neutral mark), and a stated gender, age band for a child or teen, and heritage are never given up to find a face. Each takes
+ * the least-used fitting face, so the faces spread. Stable: the same presets and library always give the same faces, and adding a preset
  * at the end does not change the earlier ones.
  */
 export function assignPresetFaces(manifest: AvatarManifest | null, presets: VoicePreset[]): Map<string, string> {
@@ -54,8 +79,17 @@ export function assignPresetFaces(manifest: AvatarManifest | null, presets: Voic
   }
   for (const p of presets) {
     if (out.has(p.id)) continue;
+    // A role the preset names outright (an android, a dragon, a pharaoh) has its own portrait; a stated gender still has to agree.
     const gender = p.gender === "male" || p.gender === "female" ? p.gender : undefined;
-    const a: AvatarEntry | null = autoAvatar(manifest, p.id, gender, presetHint(p), presetMeta(p), usage);
+    const story = readVoice(gender, presetHint(p)).story;
+    if (story) {
+      const roleFaces = manifest.avatars.filter((a) => story.includes(a.id) && (!gender || LOOKS[a.id]?.g === "n" || LOOKS[a.id]?.g === (gender === "male" ? "m" : "f")));
+      const r = roleFaces.length ? pickFace({ faces: roleFaces.map((entry) => ({ entry, ageExact: true })), used: [] }, p.id, usage) : null;
+      if (r) { out.set(p.id, r.id); usage.set(r.id, (usage.get(r.id) ?? 0) + 1); continue; }
+    }
+    const { want, blocked } = presetFaceFacts(p);
+    if (blocked) continue;
+    const a = pickFace(matchFaces(manifest, want), p.id, usage);
     if (a) { out.set(p.id, a.id); usage.set(a.id, (usage.get(a.id) ?? 0) + 1); }
   }
   return out;
