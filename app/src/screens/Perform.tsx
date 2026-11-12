@@ -18,7 +18,7 @@ import { VARIATIONS, type VariationId } from "../acting";
 import { applyPreset, chosenTake, cleanNote, ALL_SOUND_TAGS, EMOTIONS, hasStyle, MORE_SOUNDS, NOTE_MAX, PRESETS, pushHistory, SOUNDS, STYLES, toggleIn, toggleStyle, vkUnsupported } from "../direct";
 import { VisualLine } from "../VisualLine";
 import { api } from "../api";
-import { ENGINES, ENGINE_ORDER, directorLabel, directorReady, qualityFormat, soundEngineOf } from "../engines";
+import { ENGINES, ENGINE_ORDER, directorBillingLine, directorLabel, directorReady, qualityFormat, soundEngineOf } from "../engines";
 import { askCloud } from "../directorCall";
 import { useLocalDirectorReady } from "../localDirector";
 import { assembledFor, makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type CastingCheck, type Model } from "../generate";
@@ -178,7 +178,7 @@ export default function Perform() {
     const local = engines.directorEngine === "local";
     const price = priceLines([{ kind: "director" }]);
     if (!local) {
-      const ok = await confirmSpend({ title: "Ask the AI Director?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters) to ${directorLabel(engines)}`, "It only suggests. You review everything before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
+      const ok = await confirmSpend({ title: "Ask the AI Director?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters) to ${directorLabel(engines)}`, "It only suggests. You review everything before anything changes.", directorBillingLine(engines), ...price.lines], warn: price.warn });
       if (!ok) return;
     }
     setThinking(true);
@@ -199,7 +199,7 @@ export default function Perform() {
     const chars = groups.reduce((n, g) => n + userPrompt({ ...project, lines: g }).length + sys.length, 0);
     if (!local) {
       const price = priceLines(groups.map(() => ({ kind: "director" as const })));
-      const ok = await confirmSpend({ title: "Direct the whole scene with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to ${directorLabel(engines)}`, "It writes a full direction for every line. You review and edit them before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
+      const ok = await confirmSpend({ title: "Direct the whole scene with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to ${directorLabel(engines)}`, "It writes a full direction for every line. You review and edit them before anything changes.", directorBillingLine(engines), ...price.lines], warn: price.warn });
       if (!ok) return;
     }
     setSceneThinking(true);
@@ -226,7 +226,7 @@ export default function Perform() {
     const chars = groups.reduce((n, g) => n + userPrompt({ ...project, lines: g }).length + sys.length, 0);
     if (!local) {
       const price = priceLines(groups.map(() => ({ kind: "director" as const })));
-      const ok = await confirmSpend({ title: "Plan the performance with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to ${directorLabel(engines)}`, "It plans what each character wants, hides and does with their body. You review and edit before anything changes.", "Uses a small amount of Kie credit", ...price.lines], warn: price.warn });
+      const ok = await confirmSpend({ title: "Plan the performance with AI?", lines: [`Sends your script (${project.lines.length} lines, about ${chars} characters in ${groups.length} request${groups.length === 1 ? "" : "s"}) to ${directorLabel(engines)}`, "It plans what each character wants, hides and does with their body. You review and edit before anything changes.", directorBillingLine(engines), ...price.lines], warn: price.warn });
       if (!ok) return;
     }
     setPlanThinking(true);

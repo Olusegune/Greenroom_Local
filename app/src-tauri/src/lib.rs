@@ -1599,6 +1599,19 @@ fn acestep_status(root: &std::path::Path, models: &std::path::Path) -> LocalRunt
     LocalRuntimeStatus { installed, model_ready, detail }
 }
 
+/// Instant answer for the screens: the engine marker, its python and the model files are all in place. The full check above imports
+/// PyTorch and takes about 10 seconds, so screens use this one to avoid saying "install" while they wait.
+fn acestep_files_ready(root: &std::path::Path, models: &std::path::Path) -> bool {
+    let dir = root.join("runtime").join("acestep-managed");
+    dir.join("complete").is_file() && dir.join("python.exe").is_file() && acestep_dir(models).is_some()
+}
+
+#[tauri::command]
+async fn acestep_ready(app: tauri::AppHandle) -> Result<bool, String> {
+    let (r, m) = (root(&app)?, model_manager::models_root(&app)?);
+    blocking(move || Ok(acestep_files_ready(&r, &m))).await
+}
+
 fn setup_acestep_runtime(root: &std::path::Path, models: &std::path::Path) -> Result<LocalRuntimeStatus, String> {
     static SETUP: Mutex<()> = Mutex::new(());
     let _guard = SETUP.lock().map_err(|_| "Setup is unavailable. Restart Greenroom and try again.")?;
@@ -1755,6 +1768,18 @@ fn sfx_status(root: &std::path::Path, models: &std::path::Path) -> LocalRuntimeS
     LocalRuntimeStatus { installed, model_ready, detail }
 }
 
+/// Instant answer for the screens (see acestep_files_ready): marker, python and both model folders are in place.
+fn sfx_files_ready(root: &std::path::Path, models: &std::path::Path) -> bool {
+    let dir = root.join("runtime").join("sfx-managed");
+    dir.join("complete").is_file() && dir.join("python.exe").is_file() && sfx_dirs(models).is_some()
+}
+
+#[tauri::command]
+async fn sfx_ready(app: tauri::AppHandle) -> Result<bool, String> {
+    let (r, m) = (root(&app)?, model_manager::models_root(&app)?);
+    blocking(move || Ok(sfx_files_ready(&r, &m))).await
+}
+
 fn setup_sfx_runtime(root: &std::path::Path, models: &std::path::Path) -> Result<LocalRuntimeStatus, String> {
     static SETUP: Mutex<()> = Mutex::new(());
     let _guard = SETUP.lock().map_err(|_| "Setup is unavailable. Restart Greenroom and try again.")?;
@@ -1863,6 +1888,12 @@ mod local_sfx_tests {
     fn req(p: &str, s: u32) -> LocalSfxReq { LocalSfxReq { prompt: p.into(), seconds: s, seed: None } }
     /// Found by running the real engine on 2026-11-12: the library rejects a folder as "t5_model_name" (it wants model_path), and the
     /// private engine has no torchaudio audio backend, so the file must be written with the standard library.
+    #[test]
+    fn instant_ready_checks_say_no_when_nothing_is_installed() {
+        let nowhere = std::env::temp_dir().join("greenroom-no-such-folder-0b7e");
+        assert!(!sfx_files_ready(&nowhere, &nowhere));
+        assert!(!acestep_files_ready(&nowhere, &nowhere));
+    }
     #[test]
     fn sfx_worker_uses_the_local_text_encoder_and_the_standard_wav_writer() {
         let s = include_str!("../../../runtime/sfx_once.py");
@@ -2210,7 +2241,7 @@ pub fn run() {
             key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, setup_check, setup_report, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
-            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_design_preview, qwen_design_save, qwen_design_ready, qwen_base_download, qwen_lock_voice, qwen_design_preview, qwen_design_save, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
+            model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_design_preview, qwen_design_save, qwen_design_ready, qwen_base_download, qwen_lock_voice, qwen_design_preview, qwen_design_save, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_ready, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_ready, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert
         ])
         .build(tauri::generate_context!())
         .expect("error while building Greenroom")

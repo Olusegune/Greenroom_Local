@@ -17,10 +17,12 @@ export default function MakeMusicLocal({ onUse }: { onUse: (m: Made) => void }) 
   const [lyrics, setLyrics] = useState("");
   const [seconds, setSeconds] = useState(30);
   const [made, setMade] = useState<Made[]>([]);
-  useEffect(() => { void api.acestepStatus().then(setStatus).catch(() => setStatus(null)); }, []);
+  const [quick, setQuick] = useState<boolean | null>(null);
+  useEffect(() => { void api.acestepReady().then(setQuick).catch(() => setQuick(false)); void api.acestepStatus().then(setStatus).catch(() => setStatus(null)); }, []);
   if (!project) return null;
 
-  const ready = !!status?.installed && !!status?.modelReady;
+  // The instant file check decides; the slower full check only supplies the wording of the warning.
+  const ready = quick === true;
   const problem = checkLocalMusic(style, instrumental ? "" : lyrics, seconds);
 
   const make = async () => {
@@ -43,7 +45,7 @@ export default function MakeMusicLocal({ onUse }: { onUse: (m: Made) => void }) 
     <details className="card stack">
       <summary><strong>Make music on this PC</strong> <span className="muted small">ACE-Step, free, private, needs an NVIDIA card</span></summary>
       <p className="muted small">Describe the music and it is made on this computer, with no credits and nothing sent anywhere. A 30 second track takes about a minute on a mid-range graphics card. You hear it before choosing to put it on the timeline.</p>
-      {!ready && <Note kind="warn">{status?.detail ?? "Local music is not set up yet."} <button className="sm" onClick={() => go("models")}>Open Model Center</button></Note>}
+      {quick === false && <Note kind="warn">{status?.detail ?? "Local music is not set up yet."} <button className="sm" onClick={() => go("models")}>Open Model Center</button></Note>}
       <div className="row wrap">
         <label className="field" style={{ flex: 1, minWidth: 200 }}>Title (optional)<input type="text" maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Night market theme" /></label>
         <label className="field">Length (seconds)<input type="number" min={MIN_SECONDS} max={MAX_SECONDS} step={5} value={seconds} style={{ width: 110 }} onChange={(e) => setSeconds(Math.round(Number(e.target.value) || MIN_SECONDS))} /></label>

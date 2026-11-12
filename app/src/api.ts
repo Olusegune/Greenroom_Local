@@ -275,9 +275,12 @@ const real = {
   scriptOpen: (path: string) => call<ScriptFile>("script_open", { path }),
   musicGenerate: (project: string, req: MusicReq) => call<MadeMusic[]>("music_generate", { project, req }),
   sfxStatus: () => call<LocalRuntimeStatus>("sfx_status_cmd"),
+  /** Instant: are the engine and model files in place? (sfxStatus also imports PyTorch and takes about 10 seconds.) */
+  sfxReady: () => call<boolean>("sfx_ready"),
   sfxRuntimeInstall: () => call<LocalRuntimeStatus>("sfx_runtime_install"),
   sfxInstallModels: () => call<LocalRuntimeStatus>("sfx_install_models"),
   acestepStatus: () => call<LocalRuntimeStatus>("acestep_status_cmd"),
+  acestepReady: () => call<boolean>("acestep_ready"),
   acestepRuntimeInstall: () => call<LocalRuntimeStatus>("acestep_runtime_install"),
   musicLocalGenerate: (project: string, req: { title: string; style: string; lyrics: string; seconds: number }) => call<MadeMusic[]>("music_local_generate", { project, req }),
   audioImport: (project: string, path: string) => call<Imported>("audio_import", { project, path }),

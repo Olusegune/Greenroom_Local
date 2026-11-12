@@ -121,6 +121,15 @@ export const directorLabel = (cfg: { directorEngine?: DirectorEngine; directorMo
   return "a Kie text model";
 };
 
+/** The billing line of the Director spend sheets: it names the provider that is really called. */
+export const directorBillingLine = (cfg: { directorEngine?: DirectorEngine }): string => {
+  const c = directorCloud(cfg);
+  if (cfg.directorEngine === "local") return "Runs on this PC. Nothing is billed.";
+  if (c.provider === "openai") return "Billed by OpenAI to your own account";
+  if (c.provider === "gemini") return "Billed by Google to your own account";
+  return "Uses a small amount of Kie credit";
+};
+
 export interface EnginesCfg {
   /** Which engine answers the AI Director. Default: Kie (cloud). */
   directorEngine?: DirectorEngine;

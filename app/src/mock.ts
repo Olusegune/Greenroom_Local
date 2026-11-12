@@ -259,9 +259,11 @@ export const mock: Api = {
     return { id, ext: "wav", name: path.split(/[\/]/).pop() ?? "music.wav", bytes: 24 * 22050 * 2 + 44, sha256: "d".repeat(64) };
   },
   sfxStatus: async () => ({ installed: demoSfx.on, modelReady: demoSfx.on, detail: demoSfx.on ? "Ready. Sound effects are made on this computer." : "Install the sound-effects engine and model (about 6 GB in total)." }),
+  sfxReady: async () => demoSfx.on,
   sfxRuntimeInstall: async () => (await wait(1200), (demoSfx.on = true), { installed: true, modelReady: false, detail: "Engine ready. Download the sound-effects model (about 2.6 GB)." }),
   sfxInstallModels: async () => (await wait(1500), (demoSfx.on = true), { installed: true, modelReady: true, detail: "Ready. Sound effects are made on this computer." }),
   acestepStatus: async () => ({ installed: demoAce.on, modelReady: demoAce.on, detail: demoAce.on ? "Ready. Music is made on this computer." : "Install the music engine and download the model (about 11 GB in total)." }),
+  acestepReady: async () => demoAce.on,
   acestepRuntimeInstall: async () => (await wait(1200), (demoAce.on = true), { installed: true, modelReady: false, detail: "Engine ready. Download the ACE-Step music model (8.3 GB)." }),
   musicLocalGenerate: async (_p: string, req: { title: string; seconds: number }) => {
     await wait(1500);

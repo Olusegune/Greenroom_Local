@@ -21,6 +21,8 @@ describe("tiles", () => {
     expect(tileByName("English (Nigerian)")?.id).toBe("en-ng");
     expect(tileByName("Nope")).toBeUndefined();
     expect(languageName("ko")).toBe("Korean");
+    expect(languageName("en")).toBe("English");
+    expect(languageName("yo")).toBe("Yoruba");
   });
 });
 

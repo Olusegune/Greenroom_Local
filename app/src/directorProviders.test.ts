@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { directorCloud, directorLabel, directorReady } from "./engines";
+import { directorBillingLine, directorCloud, directorLabel, directorReady } from "./engines";
 
 const none = { kie: false, openai: false, gemini: false };
 describe("which AI provider answers the Director", () => {
@@ -32,5 +32,14 @@ describe("which AI provider answers the Director", () => {
     expect(s).not.toMatch(/a Kie text model/);
     expect((s.match(/askCloud\(engines,/g) ?? []).length).toBe(4);
     expect((s.match(/confirmSpend\(/g) ?? []).length).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("the Director spend sheet names the provider that is really called", () => {
+  it("never says Kie for OpenAI or Gemini", () => {
+    expect(directorBillingLine({})).toMatch(/Kie/);
+    expect(directorBillingLine({ directorEngine: "openai" })).toBe("Billed by OpenAI to your own account");
+    expect(directorBillingLine({ directorEngine: "gemini" })).toBe("Billed by Google to your own account");
+    expect(directorBillingLine({ directorEngine: "local" })).toMatch(/Nothing is billed/);
   });
 });

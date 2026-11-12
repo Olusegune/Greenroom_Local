@@ -114,7 +114,8 @@ export const tileByName = (name: string): Tile | undefined => TILES.find((t) => 
 export const ACCENTS = ["nigerian", "ghanaian", "south african", "kenyan", "american", "british", "irish", "scottish", "australian", "indian", "jamaican", "filipino", "korean", "japanese", "french", "spanish", "arabic"];
 
 export function languageName(code: string): string {
-  return TILES.find((t) => t.lang === code && !t.region && !t.mixed)?.name ?? TILES.find((t) => t.lang === code)?.name.replace(/ \(.*\)$/, "") ?? code;
+  // A bare code names the language, never one regional tile (the Scottish tile has no region code and used to be picked for "en").
+  return TILES.find((t) => t.lang === code && !t.region && !t.accent && !t.mixed)?.name ?? TILES.find((t) => t.lang === code)?.name.replace(/ \(.*\)$/, "") ?? code;
 }
 
 /** Does an engine's locale (`en-GB`, `en_US`, `yo`) belong to this tile? A tile with a region needs that region. */
