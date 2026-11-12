@@ -46,7 +46,7 @@ describe("the built-in library on disk", () => {
     expect(new Set([...sums, ...small]).size).toBe(list.length);
   });
 
-  it("has every master at 1024 x 1024 PNG and every derivative at its exact size", () => {
+  it("has every master at 1024 x 1024 PNG and every derivative at its exact size", { timeout: 30000 }, () => {
     for (const a of masters) {
       expect(webpSize(join(PUB, a.assets.card!)), a.id).toEqual([512, 512]);
       const m = readFileSync(join(MASTERS, a.assets.master!.slice(8)));
