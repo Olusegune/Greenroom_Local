@@ -15,7 +15,7 @@
 | Installed app | upgrade 0.16.3 to 0.17.0 by the installer worked; read-only sweep of the installed app: 0 errors |
 | Real stress test | 55-line, 4-character script through ElevenLabs v4: 55 takes, 9 sound effects, 4:16 export, no clipping |
 
-**Verdict: a working beta, not ready for public release.** Blockers: nothing judged by ear; unsigned installers and no update key; voice licences to check; Kie failing (cause unknown); Inworld untested; no clean install on a second PC; no CI. See HANDOVER.md for the full list.
+**Verdict: a working beta, not ready for public release.** Blockers: nothing judged by ear; unsigned installers and no update key; voice licences to check; Inworld untested; no clean install on a second PC; no CI. See HANDOVER.md for the full list.
 
 ## 0.13.0 record (history)
 

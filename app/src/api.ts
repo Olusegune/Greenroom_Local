@@ -178,6 +178,8 @@ const real = {
   clearKey: (name: KeyName) => call<void>("clear_key", { name }),
   huggingfaceCheck: () => call<string>("huggingface_check"),
   runClip: (req: ClipReq) => call<ClipOut>("run_clip", { req }),
+  /** Credits left on the saved Kie account. Free: it only reads the balance. */
+  kieCredits: () => call<number>("kie_credits"),
   voicesMine: () => call<VoiceInfo[]>("voices_mine"),
   voicesVoiceKiller: () => call<{ name: string; language: string }[]>("voices_voicekiller"),
   inworldCheck: () => call<number>("inworld_check"),

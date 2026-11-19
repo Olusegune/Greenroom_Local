@@ -70,8 +70,8 @@ describe("engines", () => {
     expect(ENGINES.piper.tags || ENGINES.local.tags || ENGINES.kie.tags).toBe(false);
     expect(ENGINES.piper.local && ENGINES.local.local).toBe(true);
   });
-  it("lists 67 distinct Kie voice ids", () => {
-    expect(KIE_VOICES).toHaveLength(67);
-    expect(new Set(KIE_VOICES.map((v) => v.id)).size).toBe(67);
+  it("lists 83 distinct Kie voice ids", () => {
+    expect(KIE_VOICES).toHaveLength(83);
+    expect(new Set(KIE_VOICES.map((v) => v.id)).size).toBe(83);
   });
 });

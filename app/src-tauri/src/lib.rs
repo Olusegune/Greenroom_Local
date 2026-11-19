@@ -205,7 +205,13 @@ fn make_clip(root: &std::path::Path, models: &std::path::Path, req: ClipReq) -> 
                     }
                     c.run("elevenlabs/text-to-speech-turbo-2-5", input, &fetch)
                 }
-                "kie-dialogue" => c.run("elevenlabs/text-to-dialogue-v3", serde_json::json!({ "dialogue": [{ "text": text, "voice": kie::DEFAULT_VOICE }] }), &fetch),
+                "kie-dialogue" => {
+                    let v = if voice.is_empty() { kie::DEFAULT_VOICE.to_string() } else { voice.clone() };
+                    if !eleven::valid_id(&v) {
+                        return Err("That Kie voice is not valid.".into());
+                    }
+                    c.run("elevenlabs/text-to-dialogue-v3", serde_json::json!({ "dialogue": [{ "text": text, "voice": v }] }), &fetch)
+                }
                 _ => c.run("elevenlabs/sound-effect-v2", serde_json::json!({ "text": text }), &fetch),
             }
         }
@@ -856,6 +862,12 @@ async fn avatar_generate(prompt: String) -> Result<AvatarOut, String> {
 #[tauri::command]
 async fn inworld_check() -> Result<u64, String> {
     blocking(|| inworld_client()?.check()).await
+}
+
+/// The credits left on the saved Kie account. Free to call: it only reads the balance.
+#[tauri::command]
+async fn kie_credits() -> Result<f64, String> {
+    blocking(|| kie::Client::new(kie::BASE, &get_key("kie")?).credits()).await
 }
 
 #[tauri::command]
@@ -2241,7 +2253,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
-            key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
+            key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, kie_credits, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, setup_check, setup_report, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
             model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_design_preview, qwen_design_save, qwen_design_ready, qwen_base_download, qwen_lock_voice, qwen_design_preview, qwen_design_save, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_ready, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_ready, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert

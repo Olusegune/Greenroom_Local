@@ -26,6 +26,7 @@ export default function Settings() {
       <KeyCard mark="O" tone="e5" title="OpenAI" hint="From platform.openai.com, API keys. Used only for the AI Director and for reading a script (never for voices). Each request is billed by OpenAI to your account." fields={[["openai", "API key"]]} has={keys.openai} changed={refreshKeys} />
       <KeyCard mark="G" tone="e2" title="Google Gemini" hint="From Google AI Studio (aistudio.google.com), Get API key. Used only for the AI Director and for reading a script. Each request is billed to your Google account (some models have a free tier)." fields={[["gemini", "API key"]]} has={keys.gemini} changed={refreshKeys} />
       <KeyCard mark="K" tone="e3" title="Kie" hint="From kie.ai, API Key page. Used for Kie voices, sound effects, the AI Director and Suno music." fields={[["kie", "API key"]]} has={keys.kie} changed={refreshKeys} />
+      <KieConnection saved={keys.kie} />
       <h2>Model repository connections</h2>
       <KeyCard mark="H" tone="e5" title="Hugging Face" hint="Create a read-only access token in Hugging Face settings. For gated models, first obtain access on the model page. Your token is stored in your system credential store." fields={[["huggingface", "read token"]]} has={keys.huggingface} changed={refreshKeys} />
       <HuggingFaceConnection saved={keys.huggingface} />
@@ -118,6 +119,30 @@ function HuggingFaceConnection({ saved }: { saved: boolean }) {
   const [busy, setBusy] = useState(false);
   const check = async () => { setBusy(true); setMessage(""); try { setMessage(`Connected as ${await api.huggingfaceCheck()}.`); } catch (e) { setMessage((e as Error).message); } finally { setBusy(false); } };
   return <div className="card stack"><div className="row wrap"><button disabled={!saved || busy} onClick={() => void check()}>{busy ? "Checking…" : "Check connection"}</button><button onClick={() => { void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl("https://huggingface.co/settings/tokens")); }}>Create a Hugging Face token</button></div><p className="muted small">The connection check sends only your token to Hugging Face. Saving or checking a token does not download a model. Advanced-model downloads and inference are still being integrated.</p>{message && <p role="status">{message}</p>}</div>;
+}
+
+/** Free check of the Kie account: says how many credits are left. A speech or sound clip that fails with "Internal Error" is worth checking against this. */
+function KieConnection({ saved }: { saved: boolean }) {
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const check = async () => {
+    setBusy(true);
+    setMessage("");
+    try {
+      const n = await api.kieCredits();
+      setMessage(`Connected. ${n.toLocaleString(undefined, { maximumFractionDigits: 2 })} credits left on this Kie account.`);
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="row wrap" style={{ margin: "-4px 0 8px" }}>
+      <button className="sm" disabled={!saved || busy} onClick={() => void check()}>{busy ? "Checking…" : "Check Kie credits"}</button>
+      {message && <span className="muted small" role="status">{message}</span>}
+    </div>
+  );
 }
 
 function InworldConnection({ saved }: { saved: boolean }) {

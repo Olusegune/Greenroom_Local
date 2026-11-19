@@ -6,7 +6,8 @@ use serde_json::{json, Value};
 use std::time::Duration;
 
 pub const BASE: &str = "https://api.kie.ai";
-pub const DEFAULT_VOICE: &str = "EkK5I93UQWFDigLMpZcX";
+/// George, one of ElevenLabs' standard built-in voices. Kie accepted it on both speech models on 2026-11-19; the earlier default, James, was refused by Dialogue v3.
+pub const DEFAULT_VOICE: &str = "JBFqnCBsd6RMkjVDRZzb";
 /// Kie text model used by the AI Director (OpenAI-style chat endpoint, from docs.kie.ai on 2026-10-26).
 pub const DIRECTOR_MODEL: &str = "gemini-3-8-flash-openai";
 
@@ -57,6 +58,12 @@ impl Client {
         }
     }
 
+    /// The credits left on the account (GET /api/v1/chat/credit, documented at docs.kie.ai on 2026-11-19). Free: it only reads the balance.
+    pub fn credits(&self) -> Result<f64, String> {
+        let v = self.call("GET", "/api/v1/chat/credit", None)?;
+        v["data"].as_f64().ok_or_else(|| "Kie did not say how many credits are left.".to_string())
+    }
+
     /// Ask a Kie text model one question. Returns the reply text.
     pub fn chat(&self, model: &str, system: &str, user: &str) -> Result<String, String> {
         if model.is_empty() || !model.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'.' || b == b'_') {
@@ -77,17 +84,28 @@ impl Client {
         Ok(text)
     }
 
-    /// `fetch` downloads a result URL; it is a parameter so tests need no internet.
+    /// `fetch` downloads a result URL; it is a parameter so tests need no internet. A task that Kie fails with a "try again later" message and
+    /// that used no credits (its documented sign of a transient fault) is made once more with a fresh task before giving up.
     pub fn run(&self, model: &str, input: Value, fetch: &dyn Fn(&str) -> Result<Vec<u8>, String>) -> Result<Vec<u8>, String> {
-        let created = self.call("POST", "/api/v1/jobs/createTask", Some(&json!({ "model": model, "input": input })))?;
+        match self.run_once(model, &input, fetch) {
+            Err(Failure::Transient(_)) => match self.run_once(model, &input, fetch) {
+                Err(Failure::Transient(m)) => Err(format!("{m} It was tried twice. Check your Kie credits in Settings, then try again later.")),
+                other => other.map_err(Failure::message),
+            },
+            other => other.map_err(Failure::message),
+        }
+    }
+
+    fn run_once(&self, model: &str, input: &Value, fetch: &dyn Fn(&str) -> Result<Vec<u8>, String>) -> Result<Vec<u8>, Failure> {
+        let created = self.call("POST", "/api/v1/jobs/createTask", Some(&json!({ "model": model, "input": input }))).map_err(Failure::Final)?;
         let task = created["data"]["taskId"]
             .as_str()
             .filter(|t| !t.is_empty() && t.len() <= 100 && t.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-'))
-            .ok_or("Kie did not accept the job. The model name may have changed.")?
+            .ok_or_else(|| Failure::Final("Kie did not accept the job. The model name may have changed.".into()))?
             .to_string();
         for _ in 0..self.max_polls {
             std::thread::sleep(self.poll);
-            let v = self.call("GET", &format!("/api/v1/jobs/recordInfo?taskId={task}"), None)?;
+            let v = self.call("GET", &format!("/api/v1/jobs/recordInfo?taskId={task}"), None).map_err(Failure::Final)?;
             let d = &v["data"];
             match d["state"].as_str().unwrap_or("") {
                 "success" => {
@@ -96,14 +114,36 @@ impl Client {
                         urls(&p, &mut found);
                     }
                     urls(&d["response"], &mut found);
-                    let url = found.into_iter().next().ok_or("Kie finished but returned no audio file.")?;
-                    return fetch(&url);
+                    let url = found.into_iter().next().ok_or_else(|| Failure::Final("Kie finished but returned no audio file.".into()))?;
+                    return fetch(&url).map_err(Failure::Final);
                 }
-                "fail" => return Err(format!("Kie could not make this clip. {}", short(d["failMsg"].as_str().unwrap_or("")))),
+                "fail" => {
+                    let why = short(d["failMsg"].as_str().unwrap_or(""));
+                    let code = d["failCode"].as_str().filter(|c| !c.is_empty()).map(|c| format!(" (code {c})")).unwrap_or_default();
+                    let hint = if why.contains("Invalid voice_id") { " Kie only accepts the voices in its own list (Voices, Find a voice, Kie). A voice from your own ElevenLabs library cannot be used with Kie." } else { "" };
+                    let msg = format!("Kie could not make this clip{code}. {why}{hint}");
+                    // Kie documents creditsConsumed as 0 for a failed task. Only a task that says so, and asks for another try, is repeated.
+                    let free = d["creditsConsumed"].as_f64().map(|c| c == 0.0).unwrap_or(false);
+                    return Err(if free && why.to_lowercase().contains("try again") { Failure::Transient(msg) } else { Failure::Final(msg) });
+                }
                 _ => {}
             }
         }
-        Err("Kie took too long. The clip may still appear in your Kie account.".into())
+        Err(Failure::Final("Kie took too long. The clip may still appear in your Kie account.".into()))
+    }
+}
+
+enum Failure {
+    /// Kie said "try again" and used no credits: worth one more attempt.
+    Transient(String),
+    Final(String),
+}
+
+impl Failure {
+    fn message(self) -> String {
+        match self {
+            Failure::Transient(m) | Failure::Final(m) => m,
+        }
     }
 }
 
@@ -268,6 +308,73 @@ mod tests {
     use crate::eleven::fake::*;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Arc;
+
+    #[test]
+    fn a_free_try_again_failure_is_made_once_more_and_a_second_failure_says_so() {
+        // first task fails with a transient message and no credits used, the second succeeds
+        let creates = Arc::new(AtomicUsize::new(0));
+        let c2 = creates.clone();
+        let f = start(Box::new(move |h| {
+            if h.method == "POST" {
+                let n = c2.fetch_add(1, Ordering::SeqCst);
+                (200, json!({"code":200,"data":{"taskId":format!("task_{n}")}}).to_string().into_bytes())
+            } else if h.path.contains("task_0") {
+                (200, json!({"code":200,"data":{"state":"fail","failCode":"500","failMsg":"Internal Error, Please try again later","creditsConsumed":0}}).to_string().into_bytes())
+            } else {
+                (200, json!({"code":200,"data":{"state":"success","resultJson":"{\"resultUrls\":[\"https://files.example.com/b.mp3\"]}"}}).to_string().into_bytes())
+            }
+        }));
+        let out = Client::quick(&f.base).run("elevenlabs/text-to-speech-turbo-2-5", json!({"text":"hi"}), &|_| Ok(vec![9])).unwrap();
+        assert_eq!(out, vec![9]);
+        assert_eq!(creates.load(Ordering::SeqCst), 2);
+        // both attempts fail: tried exactly twice, and the message carries the code
+        let n3 = Arc::new(AtomicUsize::new(0));
+        let n4 = n3.clone();
+        let g = start(Box::new(move |h| {
+            if h.method == "POST" { n4.fetch_add(1, Ordering::SeqCst); (200, json!({"code":200,"data":{"taskId":"task_x"}}).to_string().into_bytes()) }
+            else { (200, json!({"code":200,"data":{"state":"fail","failCode":"500","failMsg":"Error, Please try again later","creditsConsumed":0}}).to_string().into_bytes()) }
+        }));
+        let e = Client::quick(&g.base).run("m", json!({}), &|_| Ok(vec![])).unwrap_err();
+        assert_eq!(n3.load(Ordering::SeqCst), 2);
+        assert!(e.contains("code 500") && e.contains("tried twice") && e.contains("credits"), "{e}");
+        // a failure that did NOT say credits were untouched, or does not ask for another try, is never repeated
+        let n5 = Arc::new(AtomicUsize::new(0));
+        let n6 = n5.clone();
+        let h2 = start(Box::new(move |h| {
+            if h.method == "POST" { n6.fetch_add(1, Ordering::SeqCst); (200, json!({"code":200,"data":{"taskId":"task_y"}}).to_string().into_bytes()) }
+            else { (200, json!({"code":200,"data":{"state":"fail","failMsg":"Error, Please try again later","creditsConsumed":4}}).to_string().into_bytes()) }
+        }));
+        assert!(Client::quick(&h2.base).run("m", json!({}), &|_| Ok(vec![])).is_err());
+        assert_eq!(n5.load(Ordering::SeqCst), 1, "a charged failure is not repeated");
+    }
+
+    #[test]
+    fn an_invalid_voice_is_explained_and_never_repeated() {
+        let n = Arc::new(AtomicUsize::new(0));
+        let n2 = n.clone();
+        let f = start(Box::new(move |h| {
+            if h.method == "POST" { n2.fetch_add(1, Ordering::SeqCst); (200, json!({"code":200,"data":{"taskId":"t9"}}).to_string().into_bytes()) }
+            else { (200, json!({"code":200,"data":{"state":"fail","failCode":"400","failMsg":"Invalid voice_id VVGwbjbTrxWMxfVWnBPN","creditsConsumed":0}}).to_string().into_bytes()) }
+        }));
+        let e = Client::quick(&f.base).run("elevenlabs/text-to-speech-turbo-2-5", json!({"text":"hi","voice":"VVGwbjbTrxWMxfVWnBPN"}), &|_| Ok(vec![])).unwrap_err();
+        assert!(e.contains("code 400") && e.contains("Invalid voice_id") && e.contains("Kie only accepts the voices in its own list"), "{e}");
+        assert_eq!(n.load(Ordering::SeqCst), 1, "an invalid voice is not a try-again failure");
+        assert_eq!(DEFAULT_VOICE, "JBFqnCBsd6RMkjVDRZzb");
+    }
+
+    #[test]
+    fn credits_are_read_from_the_balance_endpoint_and_errors_are_plain() {
+        let f = start(Box::new(|h| {
+            assert_eq!(h.method, "GET");
+            assert!(h.path.starts_with("/api/v1/chat/credit"));
+            (200, json!({"code":200,"msg":"success","data":100.5}).to_string().into_bytes())
+        }));
+        assert_eq!(Client::quick(&f.base).credits().unwrap(), 100.5);
+        let g = start(Box::new(|_| (200, json!({"code":401,"msg":"bad key"}).to_string().into_bytes())));
+        assert!(Client::quick(&g.base).credits().unwrap_err().contains("did not accept the key"));
+        let h2 = start(Box::new(|_| (200, json!({"code":200,"data":"x"}).to_string().into_bytes())));
+        assert!(Client::quick(&h2.base).credits().is_err());
+    }
 
     #[test]
     fn creates_a_task_polls_and_downloads_the_first_result_url() {

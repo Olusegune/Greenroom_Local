@@ -153,8 +153,27 @@ export interface EnginesCfg {
 
 export const DEFAULT_ENGINES_CFG: EnginesCfg = { elevenModel: "eleven_v4", quality: "standard", elevenSfxModel: "eleven_text_to_sound_v3", prices: DEFAULT_PRICES, localServer: { url: "http://127.0.0.1:8880", model: "kokoro" } };
 
-/** Kie's preset voices for ElevenLabs Turbo 2.5 (from Kie's docs, 2026-10-26). Names repeat, so the id is what counts. */
+/** The Kie voice used when none is chosen (George; see KIE_VOICES). */
+export const KIE_DEFAULT_VOICE = "JBFqnCBsd6RMkjVDRZzb";
+
+/** Kie's preset voices for ElevenLabs Turbo 2.5 and Dialogue v3: the 83 in Kie's docs on 2026-11-19. Names repeat, so the id is what counts. Kie accepts ONLY these ids (a voice from your own ElevenLabs library is refused with "Invalid voice_id"). The first sixteen are ElevenLabs' standard built-in voices, which Kie accepted on every model we tried; James, listed in the docs, was refused by Dialogue v3 on 2026-11-19. */
 export const KIE_VOICES: { id: string; name: string; style: string }[] = [
+  ["pNInz6obpgDQGcFmaJgB", "Adam", "Dominant, Firm"],
+  ["Xb7hH8MSUJpSbSDYk0k2", "Alice", "Clear, Engaging Educator"],
+  ["pqHfZKP75CvOlQylNhV4", "Bill", "Wise, Mature, Balanced"],
+  ["IKne3meq5aSn9XLyUdCD", "Charlie", "Deep, Confident, Energetic"],
+  ["iP95p4xoKVk53GoZ742B", "Chris", "Charming, Down-to-Earth"],
+  ["onwK4e9ZLuTAKqWW03F9", "Daniel", "Steady Broadcaster"],
+  ["cjVigY5qzO86Huf0OWal", "Eric", "Smooth, Trustworthy"],
+  ["JBFqnCBsd6RMkjVDRZzb", "George", "Warm, Captivating Storyteller"],
+  ["SOYHLrjzK2X1ezoPC6cr", "Harry", "Fierce Warrior"],
+  ["cgSgspJ2msm6clMCkdW9", "Jessica", "Playful, Bright, Warm"],
+  ["pFZP5JQG7iQjIQuC4Bku", "Lily", "Velvety Actress"],
+  ["XrExE9yKIg1WjnnlVkGX", "Matilda", "Knowledgable, Professional"],
+  ["SAz9YHcvj6GT2YYXdXww", "River", "Relaxed, Neutral, Informative"],
+  ["CwhRBWXzGAHq8TQ4Fs17", "Roger", "Laid-Back, Casual, Resonant"],
+  ["EXAVITQu4vr4xnSDxMaL", "Sarah", "Mature, Reassuring, Confident"],
+  ["bIHbv24MWmeRgasZH58o", "Will", "Relaxed Optimist"],
   ["EkK5I93UQWFDigLMpZcX", "James", "Husky, engaging and bold"],
   ["Z3R5wn05IrDiVCyEkUrK", "Arabella", "Mysterious and emotive"],
   ["NNl6r8mD7vthiJatiJt1", "Bradford", "Expressive and articulate"],
@@ -216,7 +235,7 @@ export const KIE_VOICES: { id: string; name: string; style: string }[] = [
   ["eVItLK1UvXctxuaRV2Oq", "Jean", "Alluring and playful femme fatale"],
   ["esy0r39YPLQjOczyOib8", "Britney", "Calm and calculative villain"],
   ["Tsns2HvNFKfGiNjllgqo", "Sven", "Emotional and nice"],
-  ["1U02n4nD6AdIZ9CjF053", "Viraj (gentle)", "Smooth and gentle"],
+  ["1U02n4nD6AdIZ9CjF053", "Viraj (smooth)", "Smooth and gentle"],
   ["AeRdCCKzvd23BpJoofzx", "Nathaniel", "Engaging, British and calm"],
   ["LruHrtVF6PSyGItzMNHS", "Benjamin", "Deep, warm, calming"],
   ["1wGbFxmAM3Fgw63G1zZJ", "Allison", "Calm, soothing and meditative"],

@@ -118,3 +118,12 @@ The product was driven for real (the built app, the owner's library and keys, th
 
 **Not checked:** nothing judged by ear; Kie (three provider failures, request matches its docs); Inworld (no key); Picture (needs a video) and file-import dialogs (native pickers); OpenAI/Gemini beyond the Director; screen reader, zoom, high contrast; a clean install on a second PC; code signing.
 
+## 0.17.2 and 0.17.3 (2026-11-19): Kie fixed
+
+| Finding | Cause | Fix |
+|---|---|---|
+| Kie speech and sound-effect clips failed three times with "Internal Error, Please try again later" | The Voice lab sent the selected ElevenLabs library voice to Kie, which only accepts its own 83 voice IDs; Dialogue v3 also refused the default voice (James) although the docs list it | Lab sends only Kie voices (George otherwise); default is George; Kie's list updated to the current 83; a clear hint on "Invalid voice_id"; one automatic retry for free "try again" failures; Settings has a free Check credits button |
+| Real run after the fix | Account had 18,846 credits; Turbo, Dialogue v3 and sound effects all returned without error; 6.56 credits used | |
+
+Tests added: Kie client (credits, retry, invalid voice), Kie voice list. Gate: 1,178 JavaScript, 151 Rust. Nothing judged by ear.
+

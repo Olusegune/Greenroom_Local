@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl } from "../api";
 import { useApp } from "../ctx";
+import { KIE_DEFAULT_VOICE, KIE_VOICES } from "../engines";
 import { buildReport, CLIPS, DIRECTION_CHECK_IDS, countByProvider, PROVIDER_INFO, type Result } from "../lab";
 import type { VoiceInfo } from "../types";
 
@@ -42,7 +43,9 @@ export default function Lab() {
       if (stop.current) break;
       patch(c.id, { state: "running", error: undefined });
       try {
-        const out = await api.runClip({ provider: c.provider, text: c.text, voice });
+        // Kie only accepts the voices in its own list: the lab's ElevenLabs voice is used when Kie has it, otherwise George.
+        const clipVoice = c.provider === "kie-tts" || c.provider === "kie-dialogue" ? (KIE_VOICES.some((k) => k.id === voice) ? voice : KIE_DEFAULT_VOICE) : voice;
+        const out = await api.runClip({ provider: c.provider, text: c.text, voice: clipVoice });
         patch(c.id, { state: "done", url: toUrl(out), ms: out.ms });
       } catch (e) {
         patch(c.id, { state: "error", error: (e as Error).message });

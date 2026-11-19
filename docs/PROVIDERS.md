@@ -21,3 +21,11 @@ The AI Director (suggested directions, plans, scene directions, "write this dire
 ## Safety
 
 Fixed provider addresses only; the model name is checked (letters, digits, dot, dash, underscore; never a path) on the Rust side whatever the screen sent; the key goes in a header and never in an address or a log; the request size is capped; a model's reply is treated as data.
+
+## Kie (checked 2026-11-19)
+
+- **Speech:** `elevenlabs/text-to-speech-turbo-2-5` and `elevenlabs/text-to-dialogue-v3`; **sound effects:** `elevenlabs/sound-effect-v2` (no page for it in Kie's docs index, but it works); **music:** Suno; **Director:** a Kie text model. All through `POST /api/v1/jobs/createTask` then `GET /api/v1/jobs/recordInfo`.
+- **Voices:** Kie accepts only the 83 voice IDs in its own list (`KIE_VOICES` in `app/src/engines.ts`); a voice from your own ElevenLabs library is refused with `code 400. Invalid voice_id ...`. The first sixteen are ElevenLabs' standard built-in voices and worked on every model tried. **James**, Kie's documented default, was refused by Dialogue v3 on 2026-11-19, so the default is now **George**.
+- **Failures:** a task that fails with "try again later" and used no credits is made once more; a failure shows Kie's code and reason. A failed task is not billed. **Settings > Kie > Check credits** reads the balance (free).
+- **Found by testing:** the earlier "Internal Error, Please try again later" clips were Voice lab clips that sent a library voice Kie does not have. After the fix, Turbo, Dialogue v3 and sound effects all made clips (6.56 credits for three short clips).
+
