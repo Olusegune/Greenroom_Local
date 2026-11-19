@@ -1,15 +1,12 @@
 import { useMemo, useRef, useState } from "react";
-import { agentEnv } from "./agentEnv";
 import { useApp } from "../ctx";
-import { DEFAULT_PRICES, soundEngineOf } from "../engines";
 import { useSample } from "../useSample";
 import { Empty, Note, PlayButton } from "../ui";
-import { approve, estimateRemaining, MODES, progress, regenerate, reject, resume, retry, setEnabled, step, merge, type AgentRun, type JobNode, type Mode } from "../agent/graph";
+import { approve, MODES, progress, regenerate, reject, retry, setEnabled, type AgentRun, type JobNode, type Mode } from "../agent/graph";
 import { interpret, settingsFrom } from "../agent/brief";
 import { migrateRun } from "../agent/persist";
-import { planProblems, planProduction } from "../agent/plan";
-import { executors } from "../agent/services";
-import { estimateCost } from "../trust";
+import { planProblems } from "../agent/plan";
+import { planFor, runFor } from "../agent/runner";
 
 const COLUMNS: { id: string; label: string; of: (n: JobNode) => boolean }[] = [
   { id: "planned", label: "Planned", of: (n) => n.status === "planned" || n.status === "ready" },
@@ -60,8 +57,6 @@ export default function AgentStudio() {
 
   if (!project) return <section><h1>Agent Studio</h1><Empty title="Open a project first" action={<button className="primary" onClick={() => go("home")}>Open Projects</button>}>The agent works on a project's script, cast and takes.</Empty></section>;
 
-  const prices = engines.prices ?? DEFAULT_PRICES;
-  const price = (engine: Parameters<typeof estimateCost>[1][number] extends { engine?: infer E } ? E : never, chars: number) => estimateCost(prices, [{ kind: "speech", engine: engine as never, chars }]).cost;
   const now = () => new Date().toISOString();
   const save = (r: AgentRun) => { live.current = { ...live.current!, agent: r }; edit((p) => ({ ...p, agent: r }), "agent-run"); };
 
@@ -72,38 +67,26 @@ export default function AgentStudio() {
     toast(s.localOnly || s.cloudLimit !== undefined ? "Limits updated from your brief." : "Nothing in your brief changes the limits.");
   };
 
+  const rc = { app, live };
+
   const makePlan = () => {
-    const cloudLimit = localOnly ? 0 : Math.max(0, Number(limit) || 0);
-    const fresh = planProduction(live.current!, library, { id: run?.id ?? "run-" + Date.now().toString(36), brief, mode, localOnly, cloudLimit, now: now(), price: price as never, sound: { cloud: !soundEngineOf(engines).free, price: (n) => estimateCost(prices, [{ kind: "sound", count: n }]).cost } });
-    const next = run ? { ...merge(run, fresh, now()), mode, localOnly, cloudLimit, brief } : fresh;
-    save(next);
-    toast(run ? "Plan updated. Finished steps whose inputs did not change were kept." : "Plan ready. Review it, then press Start.");
+    const had = !!run;
+    planFor(rc, { brief, mode, localOnly, cloudLimit: Number(limit) || 0 });
+    toast(had ? "Plan updated. Finished steps whose inputs did not change were kept." : "Plan ready. Review it, then press Start.");
   };
 
-  const env = () => agentEnv({ app, live });
-
   const go1 = async (from?: AgentRun) => {
-    const run = from ?? migrateRun(live.current?.agent);
-    if (!run) return;
     if (running) return;
-    if (run.mode === "manual") return toast("Manual Studio: the agent does not run steps. Switch to Guided Agent to let it work.", true);
-    const need = estimateRemaining(run);
-    if (run.mode === "autonomous" && need > 0 && !run.localOnly) {
-      const ok = await confirmSpend({ title: "Let the agent spend up to your limit?", lines: [`Estimated cloud work: ${need.toFixed(2)} ${currency}`, `Hard limit: ${run.cloudLimit.toFixed(2)} ${currency}. The agent stops before passing it and never retries a paid step by itself.`, "Voice rights and final delivery still wait for you."] });
-      if (!ok) return;
-    }
     const ac = new AbortController();
     abort.current = ac;
     setRunning(true);
-    let r = resume(run, now());
-    const ex = executors(env());
     try {
-      for (let i = 0; i < 400; i++) {
-        const s = await step(r, ex, now, ac.signal);
-        r = s.run; save(r);
-        if (s.event === "idle" || s.event === "cancelled") break;
-      }
-    } finally { setRunning(false); abort.current = null; }
+      const res = await runFor(rc, { from, signal: ac.signal });
+      if (res.reason && !res.reason.startsWith("The person declined")) toast(res.reason, true);
+    } finally {
+      setRunning(false);
+      abort.current = null;
+    }
   };
 
   const approveNode = async (n: JobNode) => {

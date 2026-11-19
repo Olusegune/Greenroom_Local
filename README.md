@@ -19,6 +19,7 @@ See [docs/LOCAL_AI_ARCHITECTURE.md](docs/LOCAL_AI_ARCHITECTURE.md) for how local
 ## Release documentation
 
 - [Handover note](docs/HANDOVER.md) - start here to continue on another PC: state, what is tested, how to test the real app, next steps.
+- [Agent Studio and MCP](docs/AGENT_AND_MCP.md) - giving Greenroom a script or a brief, and letting other AI agents drive it.
 - [Script format](docs/SCRIPT_FORMAT.md) - everything the script reader understands, including `**NAME:** (direction)`, `[PAUSE: 2 seconds]` and `[SFX: ...]`.
 - [Avatars](docs/AVATARS.md) - how a face gets onto a voice, a preset or a character.
 - [Release readiness](docs/RELEASE_READINESS.md) and [QA results](docs/QA_RESULTS.md) - what passed, what was found, what is not checked.
@@ -88,6 +89,9 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Performance compiler**: type how a line should be played ("begins politely, clears his throat, chuckles quietly, pauses, then delivers the final sentence with restrained menace") under Perform. Greenroom shows exactly what the chosen voice will get, what is approximated and what cannot be sent. See `docs/PERFORMANCE_ENGINE.md`.
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
+
+## New in 0.19.0
+- **Agents can use Greenroom (MCP).** Settings > Other AI agents: another AI agent (such as Claude Desktop) can create a project from your script, plan a production from a brief and run it, through a local, token-protected server that is off by default. It cannot approve voices, spend past your limit or deliver. See docs/AGENT_AND_MCP.md.
 
 ## New in 0.18.0
 - **Listen** screen: play each line and press a key for what you hear (Good, Wrong voice, Wrong delivery, Glitch); a live to-do list and saved listening notes. See the user guide.

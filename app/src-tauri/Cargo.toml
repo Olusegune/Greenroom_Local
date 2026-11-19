@@ -1,6 +1,6 @@
 [package]
 name = "greenroom-local"
-version = "0.18.0"
+version = "0.19.0"
 description = "Greenroom Local: private, accent-aware AI voice performances"
 edition = "2021"
 publish = false
@@ -23,6 +23,7 @@ ureq = "2"
 base64 = "0.22"
 zip = { version = "9", default-features = false, features = ["deflate"] }
 sha2 = "0.10"
+getrandom = "0.2"
 sha1 = "0.10"
 md-5 = "0.10"
 sysinfo = "0.37"

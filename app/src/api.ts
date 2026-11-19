@@ -23,6 +23,8 @@ export interface Audio {
   audioB64: string;
   mime: string;
 }
+export interface McpStatus { enabled: boolean; running: boolean; port: number; defaultPort: number; url: string }
+
 export interface ClipReq {
   provider: Provider;
   text: string;
@@ -180,6 +182,12 @@ const real = {
   runClip: (req: ClipReq) => call<ClipOut>("run_clip", { req }),
   /** Credits left on the saved Kie account. Free: it only reads the balance. */
   kieCredits: () => call<number>("kie_credits"),
+  /** The MCP server other AI agents can use to drive Greenroom (off until switched on). */
+  mcpStatus: () => call<McpStatus>("mcp_status"),
+  mcpSetEnabled: (enabled: boolean, port?: number) => call<McpStatus>("mcp_set_enabled", { enabled, port: port ?? null }),
+  mcpTokenReveal: () => call<string>("mcp_token_reveal"),
+  mcpResetToken: () => call<string>("mcp_reset_token"),
+  mcpReply: (id: number, ok: boolean, payload: unknown) => call<void>("mcp_reply", { id, ok, payload }),
   voicesMine: () => call<VoiceInfo[]>("voices_mine"),
   voicesVoiceKiller: () => call<{ name: string; language: string }[]>("voices_voicekiller"),
   inworldCheck: () => call<number>("inworld_check"),

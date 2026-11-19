@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ACCENTS, applyPalette, readPalette, savePalette } from "../palette";
-import { api, type KeyName } from "../api";
+import { api, type KeyName, type McpStatus } from "../api";
 import { inworldCache } from "../finder";
 import { ageBand } from "../avatarLibrary";
 import type { VoiceEntry } from "../types";
@@ -27,6 +27,9 @@ export default function Settings() {
       <KeyCard mark="G" tone="e2" title="Google Gemini" hint="From Google AI Studio (aistudio.google.com), Get API key. Used only for the AI Director and for reading a script. Each request is billed to your Google account (some models have a free tier)." fields={[["gemini", "API key"]]} has={keys.gemini} changed={refreshKeys} />
       <KeyCard mark="K" tone="e3" title="Kie" hint="From kie.ai, API Key page. Used for Kie voices, sound effects, the AI Director and Suno music." fields={[["kie", "API key"]]} has={keys.kie} changed={refreshKeys} />
       <KieConnection saved={keys.kie} />
+
+      <h2>Other AI agents</h2>
+      <McpSettings />
       <h2>Model repository connections</h2>
       <KeyCard mark="H" tone="e5" title="Hugging Face" hint="Create a read-only access token in Hugging Face settings. For gated models, first obtain access on the model page. Your token is stored in your system credential store." fields={[["huggingface", "read token"]]} has={keys.huggingface} changed={refreshKeys} />
       <HuggingFaceConnection saved={keys.huggingface} />
@@ -119,6 +122,74 @@ function HuggingFaceConnection({ saved }: { saved: boolean }) {
   const [busy, setBusy] = useState(false);
   const check = async () => { setBusy(true); setMessage(""); try { setMessage(`Connected as ${await api.huggingfaceCheck()}.`); } catch (e) { setMessage((e as Error).message); } finally { setBusy(false); } };
   return <div className="card stack"><div className="row wrap"><button disabled={!saved || busy} onClick={() => void check()}>{busy ? "Checking…" : "Check connection"}</button><button onClick={() => { void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl("https://huggingface.co/settings/tokens")); }}>Create a Hugging Face token</button></div><p className="muted small">The connection check sends only your token to Hugging Face. Saving or checking a token does not download a model. Advanced-model downloads and inference are still being integrated.</p>{message && <p role="status">{message}</p>}</div>;
+}
+
+/**
+ * Lets another AI agent (Claude Desktop and others that speak MCP) drive Greenroom: give it a script or a brief and it plans and runs the
+ * production. Off until switched on; local to this PC; protected by a token. It cannot approve voices, go past your spending limit or
+ * deliver the final export: those stay with you in this window.
+ */
+function McpSettings() {
+  const [st, setSt] = useState<McpStatus | null>(null);
+  const [port, setPort] = useState("");
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    void api.mcpStatus().then((s) => { setSt(s); setPort(String(s.port)); }).catch(() => undefined);
+  }, []);
+  const apply = async (enabled: boolean) => {
+    setBusy(true);
+    setMsg("");
+    try {
+      const s = await api.mcpSetEnabled(enabled, Number(port) || undefined);
+      setSt(s);
+      setMsg(enabled ? `On. Listening at ${s.url}` : "Off.");
+    } catch (e) {
+      setMsg((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const copyConfig = async () => {
+    try {
+      const token = await api.mcpTokenReveal();
+      const url = st?.url ?? "http://127.0.0.1:47821/mcp";
+      const cfg = JSON.stringify({ mcpServers: { "greenroom-local": { type: "http", url, headers: { Authorization: `Bearer ${token}` } } } }, null, 2);
+      await navigator.clipboard.writeText(cfg);
+      setMsg("Copied. Paste it into the other program's MCP settings. It contains your access token: keep it private.");
+    } catch (e) {
+      setMsg((e as Error).message || "Could not copy.");
+    }
+  };
+  const reset = async () => {
+    setBusy(true);
+    try {
+      await api.mcpResetToken();
+      setMsg("A new token was made. The old one no longer works. Copy the settings again.");
+    } catch (e) {
+      setMsg((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="card stack">
+      <div className="row between">
+        <span className="eng-id">
+          <strong>Let other AI agents use Greenroom (MCP)</strong>
+          <span className="muted small">An agent such as Claude Desktop can create a project from your script, plan the production from a brief and run it. It runs only on this PC, needs the token below, and can never approve a voice, spend past your limit or deliver the final export: those wait for you in this window. Off by default.</span>
+        </span>
+        <span className={st?.running ? "badge ok" : "badge"}>{st?.running ? "On" : "Off"}</span>
+      </div>
+      <div className="row wrap">
+        <label className="row small">Port <input type="number" min={1024} max={65535} value={port} onChange={(e) => setPort(e.target.value)} aria-label="Port" style={{ width: 90 }} disabled={busy} /></label>
+        {st?.running ? <button onClick={() => void apply(false)} disabled={busy}>Turn off</button> : <button className="primary" onClick={() => void apply(true)} disabled={busy}>Turn on</button>}
+        <button onClick={() => void copyConfig()} disabled={!st?.running}>Copy the settings for the other program</button>
+        <button className="sm" onClick={() => void reset()} disabled={busy || !st?.running}>Make a new token</button>
+      </div>
+      {msg && <p className="muted small" role="status">{msg}</p>}
+    </div>
+  );
 }
 
 /** Free check of the Kie account: says how many credits are left. A speech or sound clip that fails with "Internal Error" is worth checking against this. */

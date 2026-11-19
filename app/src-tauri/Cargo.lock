@@ -1539,9 +1539,10 @@ dependencies = [
 
 [[package]]
 name = "greenroom-local"
-version = "0.18.0"
+version = "0.19.0"
 dependencies = [
  "base64 0.22.1",
+ "getrandom 0.2.17",
  "keyring",
  "lopdf",
  "md-5 0.10.6",

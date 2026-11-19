@@ -6,6 +6,7 @@ mod kie;
 mod history;
 mod inworld;
 mod llm;
+mod mcp;
 mod local;
 mod model_manager;
 mod managed_python;
@@ -26,7 +27,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::Instant;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 const SERVICE: &str = "Greenroom Local";
 
@@ -2245,6 +2246,152 @@ mod convert_tests {
     }
 }
 
+// ---- MCP: lets other AI agents drive Greenroom (off until the owner turns it on in Settings; see mcp.rs) ----
+
+type McpPending = std::sync::Arc<Mutex<std::collections::HashMap<u64, std::sync::mpsc::Sender<Result<serde_json::Value, String>>>>>;
+
+#[derive(Default)]
+struct McpState {
+    server: Mutex<Option<mcp::Server>>,
+    pending: McpPending,
+}
+
+/// Hands a tool call to the app window (which runs the tool with the same code the screens use) and waits for its answer.
+struct TauriBridge {
+    app: tauri::AppHandle,
+    pending: McpPending,
+    next: std::sync::atomic::AtomicU64,
+}
+
+impl mcp::Bridge for TauriBridge {
+    fn call(&self, name: &str, args: serde_json::Value, timeout: std::time::Duration) -> Result<serde_json::Value, String> {
+        let id = self.next.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+        let (tx, rx) = std::sync::mpsc::channel();
+        self.pending.lock().map_err(|_| "Greenroom is busy.".to_string())?.insert(id, tx);
+        if self.app.emit("mcp-call", serde_json::json!({ "id": id, "name": name, "args": args })).is_err() {
+            self.pending.lock().ok().map(|mut p| p.remove(&id));
+            return Err("The Greenroom window is not available. Open Greenroom and try again.".into());
+        }
+        let out = rx.recv_timeout(timeout).map_err(|_| "Greenroom did not answer in time. It may be waiting for the person (a cost sheet or an approval in the window).".to_string());
+        self.pending.lock().ok().map(|mut p| p.remove(&id));
+        out?
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct McpSettings {
+    enabled: bool,
+    port: u16,
+}
+
+fn mcp_settings_file(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    Ok(root(app)?.join("mcp.json"))
+}
+
+fn mcp_settings(app: &tauri::AppHandle) -> McpSettings {
+    mcp_settings_file(app).ok().and_then(|f| std::fs::read(f).ok()).and_then(|b| serde_json::from_slice::<McpSettings>(&b).ok()).filter(|s| s.port >= 1024).unwrap_or(McpSettings { enabled: false, port: mcp::DEFAULT_PORT })
+}
+
+fn mcp_entry() -> Result<keyring::Entry, String> {
+    keyring::Entry::new(SERVICE, "mcp-token").map_err(|e| format!("Could not reach the system credential store: {e}"))
+}
+
+/// The access token other programs must present. Made once, kept in the system credential store.
+fn mcp_token() -> Result<String, String> {
+    let e = mcp_entry()?;
+    match e.get_password() {
+        Ok(t) if t.len() >= 24 => Ok(t),
+        Ok(_) | Err(keyring::Error::NoEntry) => {
+            let t = mcp::new_token()?;
+            e.set_password(&t).map_err(|e| format!("Could not save to the system credential store: {e}"))?;
+            Ok(t)
+        }
+        Err(e) => Err(format!("Could not read the system credential store: {e}")),
+    }
+}
+
+fn mcp_start(app: &tauri::AppHandle, state: &McpState, port: u16) -> Result<u16, String> {
+    let token = mcp_token()?;
+    let bridge = std::sync::Arc::new(TauriBridge { app: app.clone(), pending: state.pending.clone(), next: std::sync::atomic::AtomicU64::new(0) });
+    let server = mcp::Server::start(port, token, bridge)?;
+    let port = server.port;
+    *state.server.lock().map_err(|_| "Greenroom is busy.".to_string())? = Some(server);
+    Ok(port)
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct McpStatus {
+    enabled: bool,
+    running: bool,
+    port: u16,
+    default_port: u16,
+    url: String,
+}
+
+fn mcp_status_of(app: &tauri::AppHandle, state: &McpState) -> McpStatus {
+    let cfg = mcp_settings(app);
+    let running = state.server.lock().map(|s| s.is_some()).unwrap_or(false);
+    McpStatus { enabled: cfg.enabled, running, port: cfg.port, default_port: mcp::DEFAULT_PORT, url: format!("http://127.0.0.1:{}/mcp", cfg.port) }
+}
+
+#[tauri::command]
+fn mcp_status(app: tauri::AppHandle, state: tauri::State<McpState>) -> McpStatus {
+    mcp_status_of(&app, &state)
+}
+
+/// Turns the MCP server on or off (and picks its port). Off by default. Turning it on makes the access token if there is none.
+#[tauri::command]
+fn mcp_set_enabled(app: tauri::AppHandle, state: tauri::State<McpState>, enabled: bool, port: Option<u16>) -> Result<McpStatus, String> {
+    let current = mcp_settings(&app);
+    let port = port.unwrap_or(current.port);
+    if port < 1024 {
+        return Err("Choose a port from 1024 up.".into());
+    }
+    if let Some(s) = state.server.lock().map_err(|_| "Greenroom is busy.".to_string())?.take() {
+        s.stop();
+    }
+    if enabled {
+        // give a just-stopped server a moment to let go of its port
+        std::thread::sleep(std::time::Duration::from_millis(120));
+        mcp_start(&app, &state, port)?;
+    }
+    store::atomic_write(&mcp_settings_file(&app)?, serde_json::to_vec(&McpSettings { enabled, port }).map_err(|e| e.to_string())?.as_slice())?;
+    Ok(mcp_status_of(&app, &state))
+}
+
+/// The access token, for the owner to copy into the other program's settings. It never goes anywhere else.
+#[tauri::command]
+fn mcp_token_reveal() -> Result<String, String> {
+    mcp_token()
+}
+
+/// Makes a new token (the old one stops working at once) and restarts the server if it is on.
+#[tauri::command]
+fn mcp_reset_token(app: tauri::AppHandle, state: tauri::State<McpState>) -> Result<String, String> {
+    let _ = mcp_entry()?.delete_credential();
+    let cfg = mcp_settings(&app);
+    if let Some(s) = state.server.lock().map_err(|_| "Greenroom is busy.".to_string())?.take() {
+        s.stop();
+    }
+    let t = mcp_token()?;
+    if cfg.enabled {
+        std::thread::sleep(std::time::Duration::from_millis(120));
+        mcp_start(&app, &state, cfg.port)?;
+    }
+    Ok(t)
+}
+
+/// The app window's answer to a tool call.
+#[tauri::command]
+fn mcp_reply(state: tauri::State<McpState>, id: u64, ok: bool, payload: serde_json::Value) -> Result<(), String> {
+    let tx = state.pending.lock().map_err(|_| "Greenroom is busy.".to_string())?.remove(&id);
+    if let Some(tx) = tx {
+        let _ = tx.send(if ok { Ok(payload) } else { Err(payload.as_str().unwrap_or("The tool failed.").to_string()) });
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -2252,8 +2399,19 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .manage(McpState::default())
+        .setup(|app| {
+            // the MCP server starts only if the owner turned it on in Settings; a failure here must never stop the app
+            let handle = app.handle().clone();
+            let state = app.state::<McpState>();
+            let cfg = mcp_settings(&handle);
+            if cfg.enabled {
+                let _ = mcp_start(&handle, &state, cfg.port);
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
-            key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, kie_credits, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
+            key_status, set_key, clear_key, huggingface_check, run_clip, voices_mine, voices_voicekiller, avatar_generate, inworld_check, kie_credits, mcp_status, mcp_set_enabled, mcp_token_reveal, mcp_reset_token, mcp_reply, voices_inworld, inworld_preview, inworld_clone, voices_shared, voice_add_shared, voice_design, voice_design_save, voice_clone,
             voice_delete, preview_fetch, project_list, project_load, project_save, take_write, take_read, export_write, library_load, library_save, avatars_load, avatars_save, casts_load, casts_save, version_save, version_list, version_load, backup_now, backup_auto, backup_list, backup_restore, sheet_load, sheet_save, sheet_audio_write, sheet_audio_read, sheet_export,
             save_report, audio_import, music_generate, ffmpeg_status, ffmpeg_install, video_mux, video_probe, video_allow, director_complete, llm_models, script_open, setup_check, setup_report, engines_load, engines_save, piper_status, piper_install, piper_catalog, piper_preview, piper_install_voice, piper_remove_voice, local_voices,
             model_hardware, model_states, model_install, chatterbox_import_downloads, wazobia_install_download, wazobia_voices, wazobia_install_automatic, wazobia_import_file, chatterbox_ready, chatterbox_runtime_status, chatterbox_runtime_install, kokoro_runtime_status, kokoro_runtime_install, kokoro_prefetch, qwen_prefetch, qwen_unload, qwen_lock_status, qwen_design_preview, qwen_design_save, qwen_design_ready, qwen_base_download, qwen_lock_voice, qwen_design_preview, qwen_design_save, qwen_unlock_voice, qwen_gpu_install, speaker_status, speaker_install, speaker_embed, qwen_runtime_status, qwen_runtime_install, acestep_status_cmd, acestep_ready, acestep_runtime_install, music_local_generate, sfx_status_cmd, sfx_ready, sfx_runtime_install, sfx_install_models, sfx_local_generate, director_local_status, director_local_install, director_local_complete, voice_convert

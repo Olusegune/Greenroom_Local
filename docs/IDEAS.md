@@ -54,4 +54,4 @@ Ordered by what I expect to matter most for sounding human and for professional 
 9. **MP3 / AAC / Opus export** next to WAV, for sharing on a phone.
 10. **Shippable basics:** code-signing certificate and update key; a CI run of the gate (tsc, vitest, clippy, cargo test, smoke, accessibility) on every push; a clean-install and upgrade test on a second PC; a screen-reader pass.
 11. **Tighten the sidebar and small details seen in the screenshots:** the project name in the sidebar truncates ("THE WRONG DEPARTMENT ("); the Script editor shows raw markdown with no preview; Perform's line card could show the tags that will be sent before a take is made.
-
+12. **(Done in 0.19.0, first step) Let other agents drive Greenroom.** The MCP server and shared runner exist. Next: the owner's three decisions in docs/AGENT_AND_MCP.md (draft casting, character sheets, standing delivery authorisation) would let a script run all the way to listenable takes without a person in the middle.

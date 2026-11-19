@@ -26,6 +26,7 @@ import Models from "./screens/Models";
 import Help from "./screens/Help";
 import SfxStudio from "./screens/SfxStudio";
 import Listen from "./screens/Listen";
+import McpBridge from "./mcp/McpBridge";
 import { heard } from "./listen";
 import Write from "./screens/Write";
 
@@ -113,6 +114,7 @@ function Shell() {
 
   return (
     <div className={collapsed ? "shell rail-collapsed" : "shell"}>
+      <McpBridge />
       <nav className="rail" aria-label="Main">
         <div className="brand">
           <Mark size={34} />

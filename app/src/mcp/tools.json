@@ -1,0 +1,70 @@
+[
+  {
+    "name": "greenroom_status",
+    "description": "Report what this Greenroom can do right now: version, whether a project is open, which cloud keys are saved (names only, never values), which local engines are ready, and how many voices are in the library. Call this first.",
+    "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+  },
+  {
+    "name": "list_projects",
+    "description": "List the projects on this PC (id, name, last changed).",
+    "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+  },
+  {
+    "name": "create_project",
+    "description": "Create a new project and open it. Pass the script in any format Greenroom reads: 'NAME: words', 'NAME (direction): words', markdown bold names like '**NAME:** (direction) words', '# Scene' or '**SCENE 1**' headings, '[PAUSE: 2 seconds]' and '[SFX: a door creaks]' lines. The script may be empty and set later with set_script.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Project name", "maxLength": 80 },
+        "script": { "type": "string", "description": "The script text", "maxLength": 200000 }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "open_project",
+    "description": "Open an existing project by id (from list_projects).",
+    "inputSchema": { "type": "object", "properties": { "id": { "type": "string" } }, "required": ["id"], "additionalProperties": false }
+  },
+  {
+    "name": "set_script",
+    "description": "Replace the script of the open project. Characters keep their voices and lines whose speaker and words are unchanged keep their takes.",
+    "inputSchema": { "type": "object", "properties": { "script": { "type": "string", "maxLength": 200000 } }, "required": ["script"], "additionalProperties": false }
+  },
+  {
+    "name": "get_project",
+    "description": "Summarise the open project: scenes, characters with their voices and whether each voice is approved, how many lines have takes, sound cues, the listening summary (the owner's own verdicts) and the state of the agent's production run.",
+    "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+  },
+  {
+    "name": "plan_production",
+    "description": "Have Greenroom's agent plan the production of the open project from a brief (plain words such as 'make this a podcast with stems, keep cloud spending below 3 dollars'). Returns the planned steps and what each will do. Nothing is made yet.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "brief": { "type": "string", "description": "What the person wants, in their own words", "maxLength": 4000 },
+        "mode": { "type": "string", "enum": ["guided", "autonomous"], "description": "guided stops at every creative, spending, voice-rights and delivery step; autonomous makes a first draft inside the limits" },
+        "local_only": { "type": "boolean", "description": "true (the default) uses only voices on this PC and sends nothing to a company" },
+        "cloud_limit": { "type": "number", "minimum": 0, "maximum": 1000, "description": "The most to spend on cloud work, in the person's currency; used only when local_only is false" }
+      },
+      "required": ["brief"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "run_production",
+    "description": "Run the planned production until it needs a person or finishes. The agent makes takes, checks audio and builds the timeline inside the limits. It CANNOT approve a cast (voice rights) or deliver the final export: those steps wait for the person in the Greenroom window. If paid work is planned, Greenroom shows its cost sheet to the person and this call waits for their answer. Returns the status of every step.",
+    "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+  },
+  {
+    "name": "get_production_status",
+    "description": "The state of the agent's run: each step with its status, and which steps are waiting for the person's approval (and why).",
+    "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+  },
+  {
+    "name": "get_listening_todo",
+    "description": "The owner's listening verdicts on the open project (they play each take and mark Good, Wrong voice, Wrong delivery or Glitch) and the resulting to-do list. These are a person's judgments; Greenroom adds none of its own.",
+    "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false }
+  }
+]

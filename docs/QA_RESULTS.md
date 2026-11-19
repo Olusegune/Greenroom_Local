@@ -133,3 +133,13 @@ New: `app/src/listen.ts` (verdicts, queue, summary, to-do list, report; 13 unit 
 
 Gate: 1,191 JavaScript tests, 151 Rust tests, clippy clean; browser smoke, keyboard, accessibility (existing screens), agent, casting and dialogs scripts pass. **Not checked:** the Listen screen itself has not been run through axe or a screen reader; nobody has listened to any audio.
 
+## 0.19.0 (2026-11-19): MCP server and shared agent runner
+
+New: `app/src-tauri/src/mcp.rs` (server, 11 tests), `app/src/mcp/` (tool list shared by server and window, handlers, bridge; 11 tests), `app/src/agent/runner.ts` (the plan-and-run code Agent Studio and the bridge share; the existing 97 agent tests still pass), `scripts/qa/mcp_e2e.mjs`.
+
+**Real run (installed app, a plain HTTP MCP client, nothing spent):** 25 of 25 checks: off by default; turned on through Settings; no token, a wrong token and a web Origin all refused; initialize, tools/list (10 tools, none that approve, spend or deliver), status; wrong arguments refused; no approve tool; a 55-line, 4-character, 9-cue project created from the stress script and shown in the window; 63 steps planned; run local-only with 0 spent; delivery and cast approval not done by the agent; turned off again.
+
+**Found:** the run stopped at "Recommend the cast" with "The cast needs your decision": by the casting rules nothing is assigned unless proven, and a bare script proves nothing. See docs/AGENT_AND_MCP.md, Open decisions.
+
+Gate: 1,205 JavaScript tests, 162 Rust tests, clippy clean. **Not checked:** Claude Desktop itself; an external security review; the Settings card with a screen reader.
+
