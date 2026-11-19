@@ -127,3 +127,9 @@ The product was driven for real (the built app, the owner's library and keys, th
 
 Tests added: Kie client (credits, retry, invalid voice), Kie voice list. Gate: 1,178 JavaScript, 151 Rust. Nothing judged by ear.
 
+## 0.18.0 (2026-11-19): the Listen screen
+
+New: `app/src/listen.ts` (verdicts, queue, summary, to-do list, report; 13 unit tests), `app/src/screens/Listen.tsx`, `scripts/qa/listen_e2e.mjs` (20 checks: demo takes, Space plays and pauses, keys 1 to 4, auto-advance, taking a verdict back, typing 1 to 4 in the note box records nothing, the views, the to-do list, saved notes, a new take is "not heard yet", 0 console errors). In the real app on the stress-test project (55 real takes): Space played the take, three verdicts were recorded and then taken back (0 left in the project file).
+
+Gate: 1,191 JavaScript tests, 151 Rust tests, clippy clean; browser smoke, keyboard, accessibility (existing screens), agent, casting and dialogs scripts pass. **Not checked:** the Listen screen itself has not been run through axe or a screen reader; nobody has listened to any audio.
+

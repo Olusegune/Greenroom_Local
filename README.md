@@ -89,6 +89,10 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
 
+## New in 0.18.0
+- **Listen** screen: play each line and press a key for what you hear (Good, Wrong voice, Wrong delivery, Glitch); a live to-do list and saved listening notes. See the user guide.
+- **Kie fixed** (0.17.2 and 0.17.3): see docs/PROVIDERS.md.
+
 ## New in 0.14 to 0.17 (details in DECISIONS.md D-69 to D-77)
 - **0.17.x** Markdown-style scripts (`**NAME:** (direction) words`, bold scene headings, `[PAUSE: n seconds]`, `[SFX: ...]`) are read correctly; written directions become short engine tags (`[softly] [clears throat]`) instead of one long bracket; sound cues from a script can be made (Perform: Make this sound, Make all N missing sounds); ElevenLabs lines get their neighbours as context; the take checks no longer cry wolf; **every voice in a list has a face** (see docs/AVATARS.md); a confirmed voice change on a locked character no longer leaves it half changed.
 - **0.16.x** WazobiaVoice lines are no longer padded to 40 seconds; faces are chosen only from stated facts (strict presets); local sound effects work; the screens no longer say "install" while a slow check runs.

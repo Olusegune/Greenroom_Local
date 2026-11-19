@@ -14,6 +14,7 @@ Click a heading in the left sidebar to move between screens. With a project open
 | **Script** | Type or paste the scene. Greenroom lists the characters it found, with a face and a voice picker for each. |
 | **Cast** | Give each character a voice, see why it fits (or not), approve it to lock it. |
 | **Perform** | Direct each line, make takes, make sound clips, play the scene. |
+| **Listen** | Play each line and press a key for what you hear; get a to-do list and listening notes. |
 | **Timeline** | Arrange lines, overlap dialogue, add music that dips under the voices. |
 | **Export** | Choose a destination preset, measure the mix, write the audio files and reports. |
 | **Agent Studio** | Describe what you want; the agent plans and works through it, stopping for your approval. |
@@ -32,6 +33,8 @@ Click a heading in the left sidebar to move between screens. With a project open
 ![Cast: choose and check a voice for each character](screenshots/03-cast.webp)
 
 ![Perform: one card per line with direction, takes and the character list](screenshots/04-perform.webp)
+
+![Listen: play each line, one key per verdict, a live to-do list](screenshots/22-listen.webp)
 
 ![Timeline: a lane per character and a row for sound clips](screenshots/05-timeline.webp)
 
@@ -251,6 +254,22 @@ Everywhere you can hear something, you can also pause it and carry on from the s
 ## 5. Export
 
 Open **Export** (or **File > Export audio…**) for a WAV mix, stems per character, a cue sheet and editor handoff files. See [Pro audio](PRO_AUDIO.md).
+
+## Listening to your scene (Listen)
+
+Greenroom cannot hear whether a voice sounds right; you can. **Listen** (in the sidebar, under Perform) plays each line's take and records what you hear:
+
+| Key | Verdict | Meaning |
+|---|---|---|
+| **Space** | | Play or pause the line |
+| **1** | Good | It sounds right |
+| **2** | Wrong voice | This voice does not fit the character |
+| **3** | Wrong delivery | Right voice, but the feeling, pace or manner is off |
+| **4** | Glitch or repeat | A repeated word, a cut-off, a click or a strange sound |
+| **Left / Right** (or **P / N**) | | Previous or next line |
+| **U** | | Jump to the next line you have not heard yet |
+
+After a verdict the next unheard line plays by itself (you can turn that off). Pressing the same verdict again takes it back. Add a short note if you like ("too cheerful for a whisper"). The **To do** list shows what needs fixing, groups "wrong voice" by character so a voice change is one decision, and links to Cast and Perform. **Save the listening notes** writes a Markdown file next to your exports. A verdict belongs to the exact take you heard: make a new take and that line shows as "not heard yet". Your verdicts are the by-ear findings the project's rules ask for; Greenroom never adds any of its own.
 
 ## Pasting a script written elsewhere
 
