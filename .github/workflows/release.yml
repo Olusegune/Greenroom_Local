@@ -1,7 +1,14 @@
 name: Release
 
-# Push a tag such as v0.5.1 to build the Windows installers and attach them to a GitHub Release.
-# Optional repository secrets: TAURI_SIGNING_PRIVATE_KEY (+ TAURI_SIGNING_PRIVATE_KEY_PASSWORD) for signed in-app updates.
+# Builds the Windows installers and a universal macOS app (.dmg, Apple Silicon and Intel) and, for a tag such as v0.20.0, attaches
+# them to a GitHub Release. Run it by hand from the Actions tab ("Run workflow") to get the installers as downloadable artifacts.
+#
+# Optional repository secrets:
+#   TAURI_SIGNING_PRIVATE_KEY (+ TAURI_SIGNING_PRIVATE_KEY_PASSWORD)   signed in-app updates
+#   APPLE_CERTIFICATE (base64 .p12), APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY,
+#   APPLE_ID, APPLE_PASSWORD (an app-specific password), APPLE_TEAM_ID   Developer ID signing and notarisation of the Mac app.
+# Without the Apple secrets the Mac app is ad-hoc signed only: macOS shows "cannot be opened because Apple cannot check it for
+# malicious software" the first time (see docs/MAC.md for the two ways to open it).
 on:
   push:
     tags: ["v*"]
@@ -57,14 +64,97 @@ jobs:
           Copy-Item "$rel/greenroom-local.exe" "out/Greenroom Local.exe"
           Compress-Archive -Path "out/Greenroom Local.exe" -DestinationPath "out/Greenroom-Local-portable.zip"
           Remove-Item "out/Greenroom Local.exe"
-          Get-ChildItem out -File | ForEach-Object { "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower())  $($_.Name)" } | Set-Content out/SHA256SUMS.txt
-      - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" out/* --title "Greenroom Local ${{ github.ref_name }}" --generate-notes
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installers
           path: out/*
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+      - name: Install, typecheck, test
+        working-directory: app
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npx vitest run
+      - name: Rust checks (this is where a Mac-only problem in the Rust code would show)
+        working-directory: app/src-tauri
+        run: |
+          cargo clippy --all-targets -- -D warnings
+          cargo test
+      - name: Import the Developer ID certificate (only when the secrets exist)
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -n "$APPLE_CERTIFICATE" ]; then
+            echo "$APPLE_CERTIFICATE" | base64 --decode > cert.p12
+            security create-keychain -p ci build.keychain
+            security default-keychain -s build.keychain
+            security unlock-keychain -p ci build.keychain
+            security import cert.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ci build.keychain
+            rm cert.p12
+          else
+            echo "No Apple certificate secret: the app will be ad-hoc signed only."
+          fi
+      - name: Build the universal app and .dmg
+        working-directory: app
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            npx tauri build --target universal-apple-darwin --bundles dmg --config '{"bundle":{"createUpdaterArtifacts":false}}'
+          else
+            npx tauri build --target universal-apple-darwin --bundles dmg
+          fi
+      - name: Collect
+        run: |
+          mkdir -p out
+          cp app/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg out/
+          ls -l out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: out/*
+
+  publish:
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: collected
+          merge-multiple: true
+      - name: Checksums
+        run: |
+          cd collected
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: all-installers
+          path: collected/*
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" collected/* --repo "${{ github.repository }}" --title "Greenroom Local ${{ github.ref_name }}" --generate-notes

@@ -42,3 +42,7 @@ When you have one, put the certificate in the Windows certificate store, copy it
 
 ## Automatic builds (0.5)
 Pushing a tag such as `v0.5.1` runs `.github/workflows/release.yml`: it type-checks, runs the JS and Rust tests, builds the NSIS installer and MSI, adds a portable zip and SHA-256 checksums, and publishes a GitHub Release. Add the repository secrets `TAURI_SIGNING_PRIVATE_KEY` (and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` if it has one) to also produce signed update files; without them the build skips update artifacts. Windows code signing is still not active.
+
+## Windows and Mac installers from GitHub (added 2026-11-19)
+
+`.github/workflows/release.yml` builds the Windows installers and a universal macOS `.dmg` on GitHub's machines; run it from the Actions tab or push a `v*` tag. See [MAC.md](MAC.md) for the steps, the unsigned-app warning and what works on a Mac.

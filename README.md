@@ -19,6 +19,7 @@ See [docs/LOCAL_AI_ARCHITECTURE.md](docs/LOCAL_AI_ARCHITECTURE.md) for how local
 ## Release documentation
 
 - [Handover note](docs/HANDOVER.md) - start here to continue on another PC: state, what is tested, how to test the real app, next steps.
+- [Windows and Mac installers](docs/MAC.md) - how the Windows and Mac installers are built (the Mac build is prepared but not yet run on a Mac) and what works on a Mac.
 - [Agent Studio and MCP](docs/AGENT_AND_MCP.md) - giving Greenroom a script or a brief, and letting other AI agents drive it.
 - [Script format](docs/SCRIPT_FORMAT.md) - everything the script reader understands, including `**NAME:** (direction)`, `[PAUSE: 2 seconds]` and `[SFX: ...]`.
 - [Avatars](docs/AVATARS.md) - how a face gets onto a voice, a preset or a character.
