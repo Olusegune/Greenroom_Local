@@ -2,7 +2,70 @@
 
 Write a scene, give each character a voice, direct how every line is played in your own words, make takes, and export the finished audio. This guide follows the shortest path from an empty app to a finished mix.
 
-Screenshots show the demo build, so some voice names and prices will differ on your computer.
+The tour below uses screenshots of the real app (version 0.17.1, dark theme) with a finished project open. Some later sections still show older demo-build screenshots, so voice names and prices there will differ on your computer.
+
+## Tour of the app
+
+Click a heading in the left sidebar to move between screens. With a project open the project's screens appear under its name.
+
+| Screen | What it is for |
+|---|---|
+| **Projects** | Start a project from a name or a template, or open one. |
+| **Script** | Type or paste the scene. Greenroom lists the characters it found, with a face and a voice picker for each. |
+| **Cast** | Give each character a voice, see why it fits (or not), approve it to lock it. |
+| **Perform** | Direct each line, make takes, make sound clips, play the scene. |
+| **Timeline** | Arrange lines, overlap dialogue, add music that dips under the voices. |
+| **Export** | Choose a destination preset, measure the mix, write the audio files and reports. |
+| **Agent Studio** | Describe what you want; the agent plans and works through it, stopping for your approval. |
+| **Studio** | Voice rights, consent, cost and take history. |
+| **History** | Go back to an earlier version of the project; make backups. |
+| **Voices** | Your library, find, design and clone voices, and the Accent test. |
+| **Voice metadata** | What is known about each voice and where each fact came from. |
+| **Presets** | 120 starter character voices in 12 genres. |
+| **Model Center / Engines** | Install local engines and choose which engine does what. |
+| **SFX Studio / Voice lab** | Make and place sound effects; compare providers on the same lines. |
+
+![Projects: start from a name or a template](screenshots/01-projects.webp)
+
+![Script: paste a scene; characters appear on the right with a face and a voice picker](screenshots/02-script.webp)
+
+![Cast: choose and check a voice for each character](screenshots/03-cast.webp)
+
+![Perform: one card per line with direction, takes and the character list](screenshots/04-perform.webp)
+
+![Timeline: a lane per character and a row for sound clips](screenshots/05-timeline.webp)
+
+![Export: destination presets, loudness and what to save](screenshots/06-export.webp)
+
+![Agent Studio: brief, plan, board and approval gates](screenshots/07-agent-studio.webp)
+
+![Studio: voice rights and consent records](screenshots/08-studio-rights.webp)
+
+![History: earlier versions and backups](screenshots/09-history.webp)
+
+![Voices: the library, every voice with a face and its facts](screenshots/10-voices-library.webp)
+
+![Find a voice: pick a language and see voices from every engine](screenshots/11-voices-find.webp)
+
+![Casting call: ready-made voices for common accents](screenshots/12-voices-casting-call.webp)
+
+![Design a voice from a description](screenshots/13-voices-design.webp)
+
+![Voice metadata: nothing is verified until someone listens](screenshots/14-voice-metadata.webp)
+
+![Presets: twelve genres of starter character voices](screenshots/15-presets.webp)
+
+![Presets in a genre, with faces only where the preset states a gender](screenshots/16-presets-film.webp)
+
+![Model Center: install and check local engines](screenshots/17-model-center.webp)
+
+![Engines: which engine does speech, sound, music and the Director](screenshots/18-engines.webp)
+
+![SFX Studio: describe a sound and place it beside a line](screenshots/19-sfx-studio.webp)
+
+![Voice lab: the same lines from each provider, rated 1 to 5](screenshots/20-voice-lab.webp)
+
+![Help and guide inside the app](screenshots/21-help.webp)
 
 ## 1. Start a project
 
@@ -188,6 +251,32 @@ Everywhere you can hear something, you can also pause it and carry on from the s
 ## 5. Export
 
 Open **Export** (or **File > Export audio…**) for a WAV mix, stems per character, a cue sheet and editor handoff files. See [Pro audio](PRO_AUDIO.md).
+
+## Pasting a script written elsewhere
+
+Scripts from other tools (and from AI assistants) often look like this, and Greenroom reads them as written:
+
+```text
+**SCENE 1 - THE OFFICE**
+[SFX: A heavy iron door creaks open. Distant thunder.]
+**MISS GRIMBLE:** (Clipped, professional) Next! Mr. Blaze, do come in.
+**VENOMSPUR:** (Soft throat clearing) Yes. We noticed.
+[PAUSE: 2 seconds]
+```
+
+Names, directions, scene headings, pauses and sound cues are all understood; see [SCRIPT_FORMAT.md](SCRIPT_FORMAT.md) for the full list. A sample with 4 characters and 9 sound cues is in [samples/the-wrong-department.md](samples/the-wrong-department.md).
+
+## Sound cues from a script
+
+A line like `[SFX: A door creaks open.]` becomes a sound cue on the line it belongs to, with no audio yet. On **Perform**, each cue has **Make this sound**, and the toolbar has **Make all N missing sounds**. Both show a cost sheet first (sounds made on this PC with Stable Audio are free). Cues at the start of a scene play before the next line, at most four seconds; others play after the line before.
+
+## How a direction reaches the voice
+
+A direction such as `(Soft throat clearing)` becomes short tags the engine can use (`[softly] [clears throat]`), never a long phrase, and silent stage business such as removing glasses is left out. Pace words ("fast", "deliberate") set the speed. For ElevenLabs, each line is also sent with the words of the lines before and after it so it follows on naturally. The Perform screen and the take's details show exactly what was sent. Nothing about how it sounds is claimed until you listen.
+
+## Faces
+
+Every voice in your library shows a face, chosen from what the voice itself states: its gender is never crossed, its age band and (for accents that point to a region) heritage narrow the choice, and a voice with no stated gender gets a robot, alien or animal. A character shows the face of its cast voice unless you describe the character yourself (Script, "Who is NAME?"). Anything you choose always wins. See [AVATARS.md](AVATARS.md).
 
 ## Menus and shortcuts
 

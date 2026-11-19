@@ -1,3 +1,25 @@
+# Stress tests
+
+## Run on 2026-11-19: "The Wrong Department" (done)
+
+A supernatural dark comedy: four characters (Venomspur, Rico, Miss Grimble, Mama T), three scenes, 55 lines, nine sound cues, written as an AI assistant would write it (bold names, directions in brackets, `[PAUSE]` and `[SFX]` lines). Script: [samples/the-wrong-department.md](samples/the-wrong-department.md). It was run in the installed app with ElevenLabs.
+
+![The script pasted as written, characters found](screenshots/02-script.webp)
+
+| Step | Result |
+|---|---|
+| Reading the script | First run: wrong. Characters named "**RICO", directions inside the spoken words, sound and pause cues spoken. Fixed in 0.17.0; now 4 characters, 3 scenes, 55 lines, 9 sound cues, pauses applied. |
+| What the engine receives | First run: whole directions as one tag (`[without looking up; quietly]`). Now short tags (`[quietly]`, `[softly] [clears throat]`, `[nervous] [laughs nervously]`). |
+| Takes | 55 takes in 72 s on Eleven v4 (188 s of speech); 3,118 characters; neighbour lines sent as context. |
+| Sounds | 9 ElevenLabs sound effects, made from the script's cues through the confirm sheet. |
+| Export | Podcast preset: 4:16, 24-bit 44.1 kHz stereo, peak -1.1 dBFS, no clipping, longest silence 2.9 s (the written pauses). The mix is -19.3 LUFS because one loud peak caps the gain and Greenroom has no limiter. |
+| App's own checks | Flagged 3 takes for a second listen (timing only). |
+| **Not done** | **Nobody has listened.** Accents (Nigerian, Yoruba, British), laughs, whispers and comic timing are judged only by the owner's ear. |
+
+Repeat it with: paste the sample into a new project, cast the four characters, Perform > Make all takes, Make all sounds, Export.
+
+---
+
 # Cinematic stress test: "The Night Inspection"
 
 A 60-second, three-character scene that exercises the whole pipeline. **It has not been run.** Making it needs real voices, and Greenroom's rule is that automated tests do not spend cloud credits and quality claims come only from listening. This page is the script, the procedure, the checks Greenroom can do for you, and the sheet to listen with. Run it yourself, then record what you heard in `DECISIONS.md`.

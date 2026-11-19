@@ -1,4 +1,23 @@
-# Release readiness: 0.13.0 (2026-11-10)
+# Release readiness: 0.17.1 (2026-11-19)
+
+> Updated 2026-11-19. The table below is the 0.13.0 record kept for history; the current numbers are in the next section.
+
+## Current status (0.17.1)
+
+| Check | Result |
+|---|---|
+| Type check | clean |
+| JavaScript tests | **1,171 pass**, 2 skipped |
+| Rust | clippy clean; **148 pass**, 5 ignored (real-engine runs) |
+| Browser smoke (every screen) | 0 console errors |
+| Accessibility (axe, light and dark) | 0 violations |
+| Installers | NSIS 14.77 MiB, MSI 16.86 MiB, exe 30.65 MB; the updater-signing step reports no private key (expected) |
+| Installed app | upgrade 0.16.3 to 0.17.0 by the installer worked; read-only sweep of the installed app: 0 errors |
+| Real stress test | 55-line, 4-character script through ElevenLabs v4: 55 takes, 9 sound effects, 4:16 export, no clipping |
+
+**Verdict: a working beta, not ready for public release.** Blockers: nothing judged by ear; unsigned installers and no update key; voice licences to check; Kie failing (cause unknown); Inworld untested; no clean install on a second PC; no CI. See HANDOVER.md for the full list.
+
+## 0.13.0 record (history)
 
 An honest status, not a sign-off. "Ready" here means the checks below passed; it does not mean anything was judged by ear.
 

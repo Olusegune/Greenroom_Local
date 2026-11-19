@@ -1,6 +1,6 @@
 # Handover note: Greenroom Local (for a Claude agent on another PC)
 
-## START HERE: current state at 0.17.0 (written 2026-11-19)
+## START HERE: current state at 0.17.1 (written 2026-11-19)
 
 **Read this section first.** Everything below it ("Update at 0.13.0" and the 0.12.8 note) is older and still useful for background (code map, build traps, rules), but its version numbers, test counts and "not tested" lists are out of date. The sections marked **(older)** are kept as written.
 
@@ -9,8 +9,8 @@
 |---|---|
 | Repo | https://github.com/Olusegune/Greenroom_Local |
 | Branch | **`feat/agent-studio-presets`** (all work is here; `main` is old). **No pull request is open**: `gh` is not installed on the PC that wrote this and the GitHub connector failed to authenticate, so open it by hand: https://github.com/Olusegune/Greenroom_Local/compare/main...feat/agent-studio-presets?expand=1 (about 90 commits ahead of main) |
-| Version | **0.17.0** (bumped in the five places listed in section 4). Commit message starts "0.17.0". |
-| Gate at 0.17.0 | `npx tsc --noEmit` clean; `npx vitest run` **1,170 pass, 2 skipped**; `cargo clippy --all-targets -- -D warnings` clean; `cargo test` **148 pass, 5 ignored** (the ignored ones are real-engine runs); browser `scripts/qa/smoke.mjs` 0 errors and `a11y.mjs` 0 violations. |
+| Version | **0.17.1** (bumped in the five places listed in section 4). Commit message starts "0.17.1". |
+| Gate at 0.17.1 | `npx tsc --noEmit` clean; `npx vitest run` **1,177 pass, 2 skipped**; `cargo clippy --all-targets -- -D warnings` clean; `cargo test` **148 pass, 5 ignored** (the ignored ones are real-engine runs); every browser script in `scripts/qa/` (smoke, keyboard, layout, sweep, agent, presets, casting, setup, dialogs, own audio, a11y) passes with 0 console errors and 0 accessibility violations. Docs have real screenshots in `docs/screenshots/` (21 images of the installed 0.17.1 app, referenced from README, USER_GUIDE, SCRIPT_FORMAT, AVATARS, AGENT_STUDIO and STRESS_TEST). |
 | Installers | Built once in the foreground: NSIS 14.76 MiB, MSI 16.82 MiB, exe 30.5 MB. Desktop folders `Greenroom Local 0.14.0` to `0.16.3` existed on the owner's PC (not in git; rebuild with `npx tauri build`). |
 
 ```bash
@@ -27,6 +27,7 @@ The owner is Victor Edun (GitHub **Olusegune**). They do **not** use a terminal:
 - **0.16.0** WazobiaVoice lines are no longer 40 s long (worker trims the silent tail and caps speech tokens); **strict avatars** (`docs/AVATARS.md`): a face is chosen only from stated facts, no stated gender means no face (neutral mark), gender, heritage and childhood are never crossed, Gender and Heritage filters in the portrait browser; 22 unlabelled portraits labelled by eye (UNVERIFIED, owner must review; list in a comment in `app/src/avatarLibrary.ts`).
 - **0.16.1** Local sound effects (Stable Audio Open Small) now work: two worker faults fixed in `runtime/sfx_once.py` (text-encoder `model_path`, standard-library WAV writer).
 - **0.16.2** Sound-effects and ACE-Step music screens use an instant "files are in place" check (they said "install" for about 10 s while a PyTorch import ran); the Director spend sheet names the real provider (it said "Kie credit" for OpenAI and Gemini); English voices are no longer badged "English (Scottish)".
+- **0.17.1** Piper voices carry no gender field, so 18 got robots; they now use the app's named-speaker table for the picture (voice audit of the owner's 84 voices: every voice has a face, 0 cross a stated gender, 6 state no gender and show a robot, alien or animal). Docs and screenshots refreshed; edge-case tests for the script reader.
 - **0.17.0** Stress test with `docs/samples/the-wrong-department.md` (an AI-written 4-character, 3-scene audio drama script) in the real app with ElevenLabs. Fixed: the script reader now understands the common markdown shape (`**NAME:** (direction) words`, bold scene headings, `[PAUSE: n seconds]`, `[SFX: ...]`; `docs/SCRIPT_FORMAT.md`); written directions become short engine tags instead of one long bracket (`app/src/directionTags.ts`); imported sound cues can be made (Perform: Make this sound, Make all N missing sounds); ElevenLabs lines get the lines before and after as `previous_text`/`next_text` (retry without if rejected); the app's take checks no longer cry wolf on one-word or deliberately staccato lines; a sound before a line is at most 4 s; **every voice in a list has a face** chosen from its own stated gender, age and region-pointing accent (never crossing gender; no stated gender gets a robot, alien or animal; `docs/AVATARS.md`, `voiceFace` in `avatarLibrary.ts`). Result: 55 takes in 90 s, 9 sound clips, 4:18 Podcast-preset export, peak -1.1 dBFS, no clipping. Nothing judged by ear.
 - **0.16.3** Casting bug: confirming "Change the voice" on an approved character left the old approval, so every take was refused ("Nothing was made"). A confirmed change now removes the old approval (`app/src/casting/lock.ts`, regression test in `casting/regression.test.ts`). Verified in the built app: change MARA's voice, confirm, make a take, a new WAV is written.
 

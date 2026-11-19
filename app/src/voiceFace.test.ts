@@ -35,6 +35,14 @@ describe("every voice in a list gets a face that does not contradict what it sta
     for (let i = 0; i < 60; i++) heritages.add(look(voiceFace(manifest, { id: "uk" + i, gender: "female", accent: "British", language: "en" })!.id).h);
     expect(heritages.size).toBeGreaterThan(2);
   });
+  it("a Piper voice with no gender field gets the gender of its named speaker, for the picture only", () => {
+    const amy = voiceFace(manifest, { id: "en_US-amy-medium", provider: "piper", gender: "", accent: "American", language: "en" })!;
+    expect(look(amy.id).g).toBe("f");
+    const alan = voiceFace(manifest, { id: "en_GB-alan-medium", provider: "piper", gender: "", accent: "British", language: "en" })!;
+    expect(look(alan.id).g).toBe("m");
+    const unknown = voiceFace(manifest, { id: "xx_YY-nobody-low", provider: "piper", gender: "", accent: "", language: "en" })!;
+    expect(look(unknown.id).g).toBe("n");
+  });
   it("the same voice always gets the same face", () => {
     const v = { id: "abc", gender: "female", accent: "Nigerian", language: "en" };
     expect(voiceFace(manifest, v)!.id).toBe(voiceFace(manifest, v)!.id);

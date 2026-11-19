@@ -94,3 +94,27 @@ Each demo was also re-read from disk: every character has a library voice, a pro
 - **Real app**: the built exe was started and its window looked at; `scripts/qa/real_app_readonly.mjs` drove every screen read-only against the real library (17 voices): no errors.
 - **Browser runs**: smoke, presets, presets with voices, own audio, sweep, script and picture import, agent, keyboard, setup, casting, accessibility. Three out-of-date tests were updated; layout defects found and fixed (stretching cards, unstyled inputs, clipped list items).
 - **Not checked**: nothing judged by ear; no project opened, no voice approved and no take generated in the real app by a test; WazobiaVoice, sound effects, ACE-Step and every cloud engine not run; screen reader, zoom and high contrast not tested; `rafter run` not run.
+
+## 0.14.0 to 0.17.1 (2026-11-11 to 2026-11-19): real-app testing
+
+The product was driven for real (the built app, the owner's library and keys, throwaway projects deleted afterwards, paid calls only through the confirm sheet and within the owner's budget).
+
+| Version | What testing found | Fixed in |
+|---|---|---|
+| 0.14.1 | Escape did not close Cancel/Done dialogs (a pattern written with a stray backspace character) | 0.15.0 |
+| 0.15.x | "Qwen ready" check stuck on "Checking" (slow PyTorch import) | instant file check |
+| 0.16.0 | WazobiaVoice returned 40-second files (3-4 s of speech then silence) and took 75 s; faces chosen for presets that stated no gender | trim and token cap; strict avatars |
+| 0.16.1 | Local sound effects crashed on first real run: text encoder passed as a name, no audio writer | worker fixed, guard test |
+| 0.16.2 | Sound-effects and music screens said "install" for 10 s; Director cost sheet said "Kie" for OpenAI/Gemini; every English voice badged "(Scottish)" | instant checks; real provider; language label |
+| 0.16.3 | Confirming "Change the voice" on a locked character left the old approval, so every take was refused | removes the old approval |
+| 0.17.0 | Markdown scripts mis-read (`**RICO`, directions spoken, `[SFX]` spoken); directions pasted as long tags; script sound cues could not be made; no neighbour context; take checks flagged 5 of 55 good takes; voices had no faces | reader, tag translator, Make sounds, context, checks, faces |
+| 0.17.1 | 18 Piper voices got robots because they carry no gender field | named-speaker table for the picture |
+
+**Real runs that worked:** Chatterbox; WazobiaVoice (en, yo, ha, ig); Kokoro; Piper; Qwen3-TTS; ElevenLabs speech (v3 and v4) and sound effects; VoiceKiller; OpenAI and Gemini Director; local sound effects; ACE-Step music; casting suggestions; Timeline; exports (Podcast preset: 24-bit 44.1 kHz stereo, cue sheet, rights register, manifest, report); Agent Studio end to end; History restore both ways; installer upgrade 0.16.3 to 0.17.0 and a read-only sweep of the installed app.
+
+**The stress test (2026-11-19):** `docs/samples/the-wrong-department.md`, 55 lines, 4 characters, 3 scenes, 9 sound cues, 3,118 characters. Eleven v4: 55 takes in 72 s (188 s of speech), 9 sound effects, a 4:16 export, peak -1.1 dBFS, no clipping. The app flagged 3 takes for a second listen (timing only).
+
+**Automated at 0.17.1:** `npx tsc --noEmit` clean; `npx vitest run` 1,171 pass, 2 skipped; clippy clean; `cargo test` 148 pass, 5 ignored (real-engine runs); browser smoke 0 console errors; accessibility (axe) 0 violations.
+
+**Not checked:** nothing judged by ear; Kie (three provider failures, request matches its docs); Inworld (no key); Picture (needs a video) and file-import dialogs (native pickers); OpenAI/Gemini beyond the Director; screen reader, zoom, high contrast; a clean install on a second PC; code signing.
+

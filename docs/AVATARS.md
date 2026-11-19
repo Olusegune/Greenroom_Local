@@ -33,3 +33,23 @@ Presets whose appearance an author has written (so they get a face): Yoruba, Igb
 - The look labels (gender and heritage of each built-in portrait) are by eye from the person who built the library; nobody has re-checked all of them. The tests prove the matcher honours the labels, not that every label is right. If you find a mislabelled portrait, say which and it is a one-line fix in `LOOKS_DATA`.
 - The library's heritage categories are coarse (seven). A people not represented by one gets no auto face.
 - 96 presets now show a neutral mark instead of a face, on purpose.
+
+## Screenshots (version 0.17.1, real app)
+
+Every voice in the library has a face; Nigerian-accented voices show matching portraits, a voice with no stated gender (Chatterbox) shows an alien, and Piper voices follow their named speaker:
+
+![Voices library with a face on every voice](screenshots/10-voices-library.webp)
+
+Characters show the face of their cast voice:
+
+![Cast: faces follow the voice chosen for each character](screenshots/03-cast.webp)
+
+Presets show a face only where the preset states a gender, never from an accent or a guess:
+
+![Film presets](screenshots/16-presets-film.webp)
+
+Find a voice, before a voice is added:
+
+![Find a voice](screenshots/11-voices-find.webp)
+
+Audit of the owner's real library (84 voices, 2026-11-19): every voice has a face; 0 faces cross a stated gender; 6 voices state no gender at all (Chatterbox, an ElevenLabs voice labelled neutral, and four Piper voices missing from the name table: Vais, Tsync, Alex and Alma) and show a robot, alien or animal. The tests are `app/src/voiceFace.test.ts` and `avatarMatch.test.ts`.

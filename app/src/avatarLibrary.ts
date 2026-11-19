@@ -674,6 +674,8 @@ export const isPlainFace = (a: Pick<AvatarEntry, "id" | "tier">): boolean => a.i
  * built the library, not verified by ear; a voice not listed gets any adult portrait.
  */
 const PIPER_DATA: Record<string, "f" | "m"> = {
+  // added 2026-11-19 from the speakers' published names, unverified like the rest: paola, irina and gosia are women's names, cadu a man's
+  paola: "f", irina: "f", gosia: "f", cadu: "m",
   alan: "m", alba: "f", jenny_dioco: "f", northern_english_male: "m", cori: "f", lessac: "f", amy: "f", joe: "m", john: "m", kristin: "f", bryce: "m", kusal: "m", ryan: "m",
   claude: "m", ald: "m", kareem: "m", daniela: "f", davefx: "m", carlfm: "m", siwis: "f", tom: "m", thorsten: "m", eva_k: "f", faber: "m", edresson: "m",
   priyamvada: "f", rohan: "m", pratham: "m", kss: "f", huayan: "f", chaowen: "f", xiao_ya: "f", meera: "f", arjun: "m", maya: "f", venkatesh: "m",
@@ -801,7 +803,7 @@ export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender
 }
 
 /** What a voice says about itself that decides its picture. Every field is optional. */
-export interface VoiceLookFacts { id: string; gender?: string; accent?: string; language?: string; notes?: string; age?: VoiceMeta["age"]; heritage?: VoiceMeta["heritage"] }
+export interface VoiceLookFacts { id: string; provider?: string; gender?: string; accent?: string; language?: string; notes?: string; age?: VoiceMeta["age"]; heritage?: VoiceMeta["heritage"] }
 
 /** The accents of a Western voice say nothing certain about who is speaking, so they do not choose a heritage. */
 const WESTERN_ACCENT = /(american|british|english|irish|scottish|welsh|australian|new zealand|canad|received|castilian|cockney)/i;
@@ -814,7 +816,9 @@ const WESTERN_ACCENT = /(american|british|english|irish|scottish|welsh|australia
 export function voiceFace(manifest: AvatarManifest | null, v: VoiceLookFacts, usage?: Map<string, number>, custom?: CustomFace[]): AvatarEntry | null {
   if (!manifest) return null;
   const stated = readVoice(v.gender, [v.accent, v.notes].filter(Boolean).join(" "));
-  const gender = v.gender && /^(f|female|woman)$/i.test(v.gender.trim()) ? "female" : v.gender && /^(m|male|man)$/i.test(v.gender.trim()) ? "male" : stated.g === "f" ? "female" : stated.g === "m" ? "male" : undefined;
+  // Piper voices carry no gender field, but each one is a named speaker; the app's name table (pipergender) says which, for the picture only.
+  const piper = v.provider === "piper" && !v.gender ? pipergender(v.id) : undefined;
+  const gender = v.gender && /^(f|female|woman)$/i.test(v.gender.trim()) ? "female" : v.gender && /^(m|male|man)$/i.test(v.gender.trim()) ? "male" : piper === "f" ? "female" : piper === "m" ? "male" : stated.g === "f" ? "female" : stated.g === "m" ? "male" : undefined;
   if (!gender) {
     const customLook = new Map((custom ?? []).map((c) => [c.entry.id, c.look]));
     const neutral = [...manifest.avatars, ...(custom ?? []).map((c) => c.entry)].filter((a) => (LOOKS[a.id] ?? customLook.get(a.id))?.g === "n");

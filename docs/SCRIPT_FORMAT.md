@@ -2,6 +2,8 @@
 
 Greenroom reads a script you type, paste or import. Everything below works in the Script screen and in **Import a script...**. Source: `app/src/script.ts` (the reader), `app/src/scriptImport.ts` (files), `app/src/directionTags.ts` (directions).
 
+![The Script screen with the stress-test script pasted as written; characters found on the right](screenshots/02-script.webp)
+
 ## Lines, speakers and directions
 
 | You write | Greenroom reads |
@@ -32,6 +34,10 @@ A written direction is turned into **short tags** the voice engine can use, neve
 | `Very soft, deliberate` | `[softly]` and speed 0.9 |
 
 At most three feeling tags and two sound tags are sent per line. Engines without tags (Piper, Kokoro, Qwen, Chatterbox, Wazobia) ignore the sound tags and use what they can. Which tags a particular voice really acts on is for you to hear; `DECISIONS.md` records what has been heard.
+
+![Perform: each line shows its direction as short tags and the voice it will use](screenshots/04-perform.webp)
+
+![Timeline: pauses and sound cues in place](screenshots/05-timeline.webp)
 
 ## Making it sound human (ElevenLabs)
 

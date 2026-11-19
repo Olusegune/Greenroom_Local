@@ -49,7 +49,7 @@ export function VoiceFace({ voice, id, provider, size = 54 }: { voice?: FaceVoic
   const { manifest, store } = useAvatars();
   const photo = voice?.portrait && voice.portrait.startsWith("data:image/") ? voice.portrait : null;
   const vid = voice?.id ?? id ?? "x";
-  const entry = useMemo(() => (photo ? null : voiceFace(manifest, { id: vid, gender: voice?.gender, accent: voice?.accent, language: voice?.language, notes: voice?.notes, age: voice?.age, heritage: voice?.heritage }, undefined, customFaces(store))), [photo, manifest, store, vid, voice?.gender, voice?.accent, voice?.language, voice?.notes, voice?.age, voice?.heritage]);
+  const entry = useMemo(() => (photo ? null : voiceFace(manifest, { id: vid, provider: voice?.provider, gender: voice?.gender, accent: voice?.accent, language: voice?.language, notes: voice?.notes, age: voice?.age, heritage: voice?.heritage }, undefined, customFaces(store))), [photo, manifest, store, vid, voice?.gender, voice?.accent, voice?.language, voice?.notes, voice?.age, voice?.heritage]);
   if (photo) return <img className="avatar" src={photo} alt="" width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} />;
   const face = entry ? faceFor(entry.id, manifest, store) : null;
   if (face) {

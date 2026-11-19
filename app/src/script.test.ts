@@ -113,3 +113,41 @@ describe("the markdown screenplay shape (bold names, direction after the colon, 
     expect(q.lines[0]!.text).toBe("Keep quiet.");
   });
 });
+
+describe("edge cases of the script reader", () => {
+  const nl = String.fromCharCode(10);
+  const read = (...rows: string[]) => parseScript(rows.join(nl), [], []);
+  it("removes emphasis marks from spoken words but keeps the words", () => {
+    const p = read("ADA: This is *very* important, and **really** urgent.");
+    expect(p.lines[0]!.text).toBe("This is very important, and really urgent.");
+  });
+  it("caps a pause at ten seconds, ignores a pause with nothing before it, and a cue before any speaker makes a scene", () => {
+    const p = read("[PAUSE: 3 seconds]", "[SFX: Rain on a window.]", "ADA: Hello there.", "[PAUSE: 99 seconds]", "BEN: Hi.");
+    expect(p.scenes).toEqual(["Scene 1"]);
+    expect(p.lines[0]!.events).toEqual([expect.objectContaining({ placement: "before", prompt: "Rain on a window." })]);
+    expect(p.lines[0]!.direction.pauseAfter).toBe(10);
+  });
+  it("reads Windows line endings the same way", () => {
+    const a = parseScript(["**ADA:** (soft) Hello there.", "[PAUSE: 1 second]", "BEN: Hi."].join(String.fromCharCode(13, 10)), [], []);
+    expect(a.lines).toHaveLength(2);
+    expect(a.lines[0]!.direction.pauseAfter).toBe(1);
+  });
+  it("keeps a colon, a web address and brackets inside spoken words", () => {
+    const p = read("ADA: Look at https://example.org now: it works [laughs] really.");
+    expect(p.lines[0]!.text).toBe("Look at https://example.org now: it works [laughs] really.");
+  });
+  it("a bold line with no colon is not a speaker, and a scene heading in capitals is a scene", () => {
+    const p = read("**THE END**", "**ACT 2 - NIGHT**", "ADA: Hello there.");
+    expect(p.scenes).toEqual(["ACT 2 - NIGHT"]);
+    expect(p.characters.map((c) => c.name)).toEqual(["ADA"]);
+  });
+  it("reads a very long script quickly", () => {
+    const rows: string[] = [];
+    for (let i = 0; i < 5000; i++) rows.push(`**C${i % 9}:** (calm) Line number ${i}.`, "[PAUSE: 1 second]");
+    const t0 = performance.now();
+    const p = read(...rows);
+    expect(p.lines).toHaveLength(5000);
+    expect(performance.now() - t0).toBeLessThan(2000);
+  });
+});
+

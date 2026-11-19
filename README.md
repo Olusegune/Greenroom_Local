@@ -4,21 +4,25 @@ Private, accent-aware AI voice production for Windows and macOS. Greenroom Local
 
 > This is a separate application and repository. Development here does not modify the original Greenroom repository, projects, installers, signing identity or update channel.
 
-## Current foundation (v0.1 development)
+## Current state: version 0.17.1 (2026-11-19)
 
-- Tauri 2 + React 19 + TypeScript + Rust desktop application
-- Existing Greenroom script, cast, take, timeline, picture, trust, history and professional export foundations
-- New Model Center for hardware-tiered local AI setup
-- Local model catalogue with download size, memory requirements, capabilities and licence visibility
-- Structured Performance Engine for emotional arcs, objectives, breath, physical effort, fatigue, pain and timed expressions
-- Windows and macOS bundle configuration
-- 183 frontend tests and 62 native backend tests passing
+![Greenroom Local: the Perform screen with a character's face, written direction and takes](docs/screenshots/04-perform.webp)
 
-The native installer foundation now detects hardware, keeps model state outside projects, resumes partial downloads, emits real progress, enforces manifest byte counts and SHA-256, stages new versions and activates them atomically. Production model buttons remain unavailable until their exact release artifacts and licences are pinned in application-owned manifests; moving URLs are deliberately never guessed.
+Greenroom Local is a Windows desktop app (Tauri 2, React 19, TypeScript, Rust) for directing lifelike AI voice performances: write or paste a scene, cast voices, direct delivery and body sounds, make takes, mix with pauses and sound effects, and export finished audio. It works with cloud engines (ElevenLabs, Inworld, VoiceKiller, Kie) and free engines on your own PC (Piper, Kokoro, Qwen3-TTS, Chatterbox, WazobiaVoice, Stable Audio sound effects, ACE-Step music).
 
-See [docs/LOCAL_AI_ARCHITECTURE.md](docs/LOCAL_AI_ARCHITECTURE.md) for the installation and runtime design.
+- **Status: a working beta, not a finished release.** Nothing has been judged by ear by the people who wrote the code. Installers are unsigned. See [Release readiness](docs/RELEASE_READINESS.md) and [Handover](docs/HANDOVER.md) for the honest list of what is and is not verified.
+- **Checks at 0.17.1:** 1,171 JavaScript tests and 148 Rust tests pass, clippy is clean, the browser smoke run (every screen) shows 0 errors and the accessibility run 0 violations; the built app was used for a full stress test (a 55-line, 4-character scene, 55 takes, 9 sound effects, a 4-minute export).
+- **Rules that matter:** every paid action shows a cost sheet first; keys live only in the Windows Credential Manager; takes are never overwritten; nothing about how a voice sounds is claimed unless the owner listened.
+
+See [docs/LOCAL_AI_ARCHITECTURE.md](docs/LOCAL_AI_ARCHITECTURE.md) for how local models are installed and run.
 
 ## Release documentation
+
+- [Handover note](docs/HANDOVER.md) - start here to continue on another PC: state, what is tested, how to test the real app, next steps.
+- [Script format](docs/SCRIPT_FORMAT.md) - everything the script reader understands, including `**NAME:** (direction)`, `[PAUSE: 2 seconds]` and `[SFX: ...]`.
+- [Avatars](docs/AVATARS.md) - how a face gets onto a voice, a preset or a character.
+- [Release readiness](docs/RELEASE_READINESS.md) and [QA results](docs/QA_RESULTS.md) - what passed, what was found, what is not checked.
+- [Ideas](docs/IDEAS.md) - what would improve the app next.
 
 - [User guide](docs/USER_GUIDE.md) - the golden path with screenshots: script, cast, direct in your own words, take, export. Menus and shortcuts.
 - [Getting started](docs/GETTING_STARTED.md) - install, first project, local voices, keys and export.
@@ -44,7 +48,7 @@ Sound without limits. Write a scene, give each character a voice, direct how the
 
 ![Perform: written direction on a line](docs/img/guide-5-perform-direction.jpg)
 
-## What is in v0.15
+## What it does
 
 | Area | What it does |
 |---|---|
@@ -85,8 +89,14 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
 
+## New in 0.14 to 0.17 (details in DECISIONS.md D-69 to D-77)
+- **0.17.x** Markdown-style scripts (`**NAME:** (direction) words`, bold scene headings, `[PAUSE: n seconds]`, `[SFX: ...]`) are read correctly; written directions become short engine tags (`[softly] [clears throat]`) instead of one long bracket; sound cues from a script can be made (Perform: Make this sound, Make all N missing sounds); ElevenLabs lines get their neighbours as context; the take checks no longer cry wolf; **every voice in a list has a face** (see docs/AVATARS.md); a confirmed voice change on a locked character no longer leaves it half changed.
+- **0.16.x** WazobiaVoice lines are no longer padded to 40 seconds; faces are chosen only from stated facts (strict presets); local sound effects work; the screens no longer say "install" while a slow check runs.
+- **0.15.x** Delivery presets (Podcast, YouTube, Audiobook, Broadcast, Film, Editor, Training, Game) with stems, scenes and per-line files in Agent Studio.
+- **0.14.x** Qwen3-TTS stabilised with reference-clip locking; every dialog and message closes (button, Escape); voices can be designed on this PC.
+
 ## New in 0.13.1
-- **A voice has no face.** Voice lists show a neutral waveform mark, or the picture you chose, instead of a person guessed from its name, description or accent. A character's face comes only from what you stated about them, else initials. A heritage is never read from a script or an accent.
+- **(Superseded in 0.17.0: every voice now has a face chosen from what it states, see docs/AVATARS.md.)** Voice lists showed a neutral waveform mark, or the picture you chose, instead of a person guessed from its name, description or accent. A character's face comes only from what you stated about them, else initials. A heritage is never read from a script or an accent.
 
 ## New in 0.13.0
 - **Casting integrity.** A voice is only called a match when it is proven. Every fact about a voice shows its status and where it came from; nothing is guessed from a name; an approved voice is locked and only you can change it; generation and export are checked against it. See `docs/CASTING_MATCH_ENGINE.md` and `docs/CASTING_INTEGRITY_AUDIT.md`.
