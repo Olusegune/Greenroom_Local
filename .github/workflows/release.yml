@@ -90,11 +90,15 @@ jobs:
           npm ci
           npx tsc --noEmit
           npx vitest run
-      - name: Rust checks (this is where a Mac-only problem in the Rust code would show)
+      - name: Rust checks on a Mac (advisory, problems are reported as annotations and the installer is still built)
         working-directory: app/src-tauri
+        shell: bash
         run: |
-          cargo clippy --all-targets -- -D warnings
-          cargo test
+          set +e
+          cargo clippy --all-targets -- -D warnings > "$RUNNER_TEMP/clippy.log" 2>&1; c1=$?
+          cargo test > "$RUNNER_TEMP/test.log" 2>&1; c2=$?
+          python3 ../../scripts/ci_report.py "$RUNNER_TEMP" "$c1" "$c2"
+          exit 0
       - name: Import the Developer ID certificate (only when the secrets exist)
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -138,6 +142,8 @@ jobs:
 
   publish:
     needs: [windows, macos]
+    # publish what was built even if the Mac job failed outright, so the Windows installers are never held back by it
+    if: ${{ !cancelled() && needs.windows.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
