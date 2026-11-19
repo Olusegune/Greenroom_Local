@@ -463,7 +463,7 @@ function CharacterRail() {
             <CharacterFace character={c} voice={v} size={44} />
             <button className="rc-text" onClick={() => document.getElementById(`line-${mine[0]!.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })} title={`Jump to ${c.name}'s first line`}>
               <strong>{c.name}</strong>
-              <span className="muted small">{v ? `${v.name} · ${ENGINES[v.provider].label}` : "No voice yet"}</span>
+              <span className="muted small">{v ? `${v.name} · ${ENGINES[v.provider].label}` : "No voice yet"}{c.casting?.draft && !c.casting.approval ? " · agent's draft, not approved" : ""}</span>
               <span className="muted small">{done} of {mine.length} lines have takes</span>
             </button>
           </div>

@@ -91,7 +91,9 @@ export default function CastingPanel({ character }: { character: Character }) {
           <strong>Casting</strong>
           {approval
             ? <span className="status-chip s-verified_match" title={`Approved ${approval.approvedAt.slice(0, 10)}. Basis: ${STATUS_LABEL[approval.basis]}.`}>Locked: {approval.voiceName}</span>
-            : <span className="status-chip s-unknown_metadata">Not approved</span>}
+            : character.casting?.draft
+              ? <span className="status-chip s-needs_audition" title={`The agent chose ${character.casting.draft.voiceName} as a draft${character.casting.draft.placeholder ? " (nothing was stated about this character: a placeholder)" : ""}. ${character.casting.draft.basis.join(" ")} Listen, then approve it or choose another.`}>Agent's draft, not approved</span>
+              : <span className="status-chip s-unknown_metadata">Not approved</span>}
         </span>
         <span className="row">
           {approval && <button className="sm ghost" onClick={() => void casting.unlock(character.id)}>Unlock</button>}

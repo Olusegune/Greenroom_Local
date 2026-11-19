@@ -205,6 +205,8 @@ export function productionReportMd({ project, library, prices, appVersion, now }
     for (const r of rows) L.push(`| ${esc(r.name)} | ${ENGINES[r.engine].label} | ${esc(r.usedBy.join(", "))} | ${r.source} | ${r.consent ? esc(`${r.consent.speaker}: ${BASIS_LABEL[r.consent.basis]}${r.consent.reference ? " (" + r.consent.reference + ")" : ""}`) : "none recorded"} | ${LICENCE_LABEL[r.licence]}${r.licenceNote ? " (" + esc(r.licenceNote) + ")" : ""} | ${r.level} |`);
     const issues = rows.filter((r) => r.issues.length);
     if (issues.length) L.push("", "### Items to review", ...issues.flatMap((r) => r.issues.map((i) => `- **${esc(r.name)}**: ${i}`)));
+    const drafts = project.characters.filter((c) => c.casting?.draft && !c.casting.approval && project.lines.some((l) => l.characterId === c.id));
+    if (drafts.length) L.push("", "### Draft voices chosen by the agent (not approved)", ...drafts.map((c) => `- **${esc(c.name)}**: ${esc(c.casting!.draft!.voiceName)}${c.casting!.draft!.placeholder ? " (nothing was stated about this character, so this is only a placeholder)" : ""}. Nobody has confirmed that it fits.`));
     L.push("");
   }
   const music = project.music ?? [];

@@ -89,6 +89,30 @@ check("get_project reflects the run", got.value?.open === true && got.value.prod
 const todo = await tool("get_listening_todo");
 check("get_listening_todo reports no verdicts (only the owner makes them)", todo.value?.summary?.heard === 0 && Array.isArray(todo.value.todo) && todo.value.todo.length === 0);
 
+// ---- phase 2: draft casting. A short script, the character descriptions, and the agent allowed to choose DRAFT voices on this PC.
+const NL = String.fromCharCode(10);
+const shortScript = ["# Scene one", "VENOMSPUR (dry): Good evening. Do sit down.", "RICO (confident): Ah-ah! Where is the champagne?", "MISS GRIMBLE (flat): We discontinued it.", "MAMA T (furious): Who is in charge of this nonsense?", "VENOMSPUR (softly): Grimble. Not another word."].join(NL);
+const sheet = [
+  "VENOMSPUR", "", "Elderly, highly educated British male voice. Rich baritone, restrained, dry.", "",
+  "RICO", "", "Young Nigerian male rapper, late twenties. Lagos-influenced Nigerian English. Fast conversational rhythms.", "",
+  "MISS GRIMBLE", "", "Middle-aged British woman. Crisp, clipped, bureaucratic.", "",
+  "MAMA T", "", "Elderly Nigerian woman. Warm but commanding Nigerian English accent.",
+].join(NL);
+const created2 = await tool("create_project", { name: "zz mcp draft", script: shortScript, characters: sheet });
+const chars2 = created2.value?.project?.characters ?? [];
+check("create_project with a character sheet makes the project", created2.value?.project?.lines === 5 && chars2.length === 4, JSON.stringify(chars2.map((c) => c.name)));
+const planned2 = await tool("plan_production", { brief: "A quick draft for me to listen to.", mode: "autonomous", local_only: true, draft_casting: true });
+check("the plan says draft casting is on, local-only, no spending", planned2.value?.draftCasting === true && planned2.value.localOnly === true && planned2.value.cloudLimit === 0, JSON.stringify({ d: planned2.value?.draftCasting }));
+const ran2 = await tool("run_production");
+const r2 = ran2.value;
+const proj2 = (await tool("get_project")).value;
+check("the run reached takes (it no longer stops at casting)", (proj2?.linesWithTakes ?? 0) >= 4, `linesWithTakes=${proj2?.linesWithTakes} of ${proj2?.lines}`);
+check("every character got a voice, marked as the agent's draft", (proj2?.characters ?? []).length === 4 && proj2.characters.every((c) => c.voiceId && c.voiceIsAgentDraft === true), JSON.stringify(proj2?.characters?.map((c) => [c.name, c.voiceId, c.voiceIsAgentDraft])));
+check("no voice was approved by the agent", (proj2?.characters ?? []).every((c) => c.voiceApproved === false));
+check("the approval and the delivery wait for the person", (r2?.waitingForThePerson ?? []).some((w) => /voice-rights/.test(w.because)) && r2?.finished === false, JSON.stringify(r2?.waitingForThePerson));
+check("phase 2 spent nothing", r2?.spent === 0);
+check("the owner's listening summary is still empty (the agent adds no verdicts)", (proj2?.listening?.heard ?? 1) === 0);
+
 check("the app has no cost sheet left open and shows no error", !(await c.ev(`!!document.querySelector('.scrim')`)) && c.logs.length === 0, c.logs.join(" | "));
 
 // off again

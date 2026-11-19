@@ -13,12 +13,36 @@ The agent will do on its own: read the script, plan the steps, make takes with t
 
 It will **not** do, by design (enforced in code and tested):
 
-- **Approve a voice for a character.** Voice rights and casting approval are the owner's. A voice is only assigned automatically when it is *proven* to fit, and with nothing listened to yet nothing is proven.
+- **Approve a voice for a character.** Voice rights and casting approval are the owner's. A voice is only assigned automatically when it is *proven* to fit; with draft casting switched on it may choose *draft* voices on this PC, which are never approved.
 - **Spend past your limit,** or spend at all in local-only mode. In Autonomous mode the app shows its own cost sheet and waits for your answer. A paid step is never retried automatically.
 - **Deliver the final export.** The last step waits for you.
 - **Say how anything sounds.** Only your own listening verdicts (the Listen screen) say that.
 
-**What was found when this was tried for real (2026-11-19):** an outside client created a 55-line, 4-character project from a script, planned 63 steps and ran them local-only. The agent finished "Analyze the script", then stopped at "Recommend the cast" with "The cast needs your decision": the script states nothing about how the characters should sound, no voice is proven to fit, and the casting rules (D-64, `docs/CASTING_INTEGRITY_AUDIT.md`) forbid guessing. So the agent works up to the first casting decision and waits for you. To go further without you, a decision is needed (see "Open decisions" below).
+**Draft casting (0.20.0).** By default the agent stops at the first casting decision: your casting rules say no voice is assigned unless it is *proven* to fit, and a bare script proves nothing (found when tried for real on 2026-11-19: it ran "Analyze the script", then stopped at "Recommend the cast"). If you switch on **Let the agent choose draft voices (never approved)** in Agent Studio, or send `draft_casting: true` to `plan_production`, the agent can carry a script on to takes:
+
+- It chooses a voice **on this PC only** (never a cloud voice, so nothing is spent) for each character that has none, from what is stated about the character: gender, age, language and accent from a **character sheet** (see below), then by fast engines (Piper, Kokoro) before slow ones (Qwen, Chatterbox, WazobiaVoice), and a voice nobody else has when one fits as well. A voice whose own label says the other gender is never used.
+- Each choice is recorded as **the agent's draft, not approved** (shown on Cast, Perform, Listen, in the production report and to MCP clients). A character with nothing stated still gets a distinct voice so the run can go on, recorded as a **placeholder**.
+- It never replaces a voice you chose or approved, never approves anything, and **Approve and lock the cast** and **Export the full scene** still wait for you. Your own choice or approval replaces a draft and clears the mark.
+- Real run (installed app, MCP client, nothing spent): a 5-line, 4-character script with a character sheet went to 5 of 5 takes; every character had a draft voice; none was approved.
+- Limits: it can only choose from the voices you have on this PC. A preference such as "Nigerian English" is only a preference: there was no Nigerian-accented voice in the library, so the draft was another English voice, and the Cast screen shows the mismatch.
+
+## Character sheets
+
+Descriptions written in a script, a brief, or the MCP `characters` argument are read, using only what they state (`app/src/casting/sheet.ts`):
+
+```text
+VENOMSPUR
+
+Elderly, highly educated British male voice. Rich baritone, restrained, dry.
+
+RICO
+
+Young Nigerian male rapper, late twenties. Lagos-influenced Nigerian English.
+```
+
+or, under a `Characters` heading, `NAME: description` / `NAME - description`. From each paragraph Greenroom takes gender, age, language and accent (with the words they came from) and the picture look; it never guesses from a name or a nationality. "A British woman" is a person (nationality only); "British male voice" and "Nigerian English" describe how the voice speaks and become a *preferred* accent. A character you already described is never overwritten.
+
+![Cast: every character's voice is marked as the agent's draft, with what is stated against what the voice offers](screenshots/24-cast-draft-voices.webp)
 
 ## The MCP server
 
@@ -48,10 +72,10 @@ Example for Claude Desktop or any client that takes an MCP config:
 |---|---|
 | `greenroom_status` | Version, whether a project is open, which cloud key **names** are saved (never values), which local engines are ready, how many voices are in the library. Call first. |
 | `list_projects`, `open_project` | See and open existing projects. |
-| `create_project` | Create and open a project; pass the script in any format Greenroom reads ([SCRIPT_FORMAT.md](SCRIPT_FORMAT.md)). |
+| `create_project` | Create and open a project; pass the script in any format Greenroom reads ([SCRIPT_FORMAT.md](SCRIPT_FORMAT.md)) and, optionally, character descriptions in `characters`. |
 | `set_script` | Replace the open project's script (characters keep voices; unchanged lines keep takes). |
 | `get_project` | Scenes, characters with voice and approval state, lines with takes, sound cues, the owner's listening summary, the production state. |
-| `plan_production` | The agent plans from a brief in plain words (mode guided or autonomous, local-only, cloud limit). Nothing is made. |
+| `plan_production` | The agent plans from a brief in plain words (mode guided or autonomous, local-only, cloud limit, optional `draft_casting`). Nothing is made. |
 | `run_production` | Runs until a person is needed or everything is done. Paid work shows the app's cost sheet to the person and the call waits. Returns every step's status and what is waiting for the person and why. |
 | `get_production_status` | The same status without running anything. |
 | `get_listening_todo` | The owner's own verdicts and to-do list. |
@@ -65,11 +89,9 @@ There is **no** tool to approve a cast, unlock a voice, spend, clone, export or 
 - The server only receives and relays. The tools run in the app window with the same code as the screens (`app/src/agent/runner.ts` is shared by Agent Studio and the bridge), so every gate, limit and cost sheet applies.
 - If the window is not open, a call says so. If a tool is waiting for you (a cost sheet), the call waits up to 30 minutes for a production run (90 seconds for other tools).
 
-## Open decisions (yours)
+## Still open (yours)
 
-1. **Draft casting.** To let the agent carry a script all the way to takes without you, it would have to choose voices for characters. Option: an explicit "Let the agent choose draft voices" switch that picks the best-ranked voices from stated facts, marks each as *chosen by the agent, not approved*, makes takes so you can listen, and leaves approval (rights) to you. This relaxes the "nothing is assigned unless proven" rule only for drafts and only if you switch it on. Not built.
-2. **Character sheets.** Scripts and briefs often describe each character ("elderly British baritone", "young Lagos rapper"). Reading such a block would give the casting rules stated facts to work from. Not built (see [IDEAS.md](IDEAS.md)).
-3. **Standing authorisation to deliver.** Today delivery always waits for you. A per-run "deliver to this destination within these limits" authorisation is possible if you want fully hands-off runs. Not built.
+1. **Standing authorisation to deliver.** Today delivery always waits for you. A per-run "deliver to this destination within these limits" authorisation is possible if you want fully hands-off runs. Not built; I recommended waiting until you have listened to a few drafts.
 
 ## Not tested
 

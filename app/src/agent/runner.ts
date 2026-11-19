@@ -3,6 +3,7 @@
 // spending limit, the same cost sheet. Nothing here approves a voice, spends past the limit or delivers; those stay with the person.
 
 import type { MutableRefObject } from "react";
+import { applyCharacterSheet, readCharacterSheet } from "../casting/sheet";
 import { agentEnv } from "../screens/agentEnv";
 import type { useApp } from "../ctx";
 import { DEFAULT_PRICES, soundEngineOf } from "../engines";
@@ -31,6 +32,8 @@ export interface PlanOptions {
   mode: Mode;
   localOnly: boolean;
   cloudLimit: number;
+  /** The owner allows draft voices for characters that have none (never approved). */
+  draftCasting?: boolean;
 }
 
 /** Plans the production from a brief and saves the plan. An existing run keeps its finished steps whose inputs did not change. */
@@ -38,6 +41,13 @@ export function planFor(rc: Runner, o: PlanOptions): AgentRun {
   const { app, live } = rc;
   const prices = app.engines.prices ?? DEFAULT_PRICES;
   const price = (engine: unknown, chars: number) => estimateCost(prices, [{ kind: "speech", engine: engine as never, chars }]).cost;
+  // character descriptions written in the brief ("VENOMSPUR" then a paragraph) are read like those in a script; nothing the owner set is changed
+  const sheet = readCharacterSheet(o.brief, (live.current?.characters ?? []).map((c) => c.name));
+  if (Object.keys(sheet).length) {
+    const updated = applyCharacterSheet(live.current!.characters, sheet);
+    rc.live.current = { ...live.current!, characters: updated };
+    app.edit((p) => ({ ...p, characters: applyCharacterSheet(p.characters, sheet) }), "agent-sheet");
+  }
   const existing = migrateRun(live.current?.agent);
   const cloudLimit = o.localOnly ? 0 : Math.max(0, o.cloudLimit || 0);
   const fresh = planProduction(live.current!, app.library, {
@@ -46,11 +56,12 @@ export function planFor(rc: Runner, o: PlanOptions): AgentRun {
     mode: o.mode,
     localOnly: o.localOnly,
     cloudLimit,
+    draftCasting: o.draftCasting === true,
     now: now(),
     price: price as never,
     sound: { cloud: !soundEngineOf(app.engines).free, price: (n) => estimateCost(prices, [{ kind: "sound", count: n }]).cost },
   });
-  const next = existing ? { ...merge(existing, fresh, now()), mode: o.mode, localOnly: o.localOnly, cloudLimit, brief: o.brief } : fresh;
+  const next = existing ? { ...merge(existing, fresh, now()), mode: o.mode, localOnly: o.localOnly, cloudLimit, brief: o.brief, ...(o.draftCasting ? { draftCasting: true } : { draftCasting: undefined }) } : fresh;
   saveRun(rc, next);
   return next;
 }

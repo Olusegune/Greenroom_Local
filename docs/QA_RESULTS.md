@@ -143,3 +143,13 @@ New: `app/src-tauri/src/mcp.rs` (server, 11 tests), `app/src/mcp/` (tool list sh
 
 Gate: 1,205 JavaScript tests, 162 Rust tests, clippy clean. **Not checked:** Claude Desktop itself; an external security review; the Settings card with a screen reader.
 
+## 0.20.0 (2026-11-19): draft casting and character sheets
+
+New: `casting/draft.ts` (the planner), the `draft` actor in `casting/lock.ts` (fills an empty slot only; never approves, never replaces, refuses a conflicting voice), `casting/sheet.ts` (character paragraphs), two accent phrasings in `casting/extract.ts`, `Env.draftCasting` / `AgentRun.draftCasting`, a switch in Agent Studio and `draft_casting` / `characters` in the MCP tools, draft marks on Cast, Perform, Listen and the production report. Tests: 12 for the draft rules and planner, 15 for sheets and extraction, 6 agent-level (script to takes, nothing approved, old behaviour when off, local engines only, owner's voice untouched).
+
+**Real run (installed app, MCP client, nothing spent), 33 of 33 checks:** the earlier 55-line run still stops at casting with draft casting off (as designed); a 5-line, 4-character script with a character sheet and draft casting on reached 5 of 5 takes, every character had a draft voice, none approved, approval and delivery waiting for the person, 0 spent.
+
+**Found along the way:** unverified gender labels do not count as conflicts in the engine, so a woman with only a labelled-male voice available still got a draft: drafts now treat the provider's own label as a skip or prefer signal. The best local voice for "Nigerian English" was an Indian-English one (no Nigerian voice in the library): shown honestly as a preference mismatch.
+
+Gate: 1,235 JavaScript tests, 162 Rust tests, clippy clean. **Not checked:** nobody has listened to any draft; Claude Desktop itself; the new switch with a screen reader.
+

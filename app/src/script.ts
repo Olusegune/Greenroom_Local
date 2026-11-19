@@ -1,3 +1,4 @@
+import { applyCharacterSheet, readCharacterSheet } from "./casting/sheet";
 import { directionFrom } from "./directionTags";
 import { DEFAULT_DIRECTION, type Character, type Line, type SoundEvent } from "./types";
 
@@ -180,5 +181,7 @@ export function parseScript(text: string, prevChars: Character[], prevLines: Lin
     }
     return { id: `l-${id()}`, characterId: c.id, scene: r.scene, text: r.text, direction: { ...DEFAULT_DIRECTION, ...directionFrom(r.hint), ...(r.pause > 0 ? { pauseAfter: r.pause } : {}) }, takes: [], events: eventsFor(r, []) };
   });
-  return { scenes, characters, lines };
+  // a paragraph per character in the same text ("VENOMSPUR" then "Elderly, British male voice...") becomes what is stated about them
+  const sheet = readCharacterSheet(text, characters.map((c) => c.name));
+  return { scenes, characters: Object.keys(sheet).length ? applyCharacterSheet(characters, sheet) : characters, lines };
 }

@@ -19,6 +19,10 @@ Greenroom reads a script you type, paste or import. Everything below works in th
 
 A line with no speaker straight under a speaker continues it. Text after a blank line with no speaker is ignored as stage direction (unless the whole script has no speakers, which is read as one narrator). Sample: `docs/samples/the-wrong-department.md` (4 characters, 3 scenes, 55 lines, 9 sound cues).
 
+## Character descriptions
+
+A paragraph under a character's name (the name alone on a line), or `NAME: description` lines under a `Characters` heading, is read as what is stated about that character: gender, age, language and accent, each with its quote. They fill the character's casting requirements and picture look, and never overwrite what you set. See [AGENT_AND_MCP.md](AGENT_AND_MCP.md#character-sheets).
+
 ## What a direction becomes
 
 A written direction is turned into **short tags** the voice engine can use, never pasted whole. Silent stage business is left out of what is sent.

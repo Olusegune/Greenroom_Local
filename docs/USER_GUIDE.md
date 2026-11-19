@@ -271,6 +271,12 @@ Greenroom cannot hear whether a voice sounds right; you can. **Listen** (in the 
 
 After a verdict the next unheard line plays by itself (you can turn that off). Pressing the same verdict again takes it back. Add a short note if you like ("too cheerful for a whisper"). The **To do** list shows what needs fixing, groups "wrong voice" by character so a voice change is one decision, and links to Cast and Perform. **Save the listening notes** writes a Markdown file next to your exports. A verdict belongs to the exact take you heard: make a new take and that line shows as "not heard yet". Your verdicts are the by-ear findings the project's rules ask for; Greenroom never adds any of its own.
 
+## Draft voices (Agent Studio)
+
+In **Agent Studio**, tick **Let the agent choose draft voices (never approved)** and the agent can take a script all the way to takes without you: it picks voices on this PC for characters that have none, using what is stated about them (write a short paragraph under each character's name in the script and it is read). Each pick is marked **Agent's draft, not approved** on Cast, Perform and Listen and in the production report. It never approves anything and never delivers; those wait for you. Listen to the takes, then approve a voice or choose another. See [AGENT_AND_MCP.md](AGENT_AND_MCP.md).
+
+![Cast: draft voices marked as the agent's choice](screenshots/24-cast-draft-voices.webp)
+
 ## Letting an AI agent use Greenroom (MCP)
 
 In **Settings > Other AI agents** you can switch on a local server so another AI agent (for example Claude Desktop) can create a project from your script, plan the production from a brief and run it. It is off by default, works only on this PC and needs a token (**Copy the settings for the other program**). It can never approve a voice, spend past your limit or deliver the final export: those wait for you in this window. See [AGENT_AND_MCP.md](AGENT_AND_MCP.md).

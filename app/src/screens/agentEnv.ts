@@ -33,6 +33,7 @@ export function agentEnv({ app, live }: { app: ReturnType<typeof useApp>; live: 
     library: () => library,
     ready: () => readyEnginesFrom(keys, library),
     localOnly: live.current?.agent?.localOnly !== false,
+    draftCasting: live.current?.agent?.draftCasting === true,
     interpretation: interpret(brief),
     portraitFor: (() => { const m = assignPresetFaces(currentManifest(), STARTER_PRESETS); return (id: string) => m.get(id); })(),
     edit: (fn) => { live.current = fn(live.current!); edit(fn, "agent"); },

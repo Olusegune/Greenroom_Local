@@ -256,7 +256,7 @@ export default function Listen() {
             <CharacterFace character={character} voice={voice} size={64} editable={false} />
             <span className="stack tight">
               <strong>{character?.name ?? "?"}</strong>
-              <span className="muted small">Line {at + 1} of {lines.length}{voice ? ` · ${voice.name}` : ""}{pos >= 0 ? ` · ${pos + 1} of ${ids.length} in this view` : ""}</span>
+              <span className="muted small">Line {at + 1} of {lines.length}{voice ? ` · ${voice.name}` : ""}{character?.casting?.draft && !character.casting.approval ? " (the agent's draft voice, not approved)" : ""}{pos >= 0 ? ` · ${pos + 1} of ${ids.length} in this view` : ""}</span>
             </span>
             <span className="spacer" />
             {verdict && <span className={verdict.verdict === "good" ? "badge ok" : "badge warn"}>{verdictInfo(verdict.verdict).label}</span>}

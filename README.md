@@ -90,6 +90,9 @@ Opening the front end in a plain browser (`npx vite`) uses a free demo backend, 
 - **Agent Studio** (sidebar, with a project open): a production brief, a plan, a board, approval gates, a cloud spending limit and a local-only switch. Manual, Guided (recommended) and Autonomous Draft modes. Delivery is always yours. See `docs/AGENT_STUDIO.md`.
 - Quality and honesty: `docs/FEATURE_AUDIT.md`, `docs/QA_RESULTS.md`, `docs/COMMERCIAL_LICENSING.md`.
 
+## New in 0.20.0
+- **Draft casting and character sheets.** The agent can choose *draft* voices on this PC (never approved, clearly marked) so a script runs to takes without you; paragraphs describing each character are read for what they state. See docs/AGENT_AND_MCP.md.
+
 ## New in 0.19.0
 - **Agents can use Greenroom (MCP).** Settings > Other AI agents: another AI agent (such as Claude Desktop) can create a project from your script, plan a production from a brief and run it, through a local, token-protected server that is off by default. It cannot approve voices, spend past your limit or deliver. See docs/AGENT_AND_MCP.md.
 

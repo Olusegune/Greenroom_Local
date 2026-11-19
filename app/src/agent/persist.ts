@@ -63,6 +63,8 @@ export function migrateRun(raw: unknown): AgentRun | undefined {
     localOnly: o.localOnly !== false,
     cloudLimit: num(o.cloudLimit, 0, 1e6, 0),
     spent: num(o.spent, 0, 1e9, 0),
+    // only an explicit true turns draft casting on
+    ...(o.draftCasting === true ? { draftCasting: true } : {}),
     nodes: unique, audit,
     createdAt: text(o.createdAt, 40), updatedAt: text(o.updatedAt, 40),
   };

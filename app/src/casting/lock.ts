@@ -10,11 +10,13 @@ import type { Character, Line, Take, VoiceEntry } from "../types";
 import { evaluate, rank, OFFERABLE } from "./engine";
 import { requirementsOf } from "./requirements";
 import { profileOf } from "./voiceProfile";
-import type { Actor, ApprovalEvent, CastingApproval, CharacterCasting, MatchContext, MatchResult, TakeCast } from "./types";
+import type { Actor, ApprovalEvent, CastingApproval, CharacterCasting, DraftChoice, MatchContext, MatchResult, TakeCast } from "./types";
 
 export type AssignCode = "assigned" | "approved" | "unchanged" | "cleared" | "locked" | "needs_owner" | "incompatible" | "needs_acknowledgement" | "unavailable" | "unknown_character";
 
 export interface AssignRequest {
+  /** Only with by "draft": what the draft rests on, written into the record. */
+  draft?: { placeholder: boolean; basis: string[] };
   characterId: string;
   /** The voice to give the character, or null to clear it. */
   voice: VoiceEntry | null;
@@ -43,9 +45,11 @@ export interface AssignResult {
 const MAX_HISTORY = 100;
 const OWNERS: Actor[] = ["owner", "test_harness"];
 
-function withHistory(c: Character, e: ApprovalEvent): CharacterCasting {
-  const base = c.casting ?? { version: 1 as const, history: [] };
-  return { ...base, history: [...base.history, e].slice(-MAX_HISTORY) };
+function withHistory(c: Character, e: ApprovalEvent, draft?: DraftChoice): CharacterCasting {
+  const { draft: _old, ...base } = c.casting ?? { version: 1 as const, history: [] };
+  void _old;
+  // a draft survives only when this change IS the agent's draft; any other change (the owner's own choice, an approval, clearing) ends it
+  return { ...base, history: [...base.history, e].slice(-MAX_HISTORY), ...(draft ? { draft } : {}) };
 }
 
 export const isLocked = (c: Pick<Character, "casting">): boolean => !!c.casting?.approval;
@@ -69,6 +73,22 @@ export function assignVoice(characters: Character[], req: AssignRequest): Assign
   const c = characters[idx]!;
   const owner = OWNERS.includes(req.by);
   const approved = c.casting?.approval;
+
+  // The agent's DRAFT: it may fill a character's EMPTY voice slot so takes can be made for the owner to listen to, and nothing more.
+  // It never approves, never replaces a voice the character already has (the owner's, an approved one or an earlier draft), and
+  // never uses a voice that conflicts with, or cannot serve, what is stated. The record says plainly that it is only a draft.
+  if (req.by === "draft") {
+    if (approved) return fail("locked", `${c.name} has an approved voice (${approved.voiceName}). A draft never replaces it.`);
+    if (c.voiceId) return fail("needs_owner", `${c.name} already has a voice. A draft only fills an empty slot.`);
+    if (req.approve) return fail("needs_owner", "Only you can approve a voice.");
+    if (!req.voice) return fail("needs_owner", "A draft needs a voice to give.");
+    const match = evaluate(requirementsOf(c), profileOf(req.voice), req.context ?? {});
+    if (match.status === "INCOMPATIBLE") return fail("incompatible", `${req.voice.name} does not fit ${c.name}: ${match.reasons.find((r) => r.outcome === "mismatch")?.text ?? "a stated requirement is not met."}`, match);
+    if (match.status === "UNAVAILABLE") return fail("unavailable", `${req.voice.name} cannot be used right now.`, match);
+    const draft: DraftChoice = { voiceId: req.voice.id, voiceName: req.voice.name, engine: req.voice.provider, at: req.now, status: match.status, placeholder: !!req.draft?.placeholder, basis: (req.draft?.basis ?? []).slice(0, 8) };
+    const next: Character = { ...c, voiceId: req.voice.id, casting: withHistory(c, { at: req.now, action: "assigned", voiceId: req.voice.id, by: "draft", reason: `Draft chosen by the agent as "${match.status}"${draft.placeholder ? " (nothing was stated about this character: a placeholder)" : ""}. Not approved.` }, draft) };
+    return { characters: characters.map((x, i) => (i === idx ? next : x)), ok: true, code: "assigned", message: `${req.voice.name} is the agent's draft for ${c.name}. Listen, then approve it or choose another.`, match };
+  }
   const record = (e: ApprovalEvent): Character[] => characters.map((x, i) => (i === idx ? { ...x, casting: withHistory(x, e) } : x));
 
   if (approved) {

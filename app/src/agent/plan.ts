@@ -13,6 +13,8 @@ export interface PlanOptions {
   mode: Mode;
   localOnly: boolean;
   cloudLimit: number;
+  /** The owner allows the agent to choose draft voices (see casting/draft.ts). Takes then follow the draft casting without waiting for approval. */
+  draftCasting?: boolean;
   now: string;
   /** Estimated cost of speaking `chars` characters on an engine. Free and local engines are 0. */
   price: (engine: VoiceEntry["provider"], chars: number) => number;
@@ -39,14 +41,17 @@ export function planProduction(project: Project, library: VoiceEntry[], o: PlanO
   const cloned = cast.map((c) => library.find((v) => v.id === c.voiceId)).filter((v): v is VoiceEntry => !!v && v.source === "cloned");
   const castKey = hash(JSON.stringify(cast.map((c) => [c.id, c.voiceId ?? "", c.dna?.timbre ?? ""])));
   const nodes: JobNode[] = [];
+  // With draft casting on, the steps after casting follow the drafts. The approval step stays, and stays the person's.
+  const afterCast = o.draftCasting ? "cast" : "approve_cast";
 
   nodes.push(node({ id: "analyze", kind: "analyze", title: "Analyze the script", detail: `${project.characters.length} characters, ${speaking.length} lines, ${project.scenes.length || 1} scene(s)`, deps: [], gate: "none", key: hash(project.script || JSON.stringify(speaking.map((l) => l.text))) }));
   nodes.push(node({ id: "cast", kind: "cast", title: "Recommend the cast", detail: "Looks for a voice for each character that has none, using only what is stated about them (vocal gender, age, language, accent). A voice is assigned only when it is proven to fit; otherwise the candidates are listed for you. An approved voice is never touched.", deps: ["analyze"], gate: "none", key: castKey }));
   const allApproved = cast.length > 0 && cast.every((c) => !!c.casting?.approval);
   const approve = node({ id: "approve_cast", kind: "approve_cast", title: "Approve and lock the cast", detail: cloned.length ? `Locks each character's voice. Includes ${cloned.length} cloned voice(s): you confirm the voice rights. This step is always yours: the agent cannot approve a voice.` : "Locks each character's voice so nothing can change it later without you. This step is always yours: the agent cannot approve a voice.", deps: ["cast"], gate: "rights", key: castKey });
-  nodes.push(allApproved ? { ...approve, status: "completed", approved: true, output: { kept: true, locked: cast.map((c) => c.name) } } : approve);
-  nodes.push(node({ id: "audition", kind: "audition", title: "Line up voice auditions", detail: "For each character, the voices in your library that suit their preset, ready for you to hear. Playing one is your choice; local voices are free, cloud voices ask first.", deps: ["approve_cast"], gate: "none", key: castKey }));
-  nodes.push(node({ id: "direct", kind: "direct", title: "Compile acting direction", detail: "Turn your notes and the brief into line-level direction for each voice.", deps: ["approve_cast"], gate: "creative", key: hash(o.brief + JSON.stringify(speaking.map((l) => [l.id, l.acting ?? "", l.direction.note ?? ""]))) }));
+  const approveShown = o.draftCasting && !allApproved ? { ...approve, detail: (approve.detail + " Draft casting is on: takes follow the agent's draft voices, and approving them is still yours.").slice(0, 200) } : approve;
+  nodes.push(allApproved ? { ...approve, status: "completed", approved: true, output: { kept: true, locked: cast.map((c) => c.name) } } : approveShown);
+  nodes.push(node({ id: "audition", kind: "audition", title: "Line up voice auditions", detail: "For each character, the voices in your library that suit their preset, ready for you to hear. Playing one is your choice; local voices are free, cloud voices ask first.", deps: [afterCast], gate: "none", key: castKey }));
+  nodes.push(node({ id: "direct", kind: "direct", title: "Compile acting direction", detail: "Turn your notes and the brief into line-level direction for each voice.", deps: [afterCast], gate: "creative", key: hash(o.brief + JSON.stringify(speaking.map((l) => [l.id, l.acting ?? "", l.direction.note ?? ""]))) }));
 
   const takeIds: string[] = [];
   for (const l of speaking) {
@@ -69,7 +74,7 @@ export function planProduction(project: Project, library: VoiceEntry[], o: PlanO
   nodes.push(node({ id: "timeline", kind: "timeline", title: "Assemble the timeline", detail: "Put the approved takes in order on the timeline.", deps: ["qc"], gate: "creative", key: hash(takeIds.join(",")) }));
   nodes.push(node({ id: "export", kind: "export", title: "Export the full scene", detail: "After your approval: mixes the approved takes, applies your loudness target and writes the full scene. If the brief names a destination (podcast, audiobook, game, training...) it uses that format, and writes stems, scenes or single lines when asked. OTIO, EDL and the report are on the Export screen.", deps: ["timeline"], gate: "final", key: hash(o.brief) }));
 
-  return { version: 1, id: o.id, mode: o.mode, brief: o.brief.slice(0, 2000), localOnly: o.localOnly, cloudLimit: Math.max(0, o.cloudLimit), spent: 0, nodes, audit: [{ at: o.now, nodeId: "-", event: "planned", by: "agent", note: `${nodes.length} steps` }], createdAt: o.now, updatedAt: o.now };
+  return { version: 1, id: o.id, mode: o.mode, brief: o.brief.slice(0, 2000), localOnly: o.localOnly, cloudLimit: Math.max(0, o.cloudLimit), spent: 0, ...(o.draftCasting ? { draftCasting: true } : {}), nodes, audit: [{ at: o.now, nodeId: "-", event: "planned", by: "agent", note: `${nodes.length} steps` }], createdAt: o.now, updatedAt: o.now };
 }
 
 /** Plain-words problems with a plan before it starts, so the person sees them up front. */
@@ -80,7 +85,7 @@ export function planProblems(run: AgentRun, project: Project, library: VoiceEntr
     const l = project.lines.find((x) => x.id === n.lineId);
     const c = project.characters.find((x) => x.id === l?.characterId);
     const v = c?.voiceId ? library.find((x) => x.id === c.voiceId) : undefined;
-    if (!v) out.push(`${c?.name ?? "A character"} has no voice yet, so their lines cannot be made.`);
+    if (!v) { if (!run.draftCasting) out.push(`${c?.name ?? "A character"} has no voice yet, so their lines cannot be made.`); }
     else if (run.localOnly && !ENGINES[v.provider].local) out.push(`${c?.name} uses ${v.name}, a cloud voice, but this run is local-only.`);
     else if (v.source === "cloned" && !v.consent) out.push(`${v.name} is a cloned voice with no consent record. It cannot be used until consent is recorded.`);
   }

@@ -3,12 +3,12 @@
 
 import type { Character, Project, VoiceEntry } from "../types";
 import { readMeta } from "./voiceProfile";
-import type { ApprovalEvent, CastingApproval, CastingSpec, CharacterCasting, MatchStatus, VocalAge } from "./types";
+import type { ApprovalEvent, CastingApproval, CastingSpec, CharacterCasting, DraftChoice, MatchStatus, VocalAge } from "./types";
 
 const str = (x: unknown, n: number) => (typeof x === "string" ? x.replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, n) : "");
 const AGES: VocalAge[] = ["child", "teen", "young", "mid", "old"];
 const STATUSES: MatchStatus[] = ["VERIFIED_MATCH", "COMPATIBLE_WITH_LIMITATIONS", "NEEDS_AUDITION", "UNKNOWN_METADATA", "INCOMPATIBLE", "UNAVAILABLE"];
-const ACTORS = ["owner", "agent", "auto", "preset", "cast_import", "script_edit", "model_switch", "test_harness"] as const;
+const ACTORS = ["owner", "agent", "draft", "auto", "preset", "cast_import", "script_edit", "model_switch", "test_harness"] as const;
 const strictness = (x: unknown) => (x === "required" || x === "preferred" || x === "ignore" ? x : undefined);
 
 export function readSpec(raw: unknown): CastingSpec | undefined {
@@ -37,6 +37,23 @@ function readApproval(raw: unknown): CastingApproval | undefined {
   return { voiceId, engine, voiceName: str(r.voiceName, 80), modelId: typeof r.modelId === "string" ? str(r.modelId, 80) : null, speakerId: typeof r.speakerId === "string" ? str(r.speakerId, 40) : null, approvedAt: str(r.approvedAt, 40), version: typeof r.version === "number" && Number.isFinite(r.version) && r.version >= 1 ? Math.floor(r.version) : 1, basis, acknowledged: Array.isArray(r.acknowledged) ? r.acknowledged.map((x) => str(x, 300)).filter(Boolean).slice(0, 12) : [], by };
 }
 
+/** A draft choice read back from a project file. An approved character never carries one. */
+function readDraft(raw: unknown): DraftChoice | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const o = raw as Record<string, unknown>;
+  const voiceId = typeof o.voiceId === "string" ? str(o.voiceId, 160) : "";
+  const status = STATUSES.find((s) => s === o.status);
+  if (!voiceId || !status) return undefined;
+  return {
+    voiceId, status,
+    voiceName: typeof o.voiceName === "string" ? str(o.voiceName, 120) : voiceId,
+    engine: typeof o.engine === "string" ? str(o.engine, 40) : "",
+    at: typeof o.at === "string" ? str(o.at, 40) : "",
+    placeholder: o.placeholder === true,
+    basis: (Array.isArray(o.basis) ? o.basis : []).slice(0, 8).filter((b): b is string => typeof b === "string").map((b) => str(b, 200)),
+  };
+}
+
 export function readCasting(raw: unknown): CharacterCasting | undefined {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
   const r = raw as Record<string, unknown>;
@@ -46,7 +63,8 @@ export function readCasting(raw: unknown): CharacterCasting | undefined {
     return action && typeof o.at === "string" ? [{ at: str(o.at, 40), action, voiceId: typeof o.voiceId === "string" ? str(o.voiceId, 160) : null, by: ACTORS.find((a) => a === o.by) ?? "owner", reason: str(o.reason, 300) }] : [];
   });
   const approval = readApproval(r.approval);
-  return { version: 1, history, ...(approval ? { approval } : {}) };
+  const draft = approval ? undefined : readDraft(r.draft);
+  return { version: 1, history, ...(approval ? { approval } : {}), ...(draft ? { draft } : {}) };
 }
 
 /**

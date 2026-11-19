@@ -16,7 +16,8 @@
       "type": "object",
       "properties": {
         "name": { "type": "string", "description": "Project name", "maxLength": 80 },
-        "script": { "type": "string", "description": "The script text", "maxLength": 200000 }
+        "script": { "type": "string", "description": "The script text", "maxLength": 200000 },
+        "characters": { "type": "string", "description": "Optional character descriptions, one paragraph per character under the character's name, for example 'VENOMSPUR' then 'Elderly, highly educated British male voice...'. Only what is stated (gender, age, language, accent) is used to cast.", "maxLength": 20000 }
       },
       "required": ["name"],
       "additionalProperties": false
@@ -30,7 +31,7 @@
   {
     "name": "set_script",
     "description": "Replace the script of the open project. Characters keep their voices and lines whose speaker and words are unchanged keep their takes.",
-    "inputSchema": { "type": "object", "properties": { "script": { "type": "string", "maxLength": 200000 } }, "required": ["script"], "additionalProperties": false }
+    "inputSchema": { "type": "object", "properties": { "script": { "type": "string", "maxLength": 200000 }, "characters": { "type": "string", "description": "Optional character descriptions (see create_project)", "maxLength": 20000 } }, "required": ["script"], "additionalProperties": false }
   },
   {
     "name": "get_project",
@@ -46,7 +47,8 @@
         "brief": { "type": "string", "description": "What the person wants, in their own words", "maxLength": 4000 },
         "mode": { "type": "string", "enum": ["guided", "autonomous"], "description": "guided stops at every creative, spending, voice-rights and delivery step; autonomous makes a first draft inside the limits" },
         "local_only": { "type": "boolean", "description": "true (the default) uses only voices on this PC and sends nothing to a company" },
-        "cloud_limit": { "type": "number", "minimum": 0, "maximum": 1000, "description": "The most to spend on cloud work, in the person's currency; used only when local_only is false" }
+        "cloud_limit": { "type": "number", "minimum": 0, "maximum": 1000, "description": "The most to spend on cloud work, in the person's currency; used only when local_only is false" },
+        "draft_casting": { "type": "boolean", "description": "true lets the agent choose DRAFT voices on this PC for characters that have none, so takes can be made for the person to listen to. The drafts are marked as the agent's choice and are never approved: approving a voice stays with the person. Default false." }
       },
       "required": ["brief"],
       "additionalProperties": false

@@ -40,6 +40,7 @@ export function describeRun(run: AgentRun | null | undefined): unknown {
     planned: true,
     mode: run.mode,
     localOnly: run.localOnly,
+    draftCasting: run.draftCasting === true,
     cloudLimit: run.cloudLimit,
     spent: Number(run.spent.toFixed(4)),
     progress: p,
@@ -65,7 +66,7 @@ export function describeProject(p: Project | null): unknown {
     soundCues: p.lines.reduce((n, l) => n + l.events.length, 0),
     characters: p.characters
       .filter((c) => used.has(c.id))
-      .map((c) => ({ name: c.name, lines: p.lines.filter((l) => l.characterId === c.id).length, voiceId: c.voiceId ?? null, voiceApproved: !!c.casting?.approval })),
+      .map((c) => ({ name: c.name, lines: p.lines.filter((l) => l.characterId === c.id).length, voiceId: c.voiceId ?? null, voiceApproved: !!c.casting?.approval, voiceIsAgentDraft: !!c.casting?.draft && !c.casting.approval })),
     listening: { heard: sum.heard, good: sum.good, voice: sum.voice, delivery: sum.delivery, glitch: sum.glitch, notHeardYet: sum.unheard },
     production: describeRun(migrateRun(p.agent)),
   };
@@ -111,7 +112,8 @@ export async function handleTool(name: string, args: Record<string, unknown>, b:
     case "create_project": {
       const nameArg = String(args.name ?? "").trim() || "Untitled project";
       const before = b.current()?.id;
-      await app.createProject(nameArg, typeof args.script === "string" && args.script.trim() ? args.script : undefined);
+      const full = [args.script, args.characters].filter((x): x is string => typeof x === "string" && !!x.trim()).join(String.fromCharCode(10, 10));
+      await app.createProject(nameArg, full || undefined);
       const p = await untilOpen(b, (x) => x.id !== before && x.name === nameArg);
       return { created: true, project: describeProject(p) };
     }
@@ -124,7 +126,7 @@ export async function handleTool(name: string, args: Record<string, unknown>, b:
     case "set_script": {
       const p0 = b.current();
       if (!p0) throw new Error("No project is open. Call create_project or open_project first.");
-      const script = String(args.script ?? "");
+      const script = [String(args.script ?? ""), typeof args.characters === "string" ? args.characters : ""].filter((x) => x.trim()).join(String.fromCharCode(10, 10));
       app.edit((p) => ({ ...p, script, ...parseScript(script, p.characters, p.lines) }));
       await sleep(80);
       return { updated: true, project: describeProject(b.current()) };
@@ -136,7 +138,7 @@ export async function handleTool(name: string, args: Record<string, unknown>, b:
       if (!b.current()!.lines.length) throw new Error("The project has no script yet. Call set_script first.");
       const localOnly = args.local_only === undefined ? true : !!args.local_only;
       const mode = args.mode === "autonomous" ? "autonomous" : "guided";
-      const run = planFor(b, { brief: String(args.brief ?? ""), mode, localOnly, cloudLimit: Number(args.cloud_limit ?? 0) });
+      const run = planFor(b, { brief: String(args.brief ?? ""), mode, localOnly, cloudLimit: Number(args.cloud_limit ?? 0), draftCasting: args.draft_casting === true });
       await sleep(80);
       return { planned: true, ...(describeRun(run) as object) };
     }

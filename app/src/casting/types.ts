@@ -171,7 +171,7 @@ export const STATUS_LABEL: Record<MatchStatus, string> = {
 
 // ---- Approval ---------------------------------------------------------------------------------------------
 
-export type Actor = "owner" | "agent" | "auto" | "preset" | "cast_import" | "script_edit" | "model_switch" | "test_harness";
+export type Actor = "owner" | "agent" | "draft" | "auto" | "preset" | "cast_import" | "script_edit" | "model_switch" | "test_harness";
 
 export interface ApprovalEvent { at: string; action: "assigned" | "approved" | "changed" | "unlocked" | "refused"; voiceId: string | null; by: Actor; reason: string }
 
@@ -191,9 +191,28 @@ export interface CastingApproval {
   by: Actor;
 }
 
+/**
+ * A voice the AGENT chose for a character as a DRAFT, so takes can be made for the owner to listen to. It is not an approval: nothing
+ * about the voice was proven, and the owner's own choice or approval replaces it and clears this record.
+ */
+export interface DraftChoice {
+  voiceId: string;
+  voiceName: string;
+  engine: string;
+  at: string;
+  /** How well the voice fits what is stated about the character (STATUS_LABEL says it in words). */
+  status: MatchStatus;
+  /** True when nothing was stated about the character, so the voice is only a distinct placeholder, not a considered fit. */
+  placeholder: boolean;
+  /** The stated facts the choice was made from, or why it is a placeholder. */
+  basis: string[];
+}
+
 export interface CharacterCasting {
   version: 1;
   approval?: CastingApproval;
+  /** Present only while the voice is the agent's draft choice. */
+  draft?: DraftChoice;
   history: ApprovalEvent[];
 }
 

@@ -57,6 +57,8 @@ export interface AgentRun {
   /** The most the agent may spend on cloud work in this run. */
   cloudLimit: number;
   spent: number;
+  /** The owner switched on draft casting for this run: the agent may choose draft voices (never approved) for characters without one, so takes can be made. Missing means off. */
+  draftCasting?: boolean;
   nodes: JobNode[];
   audit: AuditEntry[];
   createdAt: string;

@@ -6,6 +6,7 @@ import type { Engine } from "../engines";
 import { voicesFor } from "../presets/cast";
 import { STARTER_PRESETS, type VoicePreset } from "../presets";
 import { planCasting } from "../casting/autocast";
+import { planDraftCasting } from "../casting/draft";
 import { extractStated } from "../casting/extract";
 import { assignVoice, isLocked } from "../casting/lock";
 import { requirementsOf, describeRequirements } from "../casting/requirements";
@@ -32,6 +33,8 @@ export interface Env {
   measure: (take: Take) => Promise<Measured | null>;
   interpretation?: Interpretation;
   localOnly: boolean;
+  /** The owner switched on draft casting for this run (see casting/draft.ts). */
+  draftCasting?: boolean;
   /** A portrait id from the existing library for a preset, when the library is loaded. */
   portraitFor?: (presetId: string) => string | undefined;
   /** Makes one sound clip (a cloud call unless the sound engine is local). The caller has already checked the limit. */
@@ -80,16 +83,34 @@ export function executors(env: Env): Executors {
         if (result?.ok) made.push({ character: sp.find((c) => c.id === characterId)!.name, voice: voice.name, status: "VERIFIED_MATCH" });
       }
       const name = (id: string) => sp.find((c) => c.id === id)?.name ?? id;
+      // DRAFT CASTING (only when the owner switched it on for this run): voices on this PC are chosen as drafts for the characters that
+      // still have none, so takes can be made for the owner to listen to. Nothing is approved; the owner's choice replaces a draft.
+      const drafted: { character: string; voice: string; status: string; placeholder: boolean }[] = [];
+      let remaining = plan.proposals;
+      let none = plan.none;
+      if (env.draftCasting) {
+        const left = env.project().characters.filter((c) => sp.some((s) => s.id === c.id) && !c.voiceId && !isLocked(c));
+        const dp = planDraftCasting(left, lib, { commercial: p.commercial === true }, { allowCloud: false });
+        const gone = new Set<string>();
+        for (const pick of dp.picks) {
+          const voice = lib.find((v) => v.id === pick.voiceId)!;
+          let result: ReturnType<typeof assignVoice> | undefined;
+          env.edit((pr) => { result = assignVoice(pr.characters, { characterId: pick.characterId, voice, by: "draft", draft: { placeholder: pick.placeholder, basis: pick.basis }, now: new Date().toISOString(), context: { commercial: pr.commercial === true } }); return result.ok ? { ...pr, characters: result.characters } : pr; });
+          if (result?.ok) { gone.add(pick.characterId); drafted.push({ character: name(pick.characterId), voice: voice.name, status: STATUS_LABEL[pick.status], placeholder: pick.placeholder }); }
+        }
+        remaining = plan.proposals.filter((x) => !gone.has(x.characterId));
+        none = plan.none.filter((x) => !gone.has(x.characterId));
+      }
       const decide: string[] = [];
-      for (const pr of plan.proposals) {
+      for (const pr of remaining) {
         const c = sp.find((x) => x.id === pr.characterId)!;
         const req = requirementsOf(c);
         const stated = describeRequirements(req);
         decide.push(`${name(pr.characterId)}${req.empty ? " (nothing required is stated about their voice: tell me, or set it in Casting)" : ` (${stated.join("; ")})`} — ${pr.candidates.slice(0, 3).map((m) => `${p.characters.length ? (lib.find((v) => v.id === m.voiceId)?.name ?? m.voiceId) : m.voiceId} [${STATUS_LABEL[m.status]}]`).join(", ")}`);
       }
-      for (const n of plan.none) decide.push(`${name(n.characterId)} — no voice in your library can be used: ${n.why}`);
-      if (decide.length) throw new Error(`The cast needs your decision. ${made.length ? `Assigned ${made.map((m) => `${m.character}: ${m.voice}`).join(", ")}. ` : ""}Choose a voice in Cast (or Voices), listen to it, then retry this step.\n${decide.join("\n")}${asks}`);
-      return { output: { cast: made, questions, note: "Nothing is approved yet: the next step is yours." } };
+      for (const n of none) decide.push(`${name(n.characterId)} — no voice in your library can be used: ${n.why}`);
+      if (decide.length) throw new Error(`The cast needs your decision. ${made.length ? `Assigned ${made.map((m) => `${m.character}: ${m.voice}`).join(", ")}. ` : ""}${drafted.length ? `Draft voices: ${drafted.map((m) => `${m.character}: ${m.voice}`).join(", ")}. ` : ""}Choose a voice in Cast (or Voices), listen to it, then retry this step.\n${decide.join("\n")}${asks}`);
+      return { output: { cast: made, ...(drafted.length ? { drafts: drafted } : {}), questions, note: drafted.length ? "Draft voices were chosen by the agent and nothing is approved: listen, then approve or change them." : "Nothing is approved yet: the next step is yours." } };
     },
 
     // The only step that locks voices, and it is always the person's: its gate is never automatic.

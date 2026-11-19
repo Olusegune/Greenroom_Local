@@ -46,6 +46,7 @@ export default function AgentStudio() {
   const [brief, setBrief] = useState("");
   const [mode, setMode] = useState<Mode>("guided");
   const [localOnly, setLocalOnly] = useState(true);
+  const [draft, setDraft] = useState(false);
   const [limit, setLimit] = useState("0");
   const [running, setRunning] = useState(false);
   const abort = useRef<AbortController | null>(null);
@@ -71,7 +72,7 @@ export default function AgentStudio() {
 
   const makePlan = () => {
     const had = !!run;
-    planFor(rc, { brief, mode, localOnly, cloudLimit: Number(limit) || 0 });
+    planFor(rc, { brief, mode, localOnly, cloudLimit: Number(limit) || 0, draftCasting: draft });
     toast(had ? "Plan updated. Finished steps whose inputs did not change were kept." : "Plan ready. Review it, then press Start.");
   };
 
@@ -134,6 +135,7 @@ export default function AgentStudio() {
         </fieldset>
         <div className="row wrap">
           <label className="check"><input type="checkbox" checked={localOnly} onChange={(e) => setLocalOnly(e.target.checked)} /> Local only: nothing leaves this computer</label>
+          <label className="check" title="Voices on this PC are chosen as drafts for characters that have none, so takes can be made for you to listen to. Nothing is approved."><input type="checkbox" checked={draft} onChange={(e) => setDraft(e.target.checked)} /> Let the agent choose draft voices (never approved)</label>
           <label>Cloud spending limit ({currency})<input type="number" min="0" step="0.5" value={localOnly ? "0" : limit} disabled={localOnly} onChange={(e) => setLimit(e.target.value)} /></label>
           <button className="primary" onClick={makePlan}>{run ? "Update the plan" : "Plan the production"}</button>
         </div>

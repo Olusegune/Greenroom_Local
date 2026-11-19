@@ -57,6 +57,15 @@ export function extractStated(name: string, text: string | undefined): Extractio
   // accent: "with a Nigerian accent", "Nigerian-accented", "a British accent".
   const acc = /\b(?:with an? )?([A-Z][a-z]+(?: [A-Z][a-z]+)?)[- ](?:accented|accent)\b|\bwith an? ([A-Z][a-z]+(?: [A-Z][a-z]+)?) accent\b/.exec(t);
   if (acc) out.stated.push({ field: "accent", value: (acc[1] ?? acc[2])!, quote: acc[0] });
+  // Two phrasings that DO describe how a voice speaks, not who the person is: "<Nationality> English" ("Nigerian English") and
+  // "<Nationality> male/female voice" ("British male voice"). "A British woman" is a person, not a voice, and stays a nationality.
+  if (!acc) {
+    const nats = NATIONALITY.join("|");
+    const eng = new RegExp(`\\b(${nats}) English\\b`).exec(t);
+    const voice = new RegExp(`\\b(${nats}) (?:male|female|man'?s|woman'?s|masculine|feminine) voice\\b`, "i").exec(t);
+    const hit = eng ?? voice;
+    if (hit) out.stated.push({ field: "accent", value: hit[1]!.charAt(0).toUpperCase() + hit[1]!.slice(1).toLowerCase(), quote: hit[0] });
+  }
   // nationality is recorded and QUESTIONED, never turned into an accent.
   for (const n of NATIONALITY) {
     if (new RegExp(`\\b${n}\\b`).test(t)) { out.stated.push({ field: "nationality", value: n, quote: n }); break; }
