@@ -114,6 +114,8 @@ export interface Line {
   direction: Direction;
   takes: Take[];
   chosen?: string;
+  /** What the owner said about the take that would be played now (see listen.ts). Only the owner writes it. */
+  listened?: import("./listen").Listened;
   events: SoundEvent[];
   /** The director's performance plan for this line: objective, subtext, emotional arc, physical state and voice qualities. Absent on older projects and on lines nobody has planned. */
   performance?: PerformancePlan;
