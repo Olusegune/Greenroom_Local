@@ -1,5 +1,72 @@
 # Handover note: Greenroom Local (for a Claude agent on another PC)
 
+## START HERE: current state at 0.16.3 (written 2026-11-19)
+
+**Read this section first.** Everything below it ("Update at 0.13.0" and the 0.12.8 note) is older and still useful for background (code map, build traps, rules), but its version numbers, test counts and "not tested" lists are out of date. The sections marked **(older)** are kept as written.
+
+### Where the code is
+| Item | Value |
+|---|---|
+| Repo | https://github.com/Olusegune/Greenroom_Local |
+| Branch | **`feat/agent-studio-presets`** (all work is here; `main` is old and has no open PR) |
+| Version | **0.16.3** (bumped in the five places listed in section 4). Commit message starts "0.16.3". |
+| Gate at 0.16.3 | `npx tsc --noEmit` clean; `npx vitest run` **1,145 pass, 2 skipped**; `cargo clippy --all-targets -- -D warnings` clean; `cargo test` **147 pass, 5 ignored** (the ignored ones are real-engine runs). |
+| Installers | Built once in the foreground: NSIS 14.76 MiB, MSI 16.82 MiB, exe 30.5 MB. Desktop folders `Greenroom Local 0.14.0` to `0.16.3` existed on the owner's PC (not in git; rebuild with `npx tauri build`). |
+
+```bash
+git clone https://github.com/Olusegune/Greenroom_Local.git
+cd Greenroom_Local && git checkout feat/agent-studio-presets
+cd app && npm ci
+```
+
+The owner is Victor Edun (GitHub **Olusegune**). They do **not** use a terminal: deliver a built installer in a new Desktop folder `Greenroom Local <version>` with READ ME FIRST.txt, SHA256SUMS.txt, Docs, Portable, Source code (see `CLAUDE.md` and section 4 below). Push after each version.
+
+### What changed from 0.13.0 to 0.16.3 (decisions D-69 to D-76 in `DECISIONS.md` have the details)
+- **0.14.0** Qwen3-TTS stabilised: per-voice seed and reference-clip locking, warm worker, GPU build, speaker-similarity check (`docs/QWEN_STABILITY.md`).
+- **0.14.1 to 0.15.1** Every dialog and message box can be closed (close button, Escape, toast hold-on-hover); voice design offers two engines (ElevenLabs or Qwen on this PC) and "Make 3 previews" works with Qwen; **delivery presets and stems** in Agent Studio (Podcast, YouTube, Audiobook, Broadcast, Film, Editor, Training, Game; per-scene, per-line and stem files) with approval before delivery; instant "Qwen is ready" check.
+- **0.16.0** WazobiaVoice lines are no longer 40 s long (worker trims the silent tail and caps speech tokens); **strict avatars** (`docs/AVATARS.md`): a face is chosen only from stated facts, no stated gender means no face (neutral mark), gender, heritage and childhood are never crossed, Gender and Heritage filters in the portrait browser; 22 unlabelled portraits labelled by eye (UNVERIFIED, owner must review; list in a comment in `app/src/avatarLibrary.ts`).
+- **0.16.1** Local sound effects (Stable Audio Open Small) now work: two worker faults fixed in `runtime/sfx_once.py` (text-encoder `model_path`, standard-library WAV writer).
+- **0.16.2** Sound-effects and ACE-Step music screens use an instant "files are in place" check (they said "install" for about 10 s while a PyTorch import ran); the Director spend sheet names the real provider (it said "Kie credit" for OpenAI and Gemini); English voices are no longer badged "English (Scottish)".
+- **0.16.3** Casting bug: confirming "Change the voice" on an approved character left the old approval, so every take was refused ("Nothing was made"). A confirmed change now removes the old approval (`app/src/casting/lock.ts`, regression test in `casting/regression.test.ts`). Verified in the built app: change MARA's voice, confirm, make a take, a new WAV is written.
+
+### What has been tested for real (built app, the owner's PC and keys, a throwaway project that was deleted afterwards)
+Worked: Chatterbox, WazobiaVoice (English, Yoruba, Hausa, Igbo), Kokoro, Piper, Qwen3-TTS (lock, design, speak), ElevenLabs speech and sound effects, VoiceKiller speech (MP3 take), OpenAI and Gemini Director notes, local sound effects via SFX Studio (3 s in 33 s), ACE-Step music (10 s in 77 s, placed on the Timeline), casting suggestions, Timeline, Podcast-preset export (24-bit 44.1 kHz stereo plus cue sheet, rights register, manifest, report; the loudness line honestly says when the peak ceiling limits the gain), Agent Studio end to end on local engines (stops for approvals, 12 of 12 steps), History restore both ways (takes kept), strict avatars in the profile and Presets screens.
+
+### NOT done or NOT verified
+- **Nothing has been judged by ear** (accents, Wazobia pronunciation, music, effects, ElevenLabs lines). The owner must listen. An agent can only claim "valid audio".
+- **Kie** speech and sound effects failed three times with Kie's own "Internal Error, Please try again later". Our request matches Kie's documentation (model, voice id, text) and failed tasks report zero credits, so it looks like their side. Cause unknown. Retry later, cheaply.
+- **Not run:** Inworld (no key saved), Picture (needs a video file), importing a script or music file (native file pickers), Accent test (paid), upgrade/uninstall, screen reader, zoom, high contrast, a clean install on a second PC. The browser accessibility and smoke scripts (`scripts/qa/a11y.mjs`, `smoke.mjs`) were not repeated for 0.16.1 to 0.16.3.
+- **Unsigned installers** (SmartScreen warns); the updater has a public key but no private key. No CI. No pull request into `main`.
+- Local engines are slow: Wazobia about 40 to 70 s per line (model reloaded each call; no warm worker for Chatterbox), music about 77 s for 10 s, sound effects about 33 s (model reloaded each time).
+- Heritage categories in the portrait library are coarse (seven); the labels are by eye.
+
+### Is it ready for release? No (honest view)
+It is a working beta. Each round of hands-on testing found new faults (4 in the last round, one of which locked a user out of making takes), nothing has been listened to, and several providers and platform checks are untested. Do a listening pass with the owner and fix what they hear before calling it releasable.
+
+### How to test the REAL app (this is what found most of the recent faults)
+1. Build (`npx tauri build`, single foreground build, no other node or cargo running; section 3a of the older note lists the traps) or use the Portable exe.
+2. Start it with WebView2 remote debugging **and a separate browser profile** so it cannot clash with an installed copy:
+   PowerShell: `$env:WEBVIEW2_USER_DATA_FOLDER="$env:TEMP\gr-test-profile"; $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9347"; Start-Process "<path>\Greenroom Local.exe"`
+3. Drive it with `scripts/qa/real_app_lib.mjs` (helper: `connect(port)`, `H(c)` for nav, click, setText, text, buttons) or `scripts/qa/real_app_readonly.mjs` (read-only sweep). Create a throwaway project through the UI (name it "zz ..."), and delete its folder under `Documents\Greenroom Local\projects\` afterwards (find it by grepping `project.json` for the name; the app has no delete command).
+4. **Gotchas learned:** killing WebView2 helper processes blanks a running window (it goes dark; close it and reopen); a second copy started while another uses the same profile exits or shows a black window, so use the separate profile; in JavaScript written through the shell, `\\` can collapse to `\` and `\d` inside template literals becomes `d`, so avoid regexes with backslashes in strings you evaluate in the page (use `String.fromCharCode(10)` for newlines); do not slice page text with fixed offsets (a "12 of 12" counter read as "2 of 12" and looked like a bug).
+5. Money: every paid call must go through the confirm sheet in the UI; read the sheet (it shows characters) before approving. The owner gave a small budget (USD 5, later "up to USD 1" for cloud engines) and about USD 0 to 1 has been used; the apps do not show prices, so no exact figure exists.
+
+### Suggested next steps
+1. Owner installs 0.16.3, opens it, and **listens**: a sound effect, a music clip, Wazobia (Yoruba, Hausa, Igbo), the Kokoro and Qwen voices, an ElevenLabs line. Record findings in `DECISIONS.md` (quality claims come only from the owner).
+2. Owner reviews the 22 portraits labelled by eye.
+3. Retry Kie later; try Inworld if the owner adds a key.
+4. Speed: a warm worker for Chatterbox/Wazobia, and keep the sound-effects model loaded.
+5. Open the pull request into `main` when the owner agrees; add CI; code-signing.
+6. Repeat the browser accessibility and smoke runs and add the untested checks above.
+
+### Moving to the new PC
+- **Not in git:** API keys (Windows Credential Manager; re-enter in Settings; the Hugging Face account must have accepted the terms of `stabilityai/stable-audio-open-small` and the Wazobia model), the owner's projects and voice library (`Documents\Greenroom Local\`), downloaded models and runtimes (re-download in Model Center: Qwen runtime, GPU PyTorch, Base model, speaker package, Chatterbox, Wazobia, ACE-Step 8.3 GB model, sound effects 2.6 GB model plus engine), Desktop installer folders.
+- Qwen, ACE-Step and sound effects need an NVIDIA GPU (the owner's PC has an RTX 4070 SUPER, 12 GB).
+
+---
+
+# (older) Handover note written at 0.12.8 and 0.13.0
+
 ## Update at 0.13.0 (2026-11-10): casting integrity, built on the other PC's 0.12.8
 
 New code in `app/src/casting/` (types, voice profiles with provenance, requirements, the matching engine, the approval lock and generation guard, validated persistence, auto-cast, script reading, expression matrix, audition scripts) and screens `CastingPanel.tsx`, `VoiceReview.tsx`, `genreArt.tsx`. Every voice change goes through `assignVoice` (hook `useCasting`); `generate.ts` takes `opts.casting` and refuses a voice that is not the approved one. The agent has a new step `approve_cast` (gate `rights`, never automatic). Read `docs/CASTING_INTEGRITY_AUDIT.md` first, then `docs/CASTING_MATCH_ENGINE.md`. QA: `scripts/qa/casting_e2e.mjs`, `scripts/qa/real_app_readonly.mjs` (drives the REAL built exe read-only through WebView2 remote debugging), `app/src/demo/acceptance.spec.ts` (`GREENROOM_ACCEPTANCE=1`, real Piper and Kokoro). Gate at 0.13.0: 1,067 JavaScript and 130 Rust tests. Still nothing judged by ear; the Yoruba, child and teen characters of the acceptance run need voices that are not installed on this PC. Note for the build traps: this build was made once, in the foreground, with no other node or cargo process running.

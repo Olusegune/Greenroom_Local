@@ -112,8 +112,14 @@ export function assignVoice(characters: Character[], req: AssignRequest): Assign
   }
 
   if (c.voiceId === req.voice.id) return { characters, ok: true, code: "unchanged", message: `${c.name} already has ${req.voice.name}.`, match };
-  const next: Character = { ...c, voiceId: req.voice.id, casting: withHistory(c, { at: req.now, action: "assigned", voiceId: req.voice.id, by: req.by, reason: `Assigned as "${match.status}" (not approved).` }) };
-  return { characters: characters.map((x, i) => (i === idx ? next : x)), ok: true, code: "assigned", message: `${req.voice.name} is chosen for ${c.name}. Listen, then approve it to lock it.`, match };
+  // A change the owner confirmed on an approved character takes the old approval away. Keeping it would leave the character with one
+  // voice and an approval for another, and every take would then be refused until the owner unlocked it by hand.
+  const casting = withHistory(c, approved
+    ? { at: req.now, action: "changed", voiceId: req.voice.id, by: req.by, reason: `Changed from the approved ${approved.voiceName} after the owner confirmed. Not approved yet.` }
+    : { at: req.now, action: "assigned", voiceId: req.voice.id, by: req.by, reason: `Assigned as "${match.status}" (not approved).` });
+  if (approved) delete (casting as { approval?: CastingApproval }).approval;
+  const next: Character = { ...c, voiceId: req.voice.id, casting };
+  return { characters: characters.map((x, i) => (i === idx ? next : x)), ok: true, code: "assigned", message: `${req.voice.name} is chosen for ${c.name}${approved ? " and the old approval is removed" : ""}. Listen, then approve it to lock it.`, match };
 }
 
 /** Takes the owner's approval away so the voice can be changed. Only the owner can. */

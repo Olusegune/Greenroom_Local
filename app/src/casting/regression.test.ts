@@ -46,6 +46,15 @@ describe("approval is a lock", () => {
     expect(changed.characters[0]!.casting!.approval).toMatchObject({ voiceId: "man-uk", version: 2 });
     expect(changed.characters[0]!.casting!.history.map((h) => h.action)).toEqual(["approved", "refused", "changed"].filter((a) => a !== "refused"));
   });
+  it("a confirmed change without approval removes the old approval instead of leaving the character half changed", () => {
+    const [c] = owner([char("g", "G")], "g", ELDER_MAN, { approve: true, acknowledge: true }).characters;
+    const changed = owner([c!], "g", MAN_UK, { confirmChange: true });
+    expect(changed.ok).toBe(true);
+    const after = changed.characters[0]!;
+    expect(after.voiceId).toBe("man-uk");
+    expect(after.casting!.approval).toBeUndefined();
+    expect(after.casting!.history.at(-1)).toMatchObject({ action: "changed", voiceId: "man-uk" });
+  });
   it("unlocking is the owner's alone and leaves the voice in place", () => {
     const [c] = owner([char("g", "G")], "g", ELDER_MAN, { approve: true, acknowledge: true }).characters;
     expect(unlockVoice([c!], "g", "agent", NOW).ok).toBe(false);
