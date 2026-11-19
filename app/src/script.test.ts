@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseScript, SAMPLE_SCRIPT } from "./script";
 import { DEFAULT_DIRECTION } from "./types";
@@ -12,7 +13,7 @@ describe("parseScript", () => {
     expect(p.characters.map((c) => c.name)).toEqual(["ADA", "TUNDE"]);
     expect(p.lines).toHaveLength(7);
     expect(p.lines[0]).toMatchObject({ scene: 0, direction: { emotion: "annoyed" } });
-    expect(p.lines[4]).toMatchObject({ scene: 1, direction: { emotion: "whispering" } });
+    expect(p.lines[4]).toMatchObject({ scene: 1, direction: { sounds: ["whispers"] } });
     expect(p.lines[2]!.text).toBe("[sighs] Every time. Every single time.");
   });
 
@@ -70,5 +71,45 @@ describe("parseScript", () => {
   it("gives an empty script one scene and nothing else", () => {
     const p = parseScript("", [], [], gen);
     expect(p).toMatchObject({ scenes: ["Scene 1"], characters: [], lines: [] });
+  });
+});
+
+describe("the markdown screenplay shape (bold names, direction after the colon, scene headings, pause and sound cues)", () => {
+  const raw = readFileSync(new URL("../../docs/samples/the-wrong-department.md", import.meta.url), "utf8");
+  const p = parseScript(raw, [], []);
+  it("finds the characters by name, never with markdown marks", () => {
+    expect(p.characters.map((c) => c.name).sort()).toEqual(["MAMA T", "MISS GRIMBLE", "RICO", "VENOMSPUR"]);
+    expect(p.lines).toHaveLength(55);
+  });
+  it("reads bold scene headings, and a title does not leave an empty scene", () => {
+    expect(p.scenes).toEqual(["SCENE 1 — VENOMSPUR'S OFFICE", "SCENE 2 — AN UNEXPECTED INTERRUPTION", "SCENE 3 — THE FINAL VERDICT"]);
+  });
+  it("moves a direction written after the colon into the acting note, not the spoken words", () => {
+    const l = p.lines.find((x) => x.text.startsWith("Champagne?"))!;
+    expect(l.direction.emotion).toBe("quietly");
+    expect(p.lines.some((x) => x.text.includes("**") || x.text.startsWith("("))).toBe(false);
+  });
+  it("turns [PAUSE: n seconds] into the pause after the line before, and never speaks it", () => {
+    expect(p.lines.find((x) => x.text === "Champagne?")!.direction.pauseAfter).toBe(1);
+    expect(p.lines.find((x) => x.text.startsWith("So you're not the manager"))!.direction.pauseAfter).toBe(2);
+    expect(p.lines.some((x) => /PAUSE|SFX/i.test(x.text))).toBe(false);
+  });
+  it("turns [SFX: ...] into sound events: before the next line at a scene start, after the line before in the middle", () => {
+    const events = p.lines.flatMap((l) => l.events.map((e) => ({ at: l.text.slice(0, 12), ...e })));
+    expect(events).toHaveLength(9);
+    expect(events[0]).toMatchObject({ placement: "before", at: "Next! Mr. Ri" });
+    expect(events[1]).toMatchObject({ placement: "after" });
+    expect(events.every((e) => e.seconds >= 2 && e.seconds <= (e.placement === "before" ? 4 : 8) && e.prompt.length > 5)).toBe(true);
+  });
+  it("is stable when read again: lines keep their ids and sounds are not added twice", () => {
+    const again = parseScript(raw, p.characters, p.lines);
+    expect(again.lines.map((l) => l.id)).toEqual(p.lines.map((l) => l.id));
+    expect(again.lines.flatMap((l) => l.events)).toHaveLength(9);
+  });
+  it("also reads NAME: (direction) words without any markdown", () => {
+    const q = parseScript(["ADA: (whispering) Keep quiet.", "[PAUSE: 1.5s]", "BEN: Fine."].join(String.fromCharCode(10)), [], []);
+    expect(q.lines[0]!.direction.sounds).toEqual(["whispers"]);
+    expect(q.lines[0]!.direction.pauseAfter).toBe(1.5);
+    expect(q.lines[0]!.text).toBe("Keep quiet.");
   });
 });

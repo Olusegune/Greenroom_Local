@@ -158,6 +158,9 @@ struct ClipReq {
     language: Option<String>,
     model: Option<String>,
     delivery: Option<String>,
+    /// The spoken words of the lines either side of this one, so a separately made line keeps the scene's flow (ElevenLabs only).
+    previous_text: Option<String>,
+    next_text: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -175,8 +178,8 @@ fn make_clip(root: &std::path::Path, models: &std::path::Path, req: ClipReq) -> 
     }
     let voice = req.voice.clone().unwrap_or_default();
     match req.provider.as_str() {
-        "eleven-v4" => eleven()?.speech(&voice, eleven::MODEL_V4, text, req.speed, eleven::format_or_standard(req.quality.as_deref())),
-        "eleven-tts" => eleven()?.speech(&voice, eleven::MODEL_V3, text, req.speed, eleven::format_or_standard(req.quality.as_deref())),
+        "eleven-v4" => eleven()?.speech_in_context(&voice, eleven::MODEL_V4, text, req.speed, eleven::format_or_standard(req.quality.as_deref()), req.previous_text.as_deref(), req.next_text.as_deref()),
+        "eleven-tts" => eleven()?.speech_in_context(&voice, eleven::MODEL_V3, text, req.speed, eleven::format_or_standard(req.quality.as_deref()), req.previous_text.as_deref(), req.next_text.as_deref()),
         "eleven-sfx" => eleven()?.sound(text, req.seconds.unwrap_or(3.0), req.r#loop.unwrap_or(false), req.prompt_influence, req.sfx_model.as_deref(), eleven::format_or_standard(req.quality.as_deref())),
         "local-sfx" => sfx_bytes(root, models, text, req.seconds.unwrap_or(3.0).round().clamp(1.0, 11.0) as u32, None),
         "piper" => local::piper_speak(root, &voice, text, req.speed.unwrap_or(1.0), &local::RealRunner),

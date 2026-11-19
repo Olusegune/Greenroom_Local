@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { CharacterMark, VoiceFace, VoiceMark, barHeights } from "./voiceMark";
 
-describe("a voice has no face of its own", () => {
+describe("the mark and face of a voice in a list", () => {
   it("shows a neutral mark, the same one every time, and a different one for a different voice", () => {
     expect(barHeights("en_GB-alan-medium")).toEqual(barHeights("en_GB-alan-medium"));
     expect(barHeights("en_GB-alan-medium")).not.toEqual(barHeights("en_US-amy-medium"));
@@ -15,15 +15,14 @@ describe("a voice has no face of its own", () => {
     expect(html).toContain('aria-hidden="true"');
     expect(html).not.toContain("<img");
   });
-  it("shows a picture only when the owner chose one for the voice", () => {
+  it("the owner's own picture is shown, and a value that is not an image is ignored", () => {
     const base = { id: "v", provider: "piper" as const, name: "Alan" };
-    expect(renderToStaticMarkup(<VoiceFace voice={base} />)).not.toContain("<img");
     expect(renderToStaticMarkup(<VoiceFace voice={{ ...base, portrait: "data:image/jpeg;base64,AAAA" }} />)).toContain("<img");
     // a value that is not an image is ignored, not rendered
     expect(renderToStaticMarkup(<VoiceFace voice={{ ...base, portrait: "javascript:alert(1)" }} />)).not.toContain("<img");
   });
-  it("a gender, accent or name in a voice's record never changes its mark", () => {
-    const a = renderToStaticMarkup(<VoiceFace voice={{ id: "v", provider: "elevenlabs", name: "Abiola (Nigerian, male)" }} />);
+  it("until the portrait library has loaded, a voice shows its mark whatever its record says", () => {
+    const a = renderToStaticMarkup(<VoiceFace voice={{ id: "v", provider: "elevenlabs", name: "Abiola (Nigerian, male)", gender: "male" }} />);
     const b = renderToStaticMarkup(<VoiceFace voice={{ id: "v", provider: "elevenlabs", name: "Someone else entirely" }} />);
     expect(a).toBe(b);
   });

@@ -21,7 +21,7 @@ import { api } from "../api";
 import { ENGINES, ENGINE_ORDER, directorBillingLine, directorLabel, directorReady, qualityFormat, soundEngineOf } from "../engines";
 import { askCloud } from "../directorCall";
 import { useLocalDirectorReady } from "../localDirector";
-import { assembledFor, makeBeatTake, makeSound, makeTake, modelLabel, plan, remakeBeat, requestsFor, type CastingCheck, type Model } from "../generate";
+import { assembledFor, makeBeatTake, makeSound, makeTake, modelLabel, neighboursOf, plan, remakeBeat, requestsFor, type CastingCheck, type Model } from "../generate";
 import { beatsFor, hasBeats, isAssembled } from "../beats";
 import { migrateReactions, reuse, saveReaction } from "../reactions";
 import ReVoiceDialog from "./ReVoiceDialog";
@@ -33,10 +33,29 @@ import { validateClip } from "../soundQa";
 import { addReference, makeReference, migrateDna } from "../voiceDna";
 import { audioPlan, previewScene } from "../preview";
 import { uid } from "../script";
-import type { Character, Line, Pronunciation, VoiceEntry } from "../types";
+import type { Character, Line, Pronunciation, SoundEvent, VoiceEntry } from "../types";
 import { Empty, Note, PlayButton } from "../ui";
 import { ledgerTotal, money, shortHash } from "../trust";
 import type { Take } from "../types";
+
+/**
+ * Makes the audio for a sound cue that has none yet (one that came from the script's [SFX: ...] lines). The caller has already asked the
+ * owner about cost. Returns the event with its clip and the automatic checks attached.
+ */
+async function renderCue(projectId: string, ev: SoundEvent, engines: ReturnType<typeof useApp>["engines"]): Promise<SoundEvent> {
+  const isEleven = soundEngineOf(engines).id === "elevenlabs";
+  const options = isEleven ? { loop: ev.loop, promptInfluence: ev.promptInfluence, sfxModel: ev.model ?? engines.elevenSfxModel ?? "eleven_text_to_sound_v3" } : {};
+  const t = await makeSound(projectId, ev.prompt, ev.seconds, qualityFormat(engines.quality), soundEngineOf(engines).provider, options);
+  let qa: { peakDb: number; lufs: number | null; issues: string[] } | undefined;
+  try {
+    const b = await takeBuffer(projectId, t.id);
+    const q = validateClip(Array.from({ length: b.numberOfChannels }, (_, i) => b.getChannelData(i)), b.sampleRate, { requestedSeconds: ev.seconds, kind: "sound" });
+    qa = { peakDb: Number(q.peakDb.toFixed(1)), lufs: q.lufs === null ? null : Number(q.lufs.toFixed(1)), issues: q.issues.map((i) => i.text) };
+  } catch {
+    /* the checks are a bonus; the clip is kept either way */
+  }
+  return { ...ev, ...("sfxModel" in options && options.sfxModel ? { model: options.sfxModel } : {}), take: { ...t, qa } };
+}
 
 export default function Perform() {
   const localDirector = useLocalDirectorReady();
@@ -111,7 +130,7 @@ export default function Perform() {
     }
     try {
       for (let i = 0; i < runs.length; i++) {
-        const t = await (assembledFor(line, voice, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i], casting: castingFor(line) });
+        const t = await (assembledFor(line, voice, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, voice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, variation: runs[i], casting: castingFor(line), neighbours: neighboursOf(live.current.project?.lines ?? project.lines, line) });
         // A set of interpretations never replaces a take you already chose.
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: variations ? l.chosen ?? t.id : t.id }), "~take");
         const sent = t.provenance?.chars ?? chars;
@@ -144,7 +163,7 @@ export default function Perform() {
         // Read the voice again NOW: the owner may have changed it since this run began.
         const nowChar = live.current.project?.characters.find((c) => c.id === line.characterId);
         const nowVoice = live.current.library.find((x) => x.id === nowChar?.voiceId) ?? v;
-        const t = await (assembledFor(line, nowVoice, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, nowVoice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, casting: castingFor(line) });
+        const t = await (assembledFor(line, nowVoice, { inworldModel: engines.inworldModel }) ? makeBeatTake : makeTake)(project.id, line, nowVoice, model, dictOf(line), qualityFormat(engines.quality), { inworldModel: engines.inworldModel, casting: castingFor(line), neighbours: neighboursOf(live.current.project?.lines ?? project.lines, line) });
         patchLine(line.id, (l) => ({ ...l, takes: [...l.takes, t], chosen: t.id }), "~take");
         const sent = t.provenance?.chars ?? 0;
         addLedger({ kind: "speech", engine: ENGINES[v.provider].label, chars: sent, items: [{ kind: "speech", engine: v.provider, chars: sent }] });
@@ -153,6 +172,34 @@ export default function Perform() {
         break;
       }
       setRunning({ done: i + 1, total: todo.length });
+    }
+    setRunning(null);
+  };
+
+  /** The sound cues that have no clip yet, with the line each belongs to. */
+  const missingCues = project.lines.flatMap((l) => l.events.filter((e) => !e.take).map((e) => ({ line: l, event: e })));
+  const makeAllSounds = async () => {
+    if (missingCues.length === 0) return toast("Every sound already has a clip.");
+    const free = !!soundEngineOf(engines).free;
+    if (!free) {
+      const price = priceLines([{ kind: "sound", count: missingCues.length }]);
+      const ok = await confirmSpend({ title: "Make all the missing sounds?", lines: [`${missingCues.length} sound clips, about ${missingCues.reduce((n, c) => n + c.event.seconds, 0)} seconds in all`, `Uses ${soundEngineOf(engines).label} credits`, "One clip is made for each, in script order. You can stop at any time.", ...price.lines], warn: price.warn });
+      if (!ok) return;
+    }
+    stop.current = false;
+    setRunning({ done: 0, total: missingCues.length });
+    for (let i = 0; i < missingCues.length; i++) {
+      if (stop.current) break;
+      const { line, event } = missingCues[i]!;
+      try {
+        const made = await renderCue(project.id, event, engines);
+        patchLine(line.id, (l) => ({ ...l, events: l.events.map((x) => (x.id === event.id ? made : x)) }), "~sfx");
+        if (!free) addLedger({ kind: "sound", engine: soundEngineOf(engines).ledger, chars: event.prompt.length, items: [{ kind: "sound", count: 1 }], note: event.prompt.slice(0, 60) });
+      } catch (e) {
+        toast(`Stopped at sound ${i + 1} of ${missingCues.length}: ${(e as Error).message}`, true);
+        break;
+      }
+      setRunning({ done: i + 1, total: missingCues.length });
     }
     setRunning(null);
   };
@@ -358,6 +405,11 @@ export default function Perform() {
             {missing > 0 && (
               <button onClick={() => void makeAll()} disabled={noVoice > 0}>
                 Make all {missing} missing take{missing === 1 ? "" : "s"}…
+              </button>
+            )}
+            {missingCues.length > 0 && (
+              <button onClick={() => void makeAllSounds()} title="The [SFX: ...] cues from your script have no audio yet">
+                Make all {missingCues.length} missing sound{missingCues.length === 1 ? "" : "s"}…
               </button>
             )}
             {playing && (
@@ -734,6 +786,28 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
     setBusy(false);
   };
 
+  const [busyCue, setBusyCue] = useState("");
+  /** Makes the clip for one sound cue that came from the script. Paid engines ask first. */
+  const makeCue = async (ev: SoundEvent) => {
+    if (!project) return;
+    const free = !!soundEngineOf(engines).free;
+    if (!free) {
+      const price = priceLines([{ kind: "sound", count: 1 }]);
+      const ok = await confirmSpend({ title: "Make this sound?", lines: [`"${ev.prompt}", about ${ev.seconds} seconds`, `Uses ${soundEngineOf(engines).label} credits`, ...price.lines], warn: price.warn, skipKey: "sound" });
+      if (!ok) return;
+    }
+    setBusyCue(ev.id);
+    try {
+      const made = await renderCue(project.id, ev, engines);
+      patch((l) => ({ ...l, events: l.events.map((x) => (x.id === ev.id ? made : x)) }));
+      if (!free) addLedger({ kind: "sound", engine: soundEngineOf(engines).ledger, chars: ev.prompt.length, items: [{ kind: "sound", count: 1 }], note: ev.prompt.slice(0, 60) });
+    } catch (e) {
+      toast((e as Error).message, true);
+    } finally {
+      setBusyCue("");
+    }
+  };
+
   const addSound = async () => {
     if (!project || !snd.prompt.trim()) return;
     const free = !!soundEngineOf(engines).free;
@@ -979,6 +1053,12 @@ function LineCard({ line, index, character, voice, model, dict, patch, make, vie
         <div key={e.id} className="take">
           <PlayButton label={e.prompt.slice(0, 22)} get={() => takeUrl(project!.id, e.take!.id)} disabled={!e.take} />
           <span className="badge">sound {e.placement === "before" ? "before" : "after"}</span>
+          {!e.take && <span className="muted small" title={e.prompt}>{e.prompt.slice(0, 48)}{e.prompt.length > 48 ? "…" : ""}</span>}
+          {!e.take && (
+            <button className="sm" disabled={busyCue === e.id} onClick={() => void makeCue(e)}>
+              {busyCue === e.id ? "Making…" : "Make this sound"}
+            </button>
+          )}
           {(e.take?.qa?.issues.length ?? 0) > 0 && <span className="badge warn" title={e.take!.qa!.issues.join(" ")}>⚠ {e.take!.qa!.issues.length} to check</span>}
           {character && e.take && (
             <button

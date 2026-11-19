@@ -1,4 +1,4 @@
-import { VoiceMark } from "../voiceMark";
+import { VoiceFace, VoiceMark } from "../voiceMark";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, toUrl } from "../api";
 import { useApp } from "../ctx";
@@ -90,7 +90,7 @@ export default function CastingCall({ onDesign }: { onDesign: (description: stri
 
       <div className="chips" role="group" aria-label="Accent filter">{accents.map((a) => <button key={a} className="chip" aria-pressed={accent === a} onClick={() => setAccent(a)}>{a}</button>)}</div>
       <div className="shelf-grid">{shown.map((r) => <article className="shelf-voice" key={r.key}>
-        <VoiceMark id={r.key} provider="piper" size={54} />
+        <VoiceFace voice={{ id: r.key, provider: "piper", gender: documentedGender(r.key), accent: r.accent, language: r.language }} size={54} />
         <div className="shelf-info"><strong>{r.name}</strong><span>{r.accent} · {r.language}</span><small>{r.use} · {r.mb} MB</small></div>
         <div className="shelf-actions">
           <button className="sm" disabled={busy === r.key} onClick={() => void preview(r)} aria-label={`${playing === r.key ? "Pause" : paused === r.key ? "Resume" : "Hear"} ${r.name}`}>{playing === r.key ? "Pause" : paused === r.key ? "Resume" : "Hear"}</button>

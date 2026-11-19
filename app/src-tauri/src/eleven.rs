@@ -86,7 +86,17 @@ impl Client {
         finish(self.agent.post(&format!("{}{path}", self.base)).set("xi-api-key", &self.key).set("content-type", "application/json").send_string(&body.to_string()))
     }
 
+    /// Speech with no neighbouring lines (the tests use it; the app always goes through speech_in_context).
+    #[cfg(test)]
     pub fn speech(&self, voice: &str, model: &str, text: &str, speed: Option<f64>, format: &str) -> Result<Vec<u8>, String> {
+        self.speech_in_context(voice, model, text, speed, format, None, None)
+    }
+
+    /// Speech for one line with the words of the lines around it. ElevenLabs documents `previous_text` and `next_text` as the way to keep
+    /// the delivery continuous when speech is made in separate requests (checked 2026-11-19). If the service rejects them for a model, the
+    /// line is made again without them, so context can never stop a take from being made.
+    #[allow(clippy::too_many_arguments)]
+    pub fn speech_in_context(&self, voice: &str, model: &str, text: &str, speed: Option<f64>, format: &str, previous: Option<&str>, next: Option<&str>) -> Result<Vec<u8>, String> {
         let format = format_or_standard(Some(format));
         if !valid_id(voice) {
             return Err("Pick a voice first.".into());
@@ -95,7 +105,21 @@ impl Client {
         if let Some(sp) = speed.filter(|x| (x - 1.0).abs() > 0.001) {
             body["voice_settings"] = json!({ "speed": sp.clamp(0.7, 1.2) });
         }
-        read_all(self.post(&format!("/v1/text-to-speech/{voice}?output_format={format}"), &body).map_err(|m| quality_hint(m, format))?, MAX_AUDIO)
+        let path = format!("/v1/text-to-speech/{voice}?output_format={format}");
+        let prev = previous.map(str::trim).filter(|t| !t.is_empty());
+        let nxt = next.map(str::trim).filter(|t| !t.is_empty());
+        if prev.is_some() || nxt.is_some() {
+            let mut with = body.clone();
+            if let Some(t) = prev { with["previous_text"] = json!(t.chars().take(500).collect::<String>()); }
+            if let Some(t) = nxt { with["next_text"] = json!(t.chars().take(500).collect::<String>()); }
+            match self.post(&path, &with) {
+                Ok(r) => return read_all(r, MAX_AUDIO),
+                // only a rejected request is retried: a missing key, no credit or a busy service would fail the same way again
+                Err(m) if m.contains("(400)") || m.contains("(422)") => {}
+                Err(m) => return Err(quality_hint(m, format)),
+            }
+        }
+        read_all(self.post(&path, &body).map_err(|m| quality_hint(m, format))?, MAX_AUDIO)
     }
 
     pub fn sound(&self, text: &str, seconds: f64, looped: bool, prompt_influence: Option<f64>, model: Option<&str>, format: &str) -> Result<Vec<u8>, String> {
@@ -354,6 +378,31 @@ mod tests {
         assert_eq!(b["model_id"], "eleven_v4");
         assert_eq!(b["text"], "[laughs] hi");
         assert_eq!(b["voice_settings"]["speed"], 0.9);
+    }
+
+    #[test]
+    fn neighbouring_lines_are_sent_as_context_and_a_rejection_falls_back_to_a_plain_request() {
+        let f = start(Box::new(|_| (200, audio())));
+        let c = Client::new(&f.base, "KEY123");
+        c.speech_in_context("V1", MODEL_V4, "[sighs] fine.", None, STANDARD_FORMAT, Some("  You said ten o'clock. "), Some("")).unwrap();
+        let b: Value = serde_json::from_slice(&f.hits.lock().unwrap()[0].body).unwrap();
+        assert_eq!(b["previous_text"], "You said ten o'clock.");
+        assert!(b.get("next_text").is_none(), "an empty neighbour is not sent");
+        assert_eq!(b["text"], "[sighs] fine.");
+        // a line with no neighbours sends neither field
+        c.speech("V1", MODEL_V4, "x", None, STANDARD_FORMAT).unwrap();
+        let plain: Value = serde_json::from_slice(&f.hits.lock().unwrap()[1].body).unwrap();
+        assert!(plain.get("previous_text").is_none() && plain.get("next_text").is_none());
+        // the service refuses the context: the line is made again without it, once
+        let g = start(Box::new(|h| if String::from_utf8_lossy(&h.body).contains("previous_text") { (422, b"{\"detail\":{\"message\":\"previous_text is not supported\"}}".to_vec()) } else { (200, audio()) }));
+        let c2 = Client::new(&g.base, "KEY123");
+        assert!(c2.speech_in_context("V1", MODEL_V4, "hi", None, STANDARD_FORMAT, Some("before"), Some("after")).is_ok());
+        assert_eq!(g.hits.lock().unwrap().len(), 2);
+        // a refused key is not retried
+        let k = start(Box::new(|_| (401, b"{}".to_vec())));
+        let c3 = Client::new(&k.base, "BAD");
+        assert!(c3.speech_in_context("V1", MODEL_V4, "hi", None, STANDARD_FORMAT, Some("before"), None).is_err());
+        assert_eq!(k.hits.lock().unwrap().len(), 1);
     }
 
     #[test]

@@ -74,6 +74,13 @@ describe("take check for a repeated line", () => {
     expect(f.length).toBeGreaterThan(0);
     expect(f[0]).toMatch(/slower than speech/);
   });
+  it("does not flag one-word lines, or lines whose own punctuation breaks them into phrases", () => {
+    expect(takeFlags(analyzeSamples(speech(1.4), RATE, 1), 1)).toEqual([]);
+    expect(takeFlags(analyzeSamples(speech(2.3), RATE, 1), 1)).toEqual([]);
+    const gap = new Float32Array(Math.round(0.4 * RATE));
+    const s = Float32Array.from([...speech(0.4), ...gap, ...speech(0.4), ...gap, ...speech(0.4), ...gap, ...speech(0.4)]);
+    expect(takeFlags(analyzeSamples(s, RATE, 4), 4, 4)).toEqual([]);
+  });
   it("leaves a normal take alone", () => {
     expect(takeFlags(analyzeSamples(speech(1.2), RATE, 2), 2)).toEqual([]);
     expect(takeFlags(analyzeSamples(speech(0.5), RATE, 0), 0)).toEqual([]);

@@ -5,7 +5,7 @@
 
 import { extractStated } from "./casting/extract";
 import { type Heritage, type VoiceAge } from "./avatarLibrary";
-import { parseScript } from "./script";
+import { normalizeScriptRow, parseScript } from "./script";
 
 export interface ImportedCharacter {
   name: string;
@@ -176,7 +176,7 @@ function proseParagraphs(lines: string[]): string {
 /** Converts imported text to the app's script format and describes what was found. */
 export function convertScript(raw: string): Converted {
   const warnings: string[] = [];
-  const all = tidy((typeof raw === "string" ? raw : "").replace(/\r\n?/g, "\n").split("\n"));
+  const all = tidy((typeof raw === "string" ? raw : "").replace(/\r\n?/g, "\n").split("\n")).map(normalizeScriptRow);
   if (all.length >= MAX_LINES) warnings.push(`Only the first ${MAX_LINES.toLocaleString()} lines were read.`);
   const nonBlank = all.filter((l) => !BLANK.test(l));
   const colon = nonBlank.filter((l) => COLON_SPEAKER.test(l) && !SCENE_HEADING.test(l)).length;

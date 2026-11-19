@@ -1,6 +1,6 @@
 # Handover note: Greenroom Local (for a Claude agent on another PC)
 
-## START HERE: current state at 0.16.3 (written 2026-11-19)
+## START HERE: current state at 0.17.0 (written 2026-11-19)
 
 **Read this section first.** Everything below it ("Update at 0.13.0" and the 0.12.8 note) is older and still useful for background (code map, build traps, rules), but its version numbers, test counts and "not tested" lists are out of date. The sections marked **(older)** are kept as written.
 
@@ -8,9 +8,9 @@
 | Item | Value |
 |---|---|
 | Repo | https://github.com/Olusegune/Greenroom_Local |
-| Branch | **`feat/agent-studio-presets`** (all work is here; `main` is old and has no open PR) |
-| Version | **0.16.3** (bumped in the five places listed in section 4). Commit message starts "0.16.3". |
-| Gate at 0.16.3 | `npx tsc --noEmit` clean; `npx vitest run` **1,145 pass, 2 skipped**; `cargo clippy --all-targets -- -D warnings` clean; `cargo test` **147 pass, 5 ignored** (the ignored ones are real-engine runs). |
+| Branch | **`feat/agent-studio-presets`** (all work is here; `main` is old). **No pull request is open**: `gh` is not installed on the PC that wrote this and the GitHub connector failed to authenticate, so open it by hand: https://github.com/Olusegune/Greenroom_Local/compare/main...feat/agent-studio-presets?expand=1 (about 90 commits ahead of main) |
+| Version | **0.17.0** (bumped in the five places listed in section 4). Commit message starts "0.17.0". |
+| Gate at 0.17.0 | `npx tsc --noEmit` clean; `npx vitest run` **1,170 pass, 2 skipped**; `cargo clippy --all-targets -- -D warnings` clean; `cargo test` **148 pass, 5 ignored** (the ignored ones are real-engine runs); browser `scripts/qa/smoke.mjs` 0 errors and `a11y.mjs` 0 violations. |
 | Installers | Built once in the foreground: NSIS 14.76 MiB, MSI 16.82 MiB, exe 30.5 MB. Desktop folders `Greenroom Local 0.14.0` to `0.16.3` existed on the owner's PC (not in git; rebuild with `npx tauri build`). |
 
 ```bash
@@ -27,10 +27,11 @@ The owner is Victor Edun (GitHub **Olusegune**). They do **not** use a terminal:
 - **0.16.0** WazobiaVoice lines are no longer 40 s long (worker trims the silent tail and caps speech tokens); **strict avatars** (`docs/AVATARS.md`): a face is chosen only from stated facts, no stated gender means no face (neutral mark), gender, heritage and childhood are never crossed, Gender and Heritage filters in the portrait browser; 22 unlabelled portraits labelled by eye (UNVERIFIED, owner must review; list in a comment in `app/src/avatarLibrary.ts`).
 - **0.16.1** Local sound effects (Stable Audio Open Small) now work: two worker faults fixed in `runtime/sfx_once.py` (text-encoder `model_path`, standard-library WAV writer).
 - **0.16.2** Sound-effects and ACE-Step music screens use an instant "files are in place" check (they said "install" for about 10 s while a PyTorch import ran); the Director spend sheet names the real provider (it said "Kie credit" for OpenAI and Gemini); English voices are no longer badged "English (Scottish)".
+- **0.17.0** Stress test with `docs/samples/the-wrong-department.md` (an AI-written 4-character, 3-scene audio drama script) in the real app with ElevenLabs. Fixed: the script reader now understands the common markdown shape (`**NAME:** (direction) words`, bold scene headings, `[PAUSE: n seconds]`, `[SFX: ...]`; `docs/SCRIPT_FORMAT.md`); written directions become short engine tags instead of one long bracket (`app/src/directionTags.ts`); imported sound cues can be made (Perform: Make this sound, Make all N missing sounds); ElevenLabs lines get the lines before and after as `previous_text`/`next_text` (retry without if rejected); the app's take checks no longer cry wolf on one-word or deliberately staccato lines; a sound before a line is at most 4 s; **every voice in a list has a face** chosen from its own stated gender, age and region-pointing accent (never crossing gender; no stated gender gets a robot, alien or animal; `docs/AVATARS.md`, `voiceFace` in `avatarLibrary.ts`). Result: 55 takes in 90 s, 9 sound clips, 4:18 Podcast-preset export, peak -1.1 dBFS, no clipping. Nothing judged by ear.
 - **0.16.3** Casting bug: confirming "Change the voice" on an approved character left the old approval, so every take was refused ("Nothing was made"). A confirmed change now removes the old approval (`app/src/casting/lock.ts`, regression test in `casting/regression.test.ts`). Verified in the built app: change MARA's voice, confirm, make a take, a new WAV is written.
 
 ### What has been tested for real (built app, the owner's PC and keys, a throwaway project that was deleted afterwards)
-Worked: Chatterbox, WazobiaVoice (English, Yoruba, Hausa, Igbo), Kokoro, Piper, Qwen3-TTS (lock, design, speak), ElevenLabs speech and sound effects, VoiceKiller speech (MP3 take), OpenAI and Gemini Director notes, local sound effects via SFX Studio (3 s in 33 s), ACE-Step music (10 s in 77 s, placed on the Timeline), casting suggestions, Timeline, Podcast-preset export (24-bit 44.1 kHz stereo plus cue sheet, rights register, manifest, report; the loudness line honestly says when the peak ceiling limits the gain), Agent Studio end to end on local engines (stops for approvals, 12 of 12 steps), History restore both ways (takes kept), strict avatars in the profile and Presets screens.
+Also worked (0.17.0 stress run): the whole of `docs/samples/the-wrong-department.md` through ElevenLabs v3 (3,118 characters, one pass, plus one retake), 9 ElevenLabs sound effects, export. Worked: Chatterbox, WazobiaVoice (English, Yoruba, Hausa, Igbo), Kokoro, Piper, Qwen3-TTS (lock, design, speak), ElevenLabs speech and sound effects, VoiceKiller speech (MP3 take), OpenAI and Gemini Director notes, local sound effects via SFX Studio (3 s in 33 s), ACE-Step music (10 s in 77 s, placed on the Timeline), casting suggestions, Timeline, Podcast-preset export (24-bit 44.1 kHz stereo plus cue sheet, rights register, manifest, report; the loudness line honestly says when the peak ceiling limits the gain), Agent Studio end to end on local engines (stops for approvals, 12 of 12 steps), History restore both ways (takes kept), strict avatars in the profile and Presets screens.
 
 ### NOT done or NOT verified
 - **Nothing has been judged by ear** (accents, Wazobia pronunciation, music, effects, ElevenLabs lines). The owner must listen. An agent can only claim "valid audio".

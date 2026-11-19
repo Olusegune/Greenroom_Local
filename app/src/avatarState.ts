@@ -27,6 +27,7 @@ export function useAvatars(): State {
       return () => listeners.delete(cb);
     },
     () => state,
+    () => state,
   );
 }
 

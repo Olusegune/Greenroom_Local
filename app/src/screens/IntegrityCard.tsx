@@ -1,7 +1,7 @@
 import { integrityOf, type Integrity, type RowState } from "../casting/integrity";
 import type { MatchContext } from "../casting/types";
 import type { Character, VoiceEntry } from "../types";
-import { CharacterMark } from "../voiceMark";
+import { VoiceFace } from "../voiceMark";
 
 const ICON: Record<RowState, { glyph: string; word: string }> = {
   verified: { glyph: "✓", word: "Confirmed" },
@@ -38,7 +38,7 @@ export default function IntegrityCard({ character, voice, context }: { character
     <section className="integrity-card" aria-label={`Casting integrity for ${character.name}`}>
       <header className="row between wrap">
         <span className="row">
-          <CharacterMark name={character.name} size={36} />
+          <VoiceFace voice={voice} size={36} />
           <span className="stack tight"><strong>{character.name}</strong><span className="muted small">Character casting profile · {voice.name}</span></span>
         </span>
         <span className={`status-chip s-${t.status.toLowerCase()}`}>{t.statusLabel}</span>

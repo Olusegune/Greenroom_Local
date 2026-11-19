@@ -38,8 +38,23 @@ export class CastingError extends Error {
 }
 
 /** The request that goes to the engine for one piece of text. The voice id carries the speaker (file@7, ife@yo) unchanged. */
-export function clipRequest(p: Plan, voice: Pick<VoiceEntry, "id">, speed: number, quality?: string): Parameters<typeof api.runClip>[0] {
-  return { provider: p.provider, text: p.text, voice: voice.id, speed, instructions: p.instructions, quality, model: p.modelId };
+export function clipRequest(p: Plan, voice: Pick<VoiceEntry, "id">, speed: number, quality?: string, around?: Neighbours): Parameters<typeof api.runClip>[0] {
+  const eleven = p.provider === "eleven-v4" || p.provider === "eleven-tts";
+  return { provider: p.provider, text: p.text, voice: voice.id, speed, instructions: p.instructions, quality, model: p.modelId, ...(eleven && around?.previous ? { previousText: around.previous } : {}), ...(eleven && around?.next ? { nextText: around.next } : {}) };
+}
+
+/** The words spoken just before and just after a line in the same scene, without tags, so a voice can carry the scene's flow into the line. */
+export interface Neighbours { previous?: string; next?: string }
+const CONTEXT_CHARS = 300;
+export function neighboursOf(lines: Pick<Line, "id" | "text" | "scene">[], line: Pick<Line, "id" | "scene">): Neighbours {
+  const i = lines.findIndex((l) => l.id === line.id);
+  if (i < 0) return {};
+  const words = (t: string) => stripTags(t).replace(/\s+/g, " ").trim();
+  const before = lines[i - 1];
+  const after = lines[i + 1];
+  const previous = before && before.scene === line.scene ? words(before.text).slice(-CONTEXT_CHARS) : "";
+  const next = after && after.scene === line.scene ? words(after.text).slice(0, CONTEXT_CHARS) : "";
+  return { ...(previous ? { previous } : {}), ...(next ? { next } : {}) };
 }
 
 /** Runs the casting guard when a check was asked for. Returns the identity to stamp on the take, or throws. */
@@ -53,6 +68,8 @@ function guardCast(voice: VoiceEntry, opts: PlanOptions): TakeCast | undefined {
 export interface PlanOptions {
   /** When given, the voice is checked against the character's approval before anything is made, and the take records who it was made for. */
   casting?: CastingCheck;
+  /** The lines either side of this one (see neighboursOf). Sent to ElevenLabs as context so a separately made line follows on naturally. */
+  neighbours?: Neighbours;
   inworldModel?: InworldModel;
   /** Make the line as one of four interpretations. The saved line is not changed. */
   variation?: VariationId;
@@ -118,7 +135,7 @@ export async function makeTake(projectId: string, original: Line, voice: VoiceEn
   const saved = acted(original, voice, opts).line;
   const line = effectiveLine(opts.variation ? applyVariation(saved, opts.variation) : saved, { emphasis: voice.provider === "inworld" });
   const p = plan(original, voice, model, dict, opts);
-  const out = await api.runClip(clipRequest(p, voice, line.direction.speed, quality));
+  const out = await api.runClip(clipRequest(p, voice, line.direction.speed, quality, opts.neighbours));
   const id = "t-" + uid();
   const ext = out.mime === "audio/wav" ? "wav" : "mp3";
   await api.takeWrite(projectId, id, ext, out.audioB64);
@@ -129,7 +146,7 @@ export async function makeTake(projectId: string, original: Line, voice: VoiceEn
   try {
     const b = await takeBuffer(projectId, id);
     const words = spokenWords(line.text);
-    const f = takeFlags(analyzeSamples(b.getChannelData(0), b.sampleRate, words), words);
+    const f = takeFlags(analyzeSamples(b.getChannelData(0), b.sampleRate, words), words, Math.max(1, stripTags(line.text).split(/[.!?…]+/).filter((x) => x.trim()).length));
     if (f.length) check = f;
   } catch {
     /* the check is a bonus; the take is kept either way */

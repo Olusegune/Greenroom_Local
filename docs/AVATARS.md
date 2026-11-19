@@ -25,7 +25,7 @@ Presets whose appearance an author has written (so they get a face): Yoruba, Igb
 ## What the owner gets
 
 - **Browse by what a face shows.** The portrait browser has Gender and Heritage filters, built from the library's own look labels (which were judged by eye when the library was built), and each tile says what it shows in its tooltip, e.g. "Female, Black / African".
-- **A voice has no face unless you give it one.** Voice lists show a neutral mark. To give a voice a face, set its Picture look (gender, age, heritage, all optional, in the voice card) and choose from the filtered browser.
+- **Every voice in a list has a face (0.17.0).** The owner found a library of faceless marks odd. A voice's face is chosen from what the voice itself states (`voiceFace` in `src/avatarLibrary.ts`): its **gender** decides which portraits are possible and is never crossed; its stated age band and, for accents that point to a region (Nigerian, Ghanaian, Kenyan, Indian, Korean, Arabic, Latin American...), its **heritage** narrow the choice when portraits fit. A British, American, Irish or Australian accent chooses no heritage (it says nothing certain about who is speaking). A voice that states **no gender** gets a friendly non-human portrait (a robot, alien or stylised animal) rather than a guessed person. The face is the same every time for the same voice; a picture you chose, or a look you set in the voice card (gender, age, heritage), always wins. A character with no look of its own shows the face of the voice cast for it; a character with no voice yet shows its initials. Presets are unchanged (strict, stated facts only).
 - **Auto-chosen faces are always explainable** from stated facts, and never override a face you chose.
 
 ## Limits

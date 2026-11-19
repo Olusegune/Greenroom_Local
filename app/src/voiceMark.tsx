@@ -1,8 +1,10 @@
-// What a voice looks like in a list. A voice has no face: nobody has said who is speaking, so Greenroom does not draw a person.
-// A voice shows a small waveform mark, tinted by its engine, and its facts are written beside it. A real picture appears only when
-// the owner chose one for the voice. A character's face is a separate thing (see CharacterFace), chosen by the owner or drawn
-// only from what the owner stated about that character.
+// What a voice looks like in a list: a portrait that fits what the voice states about itself (see VoiceFace), or the owner's own picture.
+// The small waveform mark, tinted by its engine, is the fallback while the portrait library loads. A character's face is a separate
+// thing (see CharacterFace), chosen by the owner or drawn only from what the owner stated about that character.
 
+import { useMemo } from "react";
+import { customFaces, faceFor, lookLabel, voiceFace } from "./avatarLibrary";
+import { useAvatars } from "./avatarState";
 import type { VoiceEntry } from "./types";
 
 const HUE: Record<string, number> = { elevenlabs: 265, inworld: 190, voicekiller: 35, kie: 330, piper: 150, kokoro: 172, qwen: 282, chatterbox: 212, wazobia: 24, local: 100 };
@@ -35,9 +37,24 @@ export function CharacterMark({ name, size = 44 }: { name: string; size?: number
   return <span className="char-mark" role="presentation" aria-hidden="true" style={{ width: size, height: size, fontSize: Math.round(size * 0.38), "--cm": hue } as React.CSSProperties}>{initials}</span>;
 }
 
-/** The face of a voice in a list: the picture the OWNER chose for it, or the neutral mark. Never a guessed person. */
-export function VoiceFace({ voice, id, provider, size = 54 }: { voice?: Pick<VoiceEntry, "id" | "provider" | "portrait" | "name">; id?: string; provider?: string; size?: number }) {
+/** A voice's facts that choose its picture. A VoiceEntry has all of them; a voice still being looked at (not yet in the library) has some. */
+type FaceVoice = { id: string; provider?: string; name?: string; portrait?: string; gender?: string; accent?: string; language?: string; notes?: string; age?: VoiceEntry["age"]; heritage?: VoiceEntry["heritage"] };
+
+/**
+ * The face of a voice in a list: the picture the owner chose for it, otherwise a portrait that fits what the voice states (its gender is
+ * never crossed; a voice that states none gets a robot, alien or creature, not a guessed person). The waveform mark shows only while the
+ * portrait library loads. Change the picture or its look any time from the voice's own card.
+ */
+export function VoiceFace({ voice, id, provider, size = 54 }: { voice?: FaceVoice; id?: string; provider?: string; size?: number }) {
+  const { manifest, store } = useAvatars();
   const photo = voice?.portrait && voice.portrait.startsWith("data:image/") ? voice.portrait : null;
+  const vid = voice?.id ?? id ?? "x";
+  const entry = useMemo(() => (photo ? null : voiceFace(manifest, { id: vid, gender: voice?.gender, accent: voice?.accent, language: voice?.language, notes: voice?.notes, age: voice?.age, heritage: voice?.heritage }, undefined, customFaces(store))), [photo, manifest, store, vid, voice?.gender, voice?.accent, voice?.language, voice?.notes, voice?.age, voice?.heritage]);
   if (photo) return <img className="avatar" src={photo} alt="" width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} />;
-  return <VoiceMark id={voice?.id ?? id ?? "x"} provider={voice?.provider ?? provider} size={size} />;
+  const face = entry ? faceFor(entry.id, manifest, store) : null;
+  if (face) {
+    const src = size >= 96 ? face.card : size >= 48 ? face.small : face.thumb;
+    return <img className="avatar" src={src} alt="" title={lookLabel(entry!.id) || undefined} width={size} height={size} decoding="async" loading="lazy" style={{ objectFit: "cover", borderRadius: "50%" }} />;
+  }
+  return <VoiceMark id={vid} provider={voice?.provider ?? provider} size={size} />;
 }

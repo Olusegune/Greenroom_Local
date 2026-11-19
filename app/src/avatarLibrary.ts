@@ -800,6 +800,35 @@ export function autoAvatar(manifest: AvatarManifest | null, seed: string, gender
   return pool.length ? pick(pool) : null;
 }
 
+/** What a voice says about itself that decides its picture. Every field is optional. */
+export interface VoiceLookFacts { id: string; gender?: string; accent?: string; language?: string; notes?: string; age?: VoiceMeta["age"]; heritage?: VoiceMeta["heritage"] }
+
+/** The accents of a Western voice say nothing certain about who is speaking, so they do not choose a heritage. */
+const WESTERN_ACCENT = /(american|british|english|irish|scottish|welsh|australian|new zealand|canad|received|castilian|cockney)/i;
+
+/**
+ * The picture for a voice in a list (the owner can replace it any time). The voice's stated gender decides which portraits are possible
+ * and is never crossed; its age band and, for accents that point to a region (Nigerian, Indian, Korean...), its heritage narrow the choice
+ * when portraits fit. A voice that states no gender gets a neutral portrait (a robot, an alien, a creature) instead of a guessed person.
+ */
+export function voiceFace(manifest: AvatarManifest | null, v: VoiceLookFacts, usage?: Map<string, number>, custom?: CustomFace[]): AvatarEntry | null {
+  if (!manifest) return null;
+  const stated = readVoice(v.gender, [v.accent, v.notes].filter(Boolean).join(" "));
+  const gender = v.gender && /^(f|female|woman)$/i.test(v.gender.trim()) ? "female" : v.gender && /^(m|male|man)$/i.test(v.gender.trim()) ? "male" : stated.g === "f" ? "female" : stated.g === "m" ? "male" : undefined;
+  if (!gender) {
+    const customLook = new Map((custom ?? []).map((c) => [c.entry.id, c.look]));
+    const neutral = [...manifest.avatars, ...(custom ?? []).map((c) => c.entry)].filter((a) => (LOOKS[a.id] ?? customLook.get(a.id))?.g === "n");
+    // friendly, non-human portraits only (robots, aliens, stylised animals): a voice with no stated gender should not look like a ghoul
+    const friendly = neutral.filter((a) => /^(scifi_|stylized_)/.test(a.id) || a.id.startsWith("custom:"));
+    if (!(friendly.length || neutral.length)) return null;
+    return (friendly.length ? friendly : neutral)[seedHash(v.id) % (friendly.length || neutral.length)]!;
+  }
+  const accentText = [v.accent, v.language].filter(Boolean).join(" ");
+  const heritage = v.heritage ?? (accentText && !WESTERN_ACCENT.test(accentText) ? readVoice(gender, accentText).h : undefined);
+  const meta: VoiceMeta = { ...(v.age ? { age: v.age } : stated.age ? { age: stated.age } : {}), ...(heritage ? { heritage } : {}) };
+  return autoAvatar(manifest, v.id, gender, "", meta, usage, custom);
+}
+
 /** What a built-in portrait shows, in words, for a tile or tooltip: "Female, Black / African". Empty when the library has no label for it. */
 export function lookLabel(id: string): string {
   const l = LOOKS[id];

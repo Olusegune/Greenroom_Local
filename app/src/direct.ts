@@ -128,7 +128,8 @@ function compose(line: Pick<Line, "text" | "direction">): { text: string; notes:
   const d: Direction = line.direction;
   const text = line.text.replace(/\s+/g, " ").trim();
   const have = (t: string) => text.toLowerCase().includes(tag(t));
-  const short = [d.emotion, ...d.sounds].map((t) => (t ?? "").trim().toLowerCase()).filter((t) => t && !have(t));
+  // an emotion written as "angry, scolding" is sent as two short tags, not one long one
+  const short = [...(d.emotion ?? "").split(","), ...d.sounds].map((t) => (t ?? "").trim().toLowerCase()).filter((t, i, all) => t && !have(t) && all.indexOf(t) === i);
   const left = tagBudget(text) - short.reduce((n, t) => n + t.length + 1, 0);
   const all = noteTags(d.note);
   const notes = fitCues(all, left).map((t) => t.toLowerCase()).filter((t) => !have(t));

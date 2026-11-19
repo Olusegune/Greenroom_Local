@@ -1,4 +1,4 @@
-import { CharacterMark } from "../voiceMark";
+import { CharacterMark, VoiceFace } from "../voiceMark";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { api } from "../api";
@@ -27,12 +27,12 @@ export function CharacterFace({ character, voice, size = 44, emotion, editable =
   const [open, setOpen] = useState(false);
   const face = currentFace(character?.avatarId, emotion ? expressionFor(emotion) : undefined);
   const src = face ? (size >= 96 ? face.card : size >= 48 ? face.small : face.thumb) : null;
-  // A face is drawn only from what the owner STATED about this character (its look). Not from its name, a description, its language or its
-  // voice: with nothing stated there is nothing to draw, so the character shows its initials.
+  // A character's own face is drawn only from what the owner STATED about it (its look). With nothing stated it shows the face of the voice
+  // cast for it (which follows that voice's stated gender), or its initials when it has no voice yet.
   const look = character?.look;
   const described = !!(look?.gender || look?.age || look?.heritage);
   const cGender = look?.gender === "f" ? "female" : look?.gender === "m" ? "male" : undefined;
-  const inner = src ? <img className="avatar" src={src} alt={character?.name ?? ""} width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} /> : described && character ? <Avatar seed={`char:${character.id}`} gender={cGender} size={size} own meta={{ age: look?.age, heritage: look?.heritage }} /> : <CharacterMark name={character?.name ?? voice?.name ?? "?"} size={size} />;
+  const inner = src ? <img className="avatar" src={src} alt={character?.name ?? ""} width={size} height={size} decoding="async" style={{ objectFit: "cover", borderRadius: "50%" }} /> : described && character ? <Avatar seed={`char:${character.id}`} gender={cGender} size={size} own meta={{ age: look?.age, heritage: look?.heritage }} /> : voice ? <VoiceFace voice={voice} size={size} /> : <CharacterMark name={character?.name ?? "?"} size={size} />;
   if (!character || !editable) return inner;
   return (
     <>

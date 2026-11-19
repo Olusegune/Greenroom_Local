@@ -175,11 +175,14 @@ export function referenceHint(s: TakeStats): ReferencePlanHint {
  * Things worth a second listen in a new take, judged only from its length and shape. They catch a short line that came
  * back far too long, such as when a voice repeats it or reads the direction aloud. They are hints, not proof.
  */
-export function takeFlags(s: TakeStats, words: number): string[] {
+export function takeFlags(s: TakeStats, words: number, sentences = 1): string[] {
   if (words < 1 || s.speechSeconds <= 0) return [];
   const out: string[] = [];
-  if (s.wordsPerSecond > 0 && s.wordsPerSecond < 0.9) out.push(`Much slower than speech usually is (${s.wordsPerSecond} words a second). The voice may have repeated the line or read the direction aloud.`);
-  if (words <= 4 && s.pausesMs.length >= 2) out.push(`A ${words}-word line came back in ${s.pausesMs.length + 1} separate phrases. It may have been repeated.`);
+  // A one-, two- or three-word line is naturally slow in words a second ("Champagne?" takes about a second), so it is only flagged when it is long in seconds.
+  const slow = s.wordsPerSecond > 0 && s.wordsPerSecond < 0.9 && (words >= 4 || s.speechSeconds > 3);
+  if (slow) out.push(`Much slower than speech usually is (${s.wordsPerSecond} words a second). The voice may have repeated the line or read the direction aloud.`);
+  // phrases the text itself breaks into ("Not. Another. Word.") are expected, not a repeat
+  if (words <= 4 && s.pausesMs.length + 1 > Math.max(1, sentences)) out.push(`A ${words}-word line came back in ${s.pausesMs.length + 1} separate phrases. It may have been repeated.`);
   return out;
 }
 

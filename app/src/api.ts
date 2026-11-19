@@ -40,6 +40,9 @@ export interface ClipReq {
   model?: string;
   delivery?: string;
   language?: string;
+  /** ElevenLabs only: the spoken words of the lines either side of this one, so a line made on its own keeps the scene's flow. */
+  previousText?: string;
+  nextText?: string;
 }
 
 export interface InworldVoice {
